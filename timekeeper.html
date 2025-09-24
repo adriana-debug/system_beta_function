@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Time Kiosk</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            blackpearl: '#060d26',
+            beige: '#f0f3d3',
+            pear: '#cbe123',
+            shuttle: '#66686e'
+          },
+          animation: {
+            'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blackpearl via-shuttle to-blackpearl overflow-hidden text-beige">
+  <!-- Background Elements -->
+  <div class="absolute inset-0 overflow-hidden">
+    <div class="absolute top-20 left-20 w-72 h-72 bg-pear/20 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-20 right-20 w-96 h-96 bg-beige/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-shuttle/10 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="absolute top-4 right-4 flex items-center gap-4 text-beige z-10">
+    <div class="flex items-center gap-2">
+      <!-- WiFi -->
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M17.778 8.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01.808 6.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM14.95 11.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM12.12 13.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM9 16a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+      </svg>
+      <!-- Signal -->
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM17 4a1 1 0 10-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4z"></path>
+      </svg>
+      <span class="text-sm font-medium" id="current-time">14:32:15</span>
+    </div>
+    <button class="p-2 hover:bg-pear/20 rounded-lg transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Main Container -->
+  <div class="flex items-center justify-center min-h-screen p-4 relative z-10">
+    <div class="w-full max-w-4xl backdrop-blur-xl bg-blackpearl/60 border border-shuttle/40 shadow-2xl rounded-3xl p-8">
+      
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-3 mb-4">
+          <div class="w-12 h-12 bg-gradient-to-br from-pear to-shuttle rounded-xl flex items-center justify-center shadow-lg">
+            <svg class="w-6 h-6 text-blackpearl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h1 class="text-3xl font-bold text-pear">
+            TimeTracker Pro
+          </h1>
+        </div>
+        <p class="text-beige text-lg">Employee Time Management System</p>
+      </div>
+
+      <!-- Digital Clock Display -->
+      <div class="text-center mb-8">
+        <div class="inline-block backdrop-blur-md bg-blackpearl/80 rounded-2xl p-6 shadow-xl border border-shuttle/40">
+          <div class="text-5xl font-mono font-bold text-pear mb-2 tracking-wider" id="main-clock">
+            14:32:15
+          </div>
+          <div class="text-beige text-lg" id="main-date">
+            Monday, January 8, 2025
+          </div>
+        </div>
+      </div>
+
+      <!-- Authentication Options -->
+      <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <!-- Facial Recognition -->
+        <div class="backdrop-blur-md bg-blackpearl/50 border border-shuttle/30 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl p-6">
+          <div class="text-center">
+            <div class="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-pear to-shuttle rounded-2xl flex items-center justify-center shadow-lg">
+              <svg class="w-12 h-12 text-blackpearl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-beige mb-2">Facial Recognition</h3>
+            <p class="text-shuttle mb-4">Look at the camera to authenticate</p>
+            <button onclick="openCamera()" class="w-full bg-pear hover:bg-pear/90 text-blackpearl font-semibold py-3 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+              Start Face Scan
+            </button>
+          </div>
+        </div>
+
+        <!-- QR Code Scanner -->
+        <div class="backdrop-blur-md bg-blackpearl/50 border border-shuttle/30 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl p-6">
+          <div class="text-center">
+            <div class="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-shuttle to-blackpearl rounded-2xl flex items-center justify-center shadow-lg">
+              <svg class="w-12 h-12 text-pear" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-beige mb-2">QR Code Scanner</h3>
+            <p class="text-shuttle mb-4">Scan your employee QR code</p>
+            <button onclick="openCamera()" class="w-full bg-shuttle hover:bg-shuttle/80 text-beige font-semibold py-3 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+              Scan QR Code
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual Entry -->
+      <div class="text-center mb-6">
+        <button onclick="openCamera()" class="bg-shuttle hover:bg-shuttle/80 text-beige font-semibold py-3 px-8 rounded-xl shadow-lg transition-all duration-300">
+          Manual Employee ID Entry
+        </button>
+      </div>
+
+      <!-- Footer -->
+      <div class="text-center pt-6 border-t border-shuttle/40">
+        <p class="text-shuttle text-sm">
+          For assistance, contact IT Support • Version 2.1.0
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function updateTime() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('en-US', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      const dateString = now.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      document.getElementById('current-time').textContent = timeString;
+      document.getElementById('main-clock').textContent = timeString;
+      document.getElementById('main-date').textContent = dateString;
+    }
+
+    function openCamera() {
+      window.location.href = 'camera.html';
+    }
+
+    updateTime();
+    setInterval(updateTime, 1000);
+  </script>
+</body>
+</html>

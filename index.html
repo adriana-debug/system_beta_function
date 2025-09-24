@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Minds BPO</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <style>
+    :root {
+      --primary-color: #04101d;
+      --secondary-color: #a3b612;
+      --accent-color: #cce416; /* Pear */
+      --shimmer-color-1: rgba(143,211,247,0.18);
+      --shimmer-color-2: rgba(204,228,22,0.14);
+      --shimmer-color-3: rgba(204,228,22,0.08);
+    }
+
+    /* Banner and logo styles */
+    .banner-gradient {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+      position: relative;
+      overflow: hidden;
+      transition: background 400ms ease;
+    }
+
+    .banner-gradient::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(45deg, var(--shimmer-color-1) 0%, var(--shimmer-color-2) 50%, var(--shimmer-color-3) 100%);
+      animation: shimmer 9s infinite linear;
+      pointer-events: none;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .banner-blob {
+      position: absolute;
+      right: -80px;
+      top: -40px;
+      width: 360px;
+      height: 360px;
+      opacity: 0.14;
+      filter: blur(22px);
+      transform: rotate(14deg);
+      pointer-events: none;
+    }
+
+    .banner-logo-placeholder {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      font-weight: 700;
+      margin-right: 14px;
+    }
+
+    /* Feather icons and themed icon styles */
+    svg.feather {
+      color: var(--primary-color);
+      stroke: var(--primary-color);
+      transition: stroke 220ms ease, color 220ms ease;
+    }
+
+    .icon { display:inline-flex; vertical-align:middle; }
+
+    /* Themed spinner uses primary color for top border */
+    .themed-spinner {
+      border-width: 4px;
+      border-style: solid;
+      border-color: rgba(0,0,0,0.08);
+      border-top-color: var(--primary-color);
+      width: 2rem; height: 2rem; border-radius: 9999px;
+    }
+
+    /* Ensure text stays visible in dark mode */
+    body.dark p,
+    body.dark .text-sm,
+    body.dark .text-gray-500,
+    body.dark .text-gray-700,
+    body.dark .text-gray-900,
+    body.dark .text-2xl,
+    body.dark h1,
+    body.dark h2 {
+      color: #e5e7eb !important;
+    }
+
+    body.dark {
+      background-color: #111827;
+      color: #e5e7eb;
+    }
+
+    body.dark .bg-white {
+      background-color: #1f2937 !important;
+    }
+
+    body.dark .text-gray-900 {
+      color: #f9fafb !important;
+    }
+
+    body.dark .text-gray-500 {
+      color: #9ca3af !important;
+    }
+
+    body.dark .border-gray-200 {
+      border-color: #374151 !important;
+    }
+
+    body.dark .bg-gray-50 {
+      background-color: #111827;
+    }
+
+    /* Keep logo background white in dark mode so favicon looks correct */
+    .banner-logo-wrap { background: #ffffff; }
+    body.dark .banner-logo-wrap { background: #ffffff !important; }
+
+    /* Table and header adjustments for dark mode */
+    body.dark .bg-gray-100 { background-color: #0f1724 !important; }
+    body.dark .bg-white { background-color: #0b1220 !important; }
+    body.dark .sticky.top-0 { background-color: #0f1724 !important; }
+    body.dark th.bg-gray-100 { background-color: #0f1724 !important; }
+  body.dark th, body.dark thead tr th { background-color: #0f1724 !important; color: #e5e7eb !important; }
+  body.dark tbody tr td { background-color: transparent !important; color: #e5e7eb !important; }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      min-width: 200px;
+      box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+      z-index: 10;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.375rem;
+      top: 100%;
+      left: 0;
+    }
+
+    .dropdown-content a {
+      color: #374151;
+      padding: 8px 12px;
+      text-decoration: none;
+      display: block;
+      font-size: 14px;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #f3f4f6;
+    }
+
+    .theme-toggle {
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      background: white;
+    }
+
+    #spinner {
+      display: none;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+  <script>
+    // Redirect to login if not authenticated
+    (function(){
+      const authed = localStorage.getItem('dashboardAuth') === 'true' || sessionStorage.getItem('dashboardAuth') === 'true';
+      if (!authed) {
+        // preserve the intended return URL
+        const params = new URLSearchParams(window.location.search);
+        params.set('return', 'index.html');
+        window.location.href = 'login.html?' + params.toString();
+      }
+    })();
+  </script>
+  <div class="max-w-7xl mx-auto px-6 py-4">
+    <!-- Banner -->
+    <div class="banner-gradient text-white rounded-lg p-6 mb-4 relative">
+      <div class="flex items-center">
+<div class="banner-logo-wrap rounded-md overflow-hidden mr-5" style="width:48px;height:48px;transform:rotate(45deg);">
+<div class="w-full h-full bg-white rounded-md overflow-hidden" style="transform:rotate(-45deg)">
+  <img 
+    src="dmi_logo.png"
+    alt="Logo" 
+    class="w-full h-full object-cover scale-125" 
+    onerror="this.style.display='none'">
+</div>
+
+</div>
+
+     <div>
+          <h1 class="text-3xl font-bold">Welcome to Your Dashboard</h1>
+          <p class="text-sm opacity-80">Track your team's performance in real time</p>
+        </div>
+      </div>
+      <script>
+        // Show fallback placeholder if image not loaded
+        (function(){
+          const img = document.querySelector('.banner-logo-img');
+          const fallback = document.getElementById('logoFallback');
+          if (!img) { fallback.style.display = 'flex'; return; }
+          img.addEventListener('error', () => { img.style.display = 'none'; fallback.style.display = 'flex'; });
+          img.addEventListener('load', () => { fallback.style.display = 'none'; img.style.display = 'inline-block'; });
+        })();
+      </script>
+
+      <!-- Decorative blob -->
+      <svg class="banner-blob" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g transform="translate(300,300)">
+          <path d="M120,-160C160,-120,190,-80,200,-30C210,20,200,80,170,120C140,160,90,180,40,200C-10,220,-70,240,-110,210C-150,180,-170,100,-160,30C-150,-40,-110,-90,-70,-130C-30,-170,10,-200,60,-190C110,-180,80,-200,120,-160Z" fill="var(--accent-color)"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="flex flex-wrap gap-4 mb-6">
+      <div class="relative">
+        <button onclick="toggleDropdown('team-options')"
+          class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-[150px]">
+          <span id="selected-team">All Teams</span>
+        </button>
+        <div class="dropdown-content" id="team-options"></div>
+      </div>
+      <div class="relative">
+        <button onclick="toggleDropdown('agent-options')"
+          class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-[150px]">
+          <span id="selected-agent">All Agents</span>
+        </button>
+        <div class="dropdown-content" id="agent-options"></div>
+      </div>
+      <div class="relative">
+        <button onclick="toggleDropdown('month-options')"
+          class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-[150px]">
+          <span id="selected-month">All Months</span>
+        </button>
+        <div class="dropdown-content" id="month-options"></div>
+      </div>
+      <button onclick="resetFilters()" class="theme-toggle" title="Reset Filters">
+        <i data-feather="rotate-ccw"></i>
+      </button>
+      <button id="themeToggle" class="theme-toggle"><i data-feather="moon"></i></button>
+    </div>
+
+    <!-- Spinner -->
+    <div id="spinner" class="flex justify-center items-center py-6">
+      <div class="themed-spinner animate-spin"></div>
+    </div>
+
+    <!-- Email Section -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+  <h2 class="text-lg font-semibold mb-4"><i data-feather="mail" class="icon"></i> <span class="align-middle">Email</span></h2>
+      <div class="grid grid-cols-5 gap-8">
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Total Emails</p>
+          <p class="text-2xl font-semibold" id="email-total">--</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 mb-1">CSAT</p>
+          <p class="text-2xl font-semibold" id="email-csat">--</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 mb-1">First Response</p>
+          <p class="text-2xl font-semibold" id="email-frt">--</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Resolution</p>
+          <p class="text-2xl font-semibold" id="email-res">--</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 mb-1">SLA</p>
+          <p class="text-2xl font-semibold" id="email-sla">--</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Section -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+  <h2 class="text-lg font-semibold mb-4"><i data-feather="message-circle" class="icon"></i> <span class="align-middle">Chat</span></h2>
+      <div class="grid grid-cols-5 gap-8">
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Total Chats</p>
+          <p class="text-2xl font-semibold" id="chat-total">--</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 mb-1">CSAT</p>
+          <p class="text-2xl font-semibold" id="chat-csat">--</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 mb-1">First Response</p>
+          <p class="text-2xl font-semibold" id="chat-frt">--</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Resolution</p>
+          <p class="text-2xl font-semibold" id="chat-res">--</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 mb-1">SLA</p>
+          <p class="text-2xl font-semibold" id="chat-sla">--</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Call Section -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+  <h2 class="text-lg font-semibold mb-4"><i data-feather="phone" class="icon"></i> <span class="align-middle">Calls</span></h2>
+      <div class="grid grid-cols-4 gap-8">
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Total Calls</p>
+          <p class="text-2xl font-semibold" id="call-total">--</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Abandonment Rate</p>
+          <p class="text-2xl font-semibold" id="call-abandon">--</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 mb-1">Transfers</p>
+          <p class="text-2xl font-semibold" id="call-transfers">--</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 mb-1">SLA</p>
+          <p class="text-2xl font-semibold" id="call-sla">--</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaderboard & Trend -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-bold mb-4">Agent Leaderboard</h2>
+        <table class="min-w-full divide-y divide-gray-200" id="leaderboard-table">
+          <thead>
+            <tr>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Agent</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Interactions</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">CSAT</th>
+
+
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">SLA</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <!-- Rows will be injected dynamically -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-bold mb-4">Performance Trends</h2>
+        <canvas id="trendChart" height="200"></canvas>
+      </div>
+
+
+<!-- Full-width Daily Trend Table -->
+<div class="col-span-2 bg-white rounded-lg shadow p-6 mt-8">
+  <h2 class="text-lg font-bold mb-4">Daily Trend - Overall</h2>
+  <div class="overflow-x-auto">
+    <div class="max-h-[400px] overflow-y-auto">
+      <table class="min-w-full divide-y divide-gray-200 text-sm">
+        <thead class="bg-gray-100 sticky top-0 z-10">
+          <tr>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">Date</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">Total</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">Email</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">Chat</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">Calls</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">CSAT</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">First Response</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">Resolution</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">Abandonment</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">SLA</th>
+          </tr>
+        </thead>
+        <tbody id="trend-table-body" class="divide-y divide-gray-200">
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Full-width Agent Trend Table -->
+<div class="col-span-2 bg-white rounded-lg shadow p-6 mt-8">
+  <h2 class="text-lg font-bold mb-4">Agent Performance Trend</h2>
+  <div class="overflow-x-auto">
+    <div class="max-h-[400px] overflow-y-auto">
+      <table class="min-w-full divide-y divide-gray-200 text-sm">
+        <thead class="bg-gray-100 sticky top-0 z-10">
+          <tr>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">Agent</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">Total</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">Email</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">Chat</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">Calls</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">CSAT</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">First Response</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">Resolution</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">Transfer Rate</th>
+            <th class="px-4 py-2 text-left font-medium text-gray-500 bg-gray-100">SLA</th>
+          </tr>
+        </thead>
+        <tbody id="agent-trend-table-body" class="divide-y divide-gray-200">
+          <!-- Sample data for demonstration -->
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2">Sarah Johnson</td>
+            <td class="px-4 py-2">142</td>
+            <td class="px-4 py-2">65</td>
+            <td class="px-4 py-2">52</td>
+            <td class="px-4 py-2">25</td>
+            <td class="px-4 py-2">4.8</td>
+            <td class="px-4 py-2">8m</td>
+            <td class="px-4 py-2">1.8h</td>
+            <td class="px-4 py-2">2.1%</td>
+            <td class="px-4 py-2">98%</td>
+          </tr>
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2">Mike Chen</td>
+            <td class="px-4 py-2">128</td>
+            <td class="px-4 py-2">58</td>
+            <td class="px-4 py-2">48</td>
+            <td class="px-4 py-2">22</td>
+            <td class="px-4 py-2">4.7</td>
+            <td class="px-4 py-2">10m</td>
+            <td class="px-4 py-2">2.0h</td>
+            <td class="px-4 py-2">2.5%</td>
+            <td class="px-4 py-2">96%</td>
+          </tr>
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2">Emma Davis</td>
+            <td class="px-4 py-2">135</td>
+            <td class="px-4 py-2">62</td>
+            <td class="px-4 py-2">50</td>
+            <td class="px-4 py-2">23</td>
+            <td class="px-4 py-2">4.6</td>
+            <td class="px-4 py-2">9m</td>
+            <td class="px-4 py-2">1.9h</td>
+            <td class="px-4 py-2">2.3%</td>
+            <td class="px-4 py-2">97%</td>
+          </tr>
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2">Alex Thompson</td>
+            <td class="px-4 py-2">138</td>
+            <td class="px-4 py-2">63</td>
+            <td class="px-4 py-2">51</td>
+            <td class="px-4 py-2">24</td>
+            <td class="px-4 py-2">4.7</td>
+            <td class="px-4 py-2">9m</td>
+            <td class="px-4 py-2">1.8h</td>
+            <td class="px-4 py-2">2.2%</td>
+            <td class="px-4 py-2">97%</td>
+          </tr>
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2">Rachel Kim</td>
+            <td class="px-4 py-2">132</td>
+            <td class="px-4 py-2">60</td>
+            <td class="px-4 py-2">49</td>
+            <td class="px-4 py-2">23</td>
+            <td class="px-4 py-2">4.8</td>
+            <td class="px-4 py-2">8m</td>
+            <td class="px-4 py-2">1.7h</td>
+            <td class="px-4 py-2">2.0%</td>
+            <td class="px-4 py-2">98%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    feather.replace();
+  //  const APPSCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxBuNXmx-vskF0TCW7SWcZXnyElkJRRKY1VCEK-N62NE8R5cuQORcDLMU3Aqb8CRCyz/exec'; // Replace with your actual URL
+
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+    });
+
+    function toggleDropdown(id) {
+      document.querySelectorAll('.dropdown-content').forEach(el => {
+        el.style.display = el.id === id && el.style.display !== 'block' ? 'block' : 'none';
+      });
+    }
+
+    function closeDropdowns() {
+      document.querySelectorAll('.dropdown-content').forEach(el => el.style.display = 'none');
+    }
+
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.dropdown-content') && !e.target.closest('button')) {
+        closeDropdowns();
+      }
+    });
+
+    function selectTeam(team) {
+      document.getElementById('selected-team').textContent = team;
+      closeDropdowns();
+      updateDashboard();
+    }
+
+    function selectAgent(agent) {
+      document.getElementById('selected-agent').textContent = agent;
+      closeDropdowns();
+      updateDashboard();
+    }
+
+    function selectMonth(month) {
+      document.getElementById('selected-month').textContent = month;
+      closeDropdowns();
+      updateDashboard();
+    }
+
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    const trendChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Interactions',
+          data: [],
+          borderColor: "#6366f1",
+          backgroundColor: "rgba(99,102,241,0.2)",
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+
+    async function loadDropdowns() {
+      document.getElementById('spinner').style.display = 'flex';
+      const res = await fetch(`${APPSCRIPT_URL}?action=dropdowns`);
+      const data = await res.json();
+
+      const teamMenu = document.getElementById('team-options');
+      teamMenu.innerHTML = `<a href="#" onclick="selectTeam('All Teams')">All Teams</a>` +
+        data.teams.map(t => `<a href="#" onclick="selectTeam('${t}')">${t}</a>`).join('');
+
+      const agentMenu = document.getElementById('agent-options');
+      agentMenu.innerHTML = `<a href="#" onclick="selectAgent('All Agents')">All Agents</a>` +
+        data.agents.map(a => `<a href="#" onclick="selectAgent('${a}')">${a}</a>`).join('');
+
+      const monthMenu = document.getElementById('month-options');
+      monthMenu.innerHTML = data.months.map(m => `<a href="#" onclick="selectMonth('${m}')">${m}</a>`).join('');
+
+      document.getElementById('spinner').style.display = 'none';
+    }
+
+    async function updateDashboard() {
+      document.getElementById('spinner').style.display = 'flex';
+
+      const team = document.getElementById('selected-team').textContent;
+      const agent = document.getElementById('selected-agent').textContent;
+      const month = document.getElementById('selected-month').textContent;
+
+      const url = `${APPSCRIPT_URL}?team=${encodeURIComponent(team)}&agent=${encodeURIComponent(agent)}&month=${encodeURIComponent(month)}`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      document.getElementById('email-total').textContent = data.email.total;
+      document.getElementById('email-csat').textContent = data.email.csat;
+      document.getElementById('email-frt').textContent = data.email.frt;
+      document.getElementById('email-res').textContent = data.email.res;
+      document.getElementById('email-sla').textContent = data.email.sla + '%';
+
+      document.getElementById('chat-total').textContent = data.chat.total;
+      document.getElementById('chat-csat').textContent = data.chat.csat;
+      document.getElementById('chat-frt').textContent = data.chat.frt;
+      document.getElementById('chat-res').textContent = data.chat.res;
+      document.getElementById('chat-sla').textContent = data.chat.sla + '%';
+
+      document.getElementById('call-total').textContent = data.call.total;
+      document.getElementById('call-abandon').textContent = data.call.abandon + '%';
+      document.getElementById('call-transfers').textContent = data.call.transfers;
+      document.getElementById('call-sla').textContent = data.call.sla + '%';
+
+      const tbody = document.querySelector('#leaderboard-table tbody');
+      tbody.innerHTML = '';
+      data.leaderboard.forEach(row => {
+        tbody.innerHTML += `<tr>
+          <td class="px-4 py-2">${row.name}</td>
+          <td class="px-4 py-2">${row.interactions}</td>
+          <td class="px-4 py-2">${row.csat}%</td>
+          <td class="px-4 py-2">${row.sla}%</td>
+        </tr>`;
+      });
+
+      trendChart.data.labels = data.trend.labels;
+      trendChart.data.datasets[0].data = data.trend.values;
+      trendChart.update();
+
+      document.getElementById('spinner').style.display = 'none';
+    }
+
+    async function loadTrendTable() {
+      const res = await fetch(`${APPSCRIPT_URL}?action=trendTable`);
+      const data = await res.json();
+
+      const tbody = document.getElementById('trend-table-body');
+      tbody.innerHTML = '';
+      data.forEach(row => {
+        tbody.innerHTML += `<tr>
+      <td class="px-4 py-2">${row.date}</td>
+      <td class="px-4 py-2">${row.total}</td>
+      <td class="px-4 py-2">${row.email}</td>
+      <td class="px-4 py-2">${row.chat}</td>
+      <td class="px-4 py-2">${row.calls}</td>
+      <td class="px-4 py-2">${row.csat}</td>
+      <td class="px-4 py-2">${row.frt}</td>
+      <td class="px-4 py-2">${row.res}</td>
+      <td class="px-4 py-2">${row.abandon}</td>
+      <td class="px-4 py-2">${row.sla}</td> 
+    </tr>`;
+      });
+    }
+
+    function resetFilters() {
+      document.getElementById('selected-team').textContent = 'All Teams';
+      document.getElementById('selected-agent').textContent = 'All Agents';
+      document.getElementById('selected-month').textContent = 'All Months';
+      updateDashboard();
+    }
+
+    window.addEventListener('load', () => {
+      // Render feather icons and then initialize data
+      if (window.feather) feather.replace();
+      loadDropdowns();
+      updateDashboard();
+      loadTrendTable();
+    });
+  </script>
+</body>
+
+</html>

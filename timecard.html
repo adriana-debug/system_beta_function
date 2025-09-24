@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body class="bg-gray-100 text-gray-900">
+  <!-- Wrapper -->
+  <div class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-lg">
+      <div class="p-6">
+        <h1 class="text-xl font-bold mb-4">Company Portal</h1>
+        <nav class="space-y-2">
+          <a href="#" class="flex items-center p-2 text-gray-700 hover:bg-gray-200 rounded">
+            <i data-feather="home" class="mr-2"></i> Dashboard
+          </a>
+          <a href="#" class="flex items-center p-2 text-gray-700 hover:bg-gray-200 rounded">
+            <i data-feather="user" class="mr-2"></i> Employee Profile
+          </a>
+          <a href="#" class="flex items-center p-2 text-gray-700 hover:bg-gray-200 rounded">
+            <i data-feather="clock" class="mr-2"></i> Time Card
+          </a>
+          <a href="#" class="flex items-center p-2 text-gray-700 hover:bg-gray-200 rounded">
+            <i data-feather="file" class="mr-2"></i> Reports
+          </a>
+          <a href="#" class="flex items-center p-2 text-gray-700 hover:bg-gray-200 rounded">
+            <i data-feather="settings" class="mr-2"></i> Settings
+          </a>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6">
+      <!-- Header -->
+      <div class="mb-6 flex items-center justify-between">
+        <h2 class="text-2xl font-bold">Dashboard</h2>
+        <span class="text-sm text-gray-500" id="currentDateTime"></span>
+      </div>
+
+      <!-- Content Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Placeholder for Next Page 1 -->
+        <div class="bg-white p-4 rounded-xl shadow-md">
+          <h3 class="font-semibold text-lg mb-2">Placeholder - Next Page 1</h3>
+          <p class="text-sm text-gray-500">Content for the upcoming feature will appear here.</p>
+        </div>
+
+        <!-- Placeholder for Next Page 2 -->
+        <div class="bg-white p-4 rounded-xl shadow-md">
+          <h3 class="font-semibold text-lg mb-2">Placeholder - Next Page 2</h3>
+          <p class="text-sm text-gray-500">Content for the upcoming feature will appear here.</p>
+        </div>
+
+        <!-- Time In / Out Card -->
+        <div class="bg-white p-4 rounded-xl shadow-md">
+          <h3 class="font-semibold text-lg mb-2">Time Card</h3>
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="font-medium">Current Time:</span>
+              <span id="liveClock" class="text-blue-600 font-bold"></span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="font-medium">Time In:</span>
+              <span id="timeIn" class="text-green-600">Not Clocked In</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="font-medium">Time Out:</span>
+              <span id="timeOut" class="text-red-600">Not Clocked Out</span>
+            </div>
+            <div class="flex justify-center gap-4 mt-4">
+              <button onclick="clockIn()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">Time In</button>
+              <button onclick="clockOut()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">Time Out</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Time Logs Table -->
+      <div class="mt-6 bg-white p-4 rounded-xl shadow-md">
+        <h3 class="font-semibold text-lg mb-4">Daily Time Records</h3>
+        <table class="w-full text-sm text-left border">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="p-2 border">Date</th>
+              <th class="p-2 border">Employee Name</th>
+              <th class="p-2 border">Time In</th>
+              <th class="p-2 border">Time Out</th>
+              <th class="p-2 border">Duration</th>
+            </tr>
+          </thead>
+          <tbody id="timeLogTable" class="divide-y">
+            <!-- Records will be inserted dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    feather.replace();
+
+    // Live Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById("liveClock").textContent = now.toLocaleTimeString();
+      document.getElementById("currentDateTime").textContent = now.toLocaleString();
+    }
+    setInterval(updateClock, 1000);
+
+    // Time In/Out functions
+    let clockedIn = false;
+    let timeInValue = "";
+    let employeeName = "John Doe"; // placeholder employee
+
+    function clockIn() {
+      if (!clockedIn) {
+        timeInValue = new Date();
+        document.getElementById("timeIn").textContent = timeInValue.toLocaleTimeString();
+        document.getElementById("timeOut").textContent = "Not Clocked Out";
+        clockedIn = true;
+      }
+    }
+
+    function clockOut() {
+      if (clockedIn) {
+        const timeOutValue = new Date();
+        document.getElementById("timeOut").textContent = timeOutValue.toLocaleTimeString();
+        clockedIn = false;
+
+        // Calculate duration
+        const durationMs = timeOutValue - timeInValue;
+        const durationHrs = Math.floor(durationMs / (1000 * 60 * 60));
+        const durationMin = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+        const durationStr = `${durationHrs}h ${durationMin}m`;
+
+        // Insert to log table
+        const table = document.getElementById("timeLogTable");
+        const row = table.insertRow(0);
+        row.insertCell(0).textContent = new Date().toLocaleDateString();
+        row.insertCell(1).textContent = employeeName;
+        row.insertCell(2).textContent = timeInValue.toLocaleTimeString();
+        row.insertCell(3).textContent = timeOutValue.toLocaleTimeString();
+        row.insertCell(4).textContent = durationStr;
+
+        // Reset timeIn display
+        document.getElementById("timeIn").textContent = "Not Clocked In";
+        document.getElementById("timeOut").textContent = "Not Clocked Out";
+      }
+    }
+  </script>
+</body>
+</html>
