@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Minds BPO – Attendance</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+  <style>
+    :root {
+      --dm-primary: #04101d; /* deep navy */
+      --dm-secondary: #a3b612; /* olive */
+      --dm-accent: #cce416; /* lime */
+      --dm-muted: #6b7280; /* gray-500 */
+      --dm-bg: #ffffff;
+      --dm-surface: #f3f4f6;
+    }
+    body.dark {
+      --dm-bg: #0f172a;
+      --dm-surface: #1f2937;
+      --dm-muted: #cbd5e1;
+    }
+    .themed-spinner {
+      border-width: 4px;
+      border-style: solid;
+      border-color: rgba(0,0,0,0.08);
+      border-top-color: var(--dm-primary);
+      width: 2rem; height: 2rem; border-radius: 9999px;
+    }
+    .banner-gradient {
+      background: linear-gradient(135deg, var(--dm-primary) 0%, var(--dm-secondary) 50%, var(--dm-accent) 100%);
+    }
+    /* Google Table modern tweaks */
+    .google-visualization-table-table {
+      width: 100% !important;
+      border-collapse: collapse;
+    }
+    .google-visualization-table-th {
+      background: #f9fafb !important;
+      font-weight: 600 !important;
+      color: #374151 !important;
+      text-align: center !important;
+    }
+    .google-visualization-table-td {
+      padding: 8px 12px !important;
+      text-align: center !important;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<div class="max-w-7xl mx-auto px-6">
+
+  <!-- Banner -->
+  <div class="banner-gradient text-white rounded-lg p-6 mb-4 mt-6 flex items-center gap-4">
+    <div class="flex-shrink-0 w-12 h-12 bg-white rounded-md overflow-hidden rotate-45 relative">
+      <img src="dmi_logo.png" alt="Logo"
+           class="w-full h-full object-cover absolute top-0 left-0 rotate-[315deg] scale-125">
+    </div>
+    <div>
+      <h1 class="text-3xl font-bold">Attendance Dashboard</h1>
+      <p class="text-sm opacity-80">Track team attendance and hours in real time</p>
+    </div>
+  </div>
+
+
+  <!-- Spinner -->
+  <div id="spinner" class="flex justify-center items-center py-6 hidden">
+    <div class="themed-spinner animate-spin"></div>
+  </div>
+
+  <!-- Attendance Summary Section -->
+  <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+    <h2 class="text-lg font-semibold mb-4"><i data-feather="users"></i> Overall Attendance Summary</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8" id="attendance-summary">
+      <!-- Filled dynamically -->
+    </div>
+  </div>
+
+  <!-- Campaign Breakdown Table -->
+  <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8 mt-6">
+    <h2 class="text-lg font-semibold mb-4"><i data-feather="grid"></i> Campaign Breakdown</h2>
+    <div id="campaign-table" class="mt-4"></div>
+  </div>
+</div>
+
+<script>
+  feather.replace();
+
+  google.charts.load('current', {packages:['table']});
+
+  const API_URL_SUMMARY = "https://script.google.com/macros/s/AKfycbxYXjGPpeaC1zRpULAFs4bq10r-XV0R-scHknwyj0uYDalG3Km8h0p4VNO7btYUFkwEag/exec?api=summary";
+
+  async function renderAttendance() {
+    try {
+      const res = await fetch(API_URL_SUMMARY);
+      const data = await res.json();
+
+      // Overall summary cards
+      const overall = data.overall;
+      const totalDays = (overall.P||0)+(overall.L||0)+(overall.HD||0)+(overall.A||0)+(overall.T||0)+(overall.VL||0)+(overall.SUS||0);
+      const score = totalDays>0 ? (((overall.P||0)+(overall.L||0)+(overall.HD||0))/totalDays*100).toFixed(2) : "0.00";
+
+      const cards = [
+        { label: "Present", value: overall.P||0 },
+        { label: "Late", value: overall.L||0 },
+        { label: "Half Day", value: overall.HD||0 },
+        { label: "Absent", value: overall.A||0, red: true },
+        { label: "Terminated", value: overall.T||0 },
+        { label: "Vacation Leave", value: overall.VL||0 },
+        { label: "Suspended", value: overall.SUS||0 },
+        { label: "Lost Hours", value: overall.lostHours||0, red: true },
+        { label: "Attendance Score", value: `${score}%` }
+      ];
+
+      document.getElementById("attendance-summary").innerHTML = cards.map(c => `
+        <div>
+          <p class="text-sm text-gray-500 mb-1">${c.label}</p>
+          <p class="text-2xl font-semibold ${c.red && c.value>0 ? "text-red-600" : ""}">
+            ${c.value}
+          </p>
+        </div>
+      `).join("");
+
+      // Campaign Breakdown - Google Table
+      google.charts.setOnLoadCallback(() => {
+        const dataTable = new google.visualization.DataTable();
+        dataTable.addColumn('string', 'Campaign');
+        dataTable.addColumn('number', 'Present');
+        dataTable.addColumn('number', 'Late');
+        dataTable.addColumn('number', 'Half Day');
+        dataTable.addColumn('number', 'Absent');
+        dataTable.addColumn('number', 'Terminated');
+        dataTable.addColumn('number', 'Vacation Leave');
+        dataTable.addColumn('number', 'Suspended');
+        dataTable.addColumn('string', 'Score');
+        dataTable.addColumn('number', 'Lost Hours');
+
+        const rows = [];
+        Object.entries(data.campaigns).forEach(([camp, stats]) => {
+          const total = (stats.P||0)+(stats.L||0)+(stats.HD||0)+(stats.A||0)+(stats.T||0)+(stats.VL||0)+(stats.SUS||0);
+          const campScore = total>0 ? (((stats.P||0)+(stats.L||0)+(stats.HD||0))/total*100).toFixed(2)+"%" : "0.00%";
+
+          rows.push([
+            camp,
+            stats.P||0,
+            stats.L||0,
+            stats.HD||0,
+            {v: stats.A||0, f: (stats.A||0)>0 ? `<span style="color:red">${stats.A}</span>` : String(stats.A||0)},
+            stats.T||0,
+            stats.VL||0,
+            stats.SUS||0,
+            campScore,
+            {v: stats.lostHours||0, f: (stats.lostHours||0)>0 ? `<span style="color:red">${stats.lostHours}</span>` : String(stats.lostHours||0)}
+          ]);
+        });
+
+        dataTable.addRows(rows);
+
+        // Sort by Lost Hours column (index 9), descending
+        dataTable.sort([{column: 9, desc: true}]);
+
+        const table = new google.visualization.Table(document.getElementById('campaign-table'));
+        table.draw(dataTable, {
+          allowHtml: true,
+          width: '100%',
+          alternatingRowStyle: true,
+          sort: 'enable',
+          cssClassNames: {
+            headerRow: 'bg-gray-100 text-gray-700',
+            tableRow: 'hover:bg-gray-50',
+            oddTableRow: 'bg-white',
+            headerCell: 'px-2 py-1',
+            tableCell: 'px-2 py-1 text-center'
+          }
+        });
+      });
+
+    } catch (err) {
+      console.error(err);
+      document.getElementById("attendance-summary").innerHTML = `<p class="text-red-600">Failed to load data</p>`;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    renderAttendance();
+  });
+</script>
+</body>
+</html>

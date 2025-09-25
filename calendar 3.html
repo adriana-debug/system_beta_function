@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Agent Performance Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+
+  <!-- Header Banner -->
+  <div class="relative h-40 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 overflow-hidden">
+    <div class="absolute inset-0 bg-black/20"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent"></div>
+    <div class="max-w-[1440px] mx-auto px-10">
+      <nav class="relative z-10 flex items-center justify-between py-6">
+        <h1 class="text-white text-2xl font-bold">Digital Minds BPO</h1>
+        <ul class="flex space-x-6 text-white">
+          <li><a href="#" class="hover:underline">Home</a></li>
+          <li><a href="#" class="hover:underline">Reports</a></li>
+          <li><a href="#" class="hover:underline">Settings</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-[1440px] mx-auto px-10 -mt-12 relative z-20">
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+      <!-- Present -->
+      <div class="bg-white rounded-2xl shadow-lg p-8 h-44 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold">Present</h2>
+          <i data-feather="user-check" class="text-green-500"></i>
+        </div>
+        <p class="text-4xl font-bold text-green-500">120</p>
+      </div>
+      <!-- Absent -->
+      <div class="bg-white rounded-2xl shadow-lg p-8 h-44 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold">Absent</h2>
+          <i data-feather="user-x" class="text-red-500"></i>
+        </div>
+        <p class="text-4xl font-bold text-red-500">15</p>
+      </div>
+      <!-- Tardiness -->
+      <div class="bg-white rounded-2xl shadow-lg p-8 h-44 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold">Tardiness</h2>
+          <i data-feather="clock" class="text-yellow-500"></i>
+        </div>
+        <p class="text-4xl font-bold text-yellow-500">8</p>
+      </div>
+      <!-- Planned Leave -->
+      <div class="bg-white rounded-2xl shadow-lg p-8 h-44 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold">Planned Leave</h2>
+          <i data-feather="activity" class="text-blue-500"></i>
+        </div>
+        <p class="text-4xl font-bold text-blue-500">95%</p>
+      </div>
+      <!-- Attendance Score -->
+      <div class="bg-white rounded-2xl shadow-lg p-8 h-44 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold">Attendance Score</h2>
+          <i data-feather="pie-chart" class="text-purple-500"></i>
+        </div>
+        <p class="text-4xl font-bold text-purple-500">88%</p>
+      </div>
+    </div>
+
+    <!-- Feed and Sidebar -->
+    <div class="grid grid-cols-1 lg:grid-cols-6 gap-10">
+      <!-- Feed -->
+      <div class="lg:col-span-4 bg-white rounded-2xl shadow-lg p-8">
+        <h2 class="text-xl font-semibold mb-6">Activity Feed</h2>
+        <table class="table-fixed border-collapse text-xs w-full">
+          <thead>
+            <tr class="bg-gray-100 text-gray-700">
+              <th class="p-2 text-left">Agent</th>
+              <th class="p-2 text-left">Status</th>
+              <th class="p-2 text-left">Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b">
+              <td class="p-2">John Doe</td>
+              <td class="p-2 text-green-500">Present</td>
+              <td class="p-2">09:00 AM</td>
+            </tr>
+            <tr class="border-b">
+              <td class="p-2">Jane Smith</td>
+              <td class="p-2 text-red-500">Absent</td>
+              <td class="p-2">--</td>
+            </tr>
+            <tr class="border-b">
+              <td class="p-2">Mark Lee</td>
+              <td class="p-2 text-yellow-500">Tardy</td>
+              <td class="p-2">09:20 AM</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="lg:col-span-2 bg-white rounded-2xl shadow-lg p-8">
+        <h2 class="text-xl font-semibold mb-6">Sidebar / Legend</h2>
+        <div class="space-y-4 text-sm">
+          <div class="flex items-start space-x-3"><div class="h-2 w-2 bg-[#38761D] rounded-full mt-2"></div><span>P – Present</span></div>
+          <div class="flex items-start space-x-3"><div class="h-2 w-2 bg-[#00FF00] rounded-full mt-2"></div><span>HD – Half Day</span></div>
+          <div class="flex items-start space-x-3"><div class="h-2 w-2 bg-[#F59E0B] rounded-full mt-2"></div><span>L – Late</span></div>
+          <div class="flex items-start space-x-3"><div class="h-2 w-2 bg-[#6FA8DC] rounded-full mt-2"></div><span>SL – Sick Leave</span></div>
+          <div class="flex items-start space-x-3"><div class="h-2 w-2 bg-[#8E7CC3] rounded-full mt-2"></div><span>T – Training</span></div>
+          <div class="flex items-start space-x-3"><div class="h-2 w-2 bg-[#0000FF] rounded-full mt-2"></div><span>VL – Vacation Leave</span></div>
+          <div class="flex items-start space-x-3"><div class="h-2 w-2 bg-[#00FFFF] rounded-full mt-2"></div><span>SUS – Suspended</span></div>
+          <div class="flex items-start space-x-3"><div class="h-2 w-2 bg-[#9CA3AF] rounded-full mt-2"></div><span>Off – Day Off</span></div>
+          <div class="flex items-start space-x-3"><div class="h-2 w-2 bg-[#EF4444] rounded-full mt-2"></div><span>A – Absent</span></div>
+          <div class="flex items-start space-x-3"><div class="h-2 w-2 bg-[#14B8A6] rounded-full mt-2"></div><span>H – Holiday</span></div>
+          <div class="flex items-start space-x-3"><div class="h-2 w-2 bg-gray-300 rounded-full mt-2"></div><span>NA – Not Applicable</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Attendance Title + Loading Spinner + Calendar Feed -->
+    <h2 class="text-2xl font-bold mt-12 mb-6 text-gray-800">Call Center Attendance – September</h2>
+
+    <!-- Spinner -->
+    <div id="loading-spinner" class="flex items-center justify-center py-12">
+      <svg class="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+    </div>
+
+    <div class="lg:col-span-5 space-y-6" id="campaign-feed"></div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-12 py-6 bg-gray-50 border-t">
+    <div class="max-w-[1440px] mx-auto px-10 text-center text-sm text-gray-500">
+      &copy; 2025 Digital Minds BPO. All rights reserved.
+    </div>
+  </footer>
+
+  <script>
+    feather.replace();
+
+    const API_URL = "https://script.google.com/macros/s/AKfycbwuhbrM5WhurujJJtZMZTZ6YJJnrfc8xP54qhtvoHAu-vWzY75BwCW94fr5b27z970/exec";
+    const statusColors = {
+      P: "bg-[#38761D]", HD: "bg-[#00FF00]", L: "bg-[#F59E0B]",
+      SL: "bg-[#6FA8DC]", T: "bg-[#8E7CC3]", VL: "bg-[#0000FF]",
+      SUS: "bg-[#00FFFF]", Off: "bg-[#9CA3AF]", A: "bg-[#EF4444]",
+      H: "bg-[#14B8A6]", NA: ""
+    };
+
+    async function loadAttendance() {
+      const spinner = document.getElementById("loading-spinner");
+      const feed = document.getElementById("campaign-feed");
+      spinner.style.display = "flex";
+      feed.innerHTML = "";
+
+      const res = await fetch(API_URL);
+      const rawData = await res.json();
+      const campaigns = {};
+
+      rawData.forEach(row => {
+        const { date, name, campaign, status } = row;
+        const day = new Date(date).getDate();
+        if (!campaigns[campaign]) campaigns[campaign] = {};
+        if (!campaigns[campaign][name]) campaigns[campaign][name] = Array(30).fill("NA");
+        if (day >= 1 && day <= 30) campaigns[campaign][name][day - 1] = status || "NA";
+      });
+
+      Object.entries(campaigns).forEach(([campaign, employees]) => {
+        const card = document.createElement("div");
+        card.className = "bg-white shadow-lg rounded-lg";
+        card.innerHTML = `
+          <div class="p-6 border-b flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
+                ${campaign.slice(0,2).toUpperCase()}
+              </div>
+              <div>
+                <p class="font-semibold text-slate-900">${campaign}</p>
+                <p class="text-sm text-slate-500">Attendance Calendar</p>
+              </div>
+            </div>
+            <button class="p-2 hover:bg-slate-100 rounded-lg">
+              <i data-feather="more-horizontal" class="h-5 w-5"></i>
+            </button>
+          </div>
+          <div class="px-6 pb-6 overflow-x-auto">
+            <table class="table-fixed border-collapse text-xs w-full">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="border px-2 py-1 text-left w-40">Employee</th>
+                  ${[...Array(30).keys()].map(d => `<th class='border px-1 py-1 w-6 text-center'>${d+1}</th>`).join('')}
+                </tr>
+              </thead>
+              <tbody>
+                ${Object.entries(employees).map(([name, days]) => `
+                  <tr>
+                    <td class="border px-2 py-1 font-medium text-gray-700">${name}</td>
+                    ${days.map(status => {
+                      if (status === "NA") {
+                        return `<td class="border w-6 h-6" style="background:repeating-linear-gradient(45deg,#E5E7EB 0px,#E5E7EB 2px,#D1D5DB 2px,#D1D5DB 4px);"></td>`;
+                      }
+                      return `<td class="border w-6 h-6 ${statusColors[status] || ""}" title="${status}"></td>`;
+                    }).join('')}
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+        feed.appendChild(card);
+      });
+
+      feather.replace();
+      spinner.style.display = "none";
+    }
+
+    loadAttendance();
+  </script>
+</body>
+</html>
