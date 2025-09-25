@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reports – Digital Minds BPO</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <style>
+    .rotate-180 { transform: rotate(180deg); }
+  </style>
+</head>
+
+<body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
+
+<!-- Header Banner -->
+<div class="relative h-44 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 overflow-hidden">
+  <div class="absolute inset-0 bg-black/20"></div>
+  <div class="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent"></div>
+
+  <div class="max-w-[1440px] mx-auto px-10 h-full flex flex-col justify-between relative z-10">
+    <!-- Navigation (same everywhere) -->
+    <nav class="flex items-center justify-between py-6">
+      <h1 class="text-white text-2xl font-bold">Digital Minds BPO</h1>
+      <ul class="flex space-x-6 text-white">
+        <li><a href="index.html" class="hover:underline">Home</a></li>
+        <li><a href="reports.html" class="underline font-semibold">Reports</a></li>
+        <li><a href="#" class="hover:underline">Settings</a></li>
+      </ul>
+    </nav>
+
+    <!-- Page Title + Subtitle aligned to bottom -->
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-white">Campaign Reports</h2>
+      <p class="text-blue-100 text-lg">Drilldown insights on performance, attendance & compliance</p>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Main Content -->
+<main class="flex-1 max-w-[1440px] mx-auto px-6 md:px-8 mt-6 relative z-20 pb-10 space-y-10">
+
+  <!-- Campaign Summary -->
+  <section>
+    <h2 class="text-2xl font-bold mb-3 text-gray-800">Campaign Summary</h2>
+    <div class="bg-white rounded-2xl shadow-md p-5 md:p-6">
+      <table class="table-fixed border-collapse text-sm w-full">
+        <thead>
+          <tr class="bg-gray-100 text-gray-700">
+            <th class="p-2 text-left w-48">Campaign</th>
+            <th class="p-2 text-center w-20">Present</th>
+            <th class="p-2 text-center w-20">Late</th>
+            <th class="p-2 text-center w-20">Absent</th>
+            <th class="p-2 text-center w-20">Score</th>
+            <th class="p-2 w-12"></th>
+          </tr>
+        </thead>
+        <tbody id="reports-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Employee Attendance -->
+  <section>
+    <h2 class="text-2xl font-bold mb-3 text-gray-800">Employee Attendance Detail</h2>
+    <div class="bg-white rounded-2xl shadow-md p-5 md:p-6">
+      <table class="table-fixed border-collapse text-sm w-full">
+        <thead>
+          <tr class="bg-gray-100 text-gray-700">
+            <th class="p-2 text-left w-48">Campaign</th>
+            <th class="p-2 text-center w-20">Employees</th>
+            <th class="p-2 w-12"></th>
+          </tr>
+        </thead>
+        <tbody id="attendance-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+
+  <!-- Footer -->
+  <footer class="mt-auto py-6 bg-gray-50 border-t">
+    <div class="max-w-[1440px] mx-auto px-10 text-center text-sm text-gray-500">
+      &copy; 2025 Digital Minds BPO. All rights reserved.
+    </div>
+  </footer>
+
+  <script>
+    feather.replace();
+
+    // --- Demo Campaigns Data ---
+    const campaigns = [
+      {
+        name: "Campaign A",
+        P: 20, L: 3, A: 2, score: 85,
+        agents: [
+          { name: "John Doe", status: "Absent", notes: "Family emergency", score: 60 },
+          { name: "Jane Smith", status: "Late", notes: "Traffic delay", score: 75 },
+          { name: "Bob Johnson", status: "Present", notes: "", score: 95 }
+        ]
+      },
+      {
+        name: "Campaign B",
+        P: 15, L: 5, A: 4, score: 70,
+        agents: [
+          { name: "Alice", status: "Absent", notes: "Medical leave", score: 60 },
+          { name: "Bob", status: "Present", notes: "", score: 90 }
+        ]
+      }
+    ];
+
+    // --- Employee Attendance Data ---
+    const attendanceData = [
+      { date: "9/1/2025", name: "Mary Joy 'MJ' Florendo", campaign: "American Range Walls", status: "A" },
+      { date: "9/1/2025", name: "Aileene Eboña", campaign: "Bag Borrow or Steal", status: "A" },
+      { date: "9/1/2025", name: "Jemelyn Villablanca", campaign: "Bag Borrow or Steal", status: "L" },
+      { date: "9/1/2025", name: "Abegail Macalla", campaign: "Diamond Asset", status: "T" },
+      { date: "9/1/2025", name: "Charles William De Guzman", campaign: "Diamond Asset", status: "Off" },
+      { date: "9/1/2025", name: "Bernadette Rivera", campaign: "Make-A-Fort", status: "P" },
+      { date: "9/1/2025", name: "Justfer Fernandez", campaign: "Make-A-Fort", status: "P" }
+    ];
+
+    // Render Campaign Summary
+    function renderReports() {
+      const tbody = document.getElementById("reports-body");
+      tbody.innerHTML = "";
+
+      campaigns.forEach((c, idx) => {
+        const rowId = `report-${idx}`;
+        tbody.innerHTML += `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-2 font-medium">${c.name}</td>
+            <td class="p-2 text-center">${c.P}</td>
+            <td class="p-2 text-center text-yellow-600">${c.L}</td>
+            <td class="p-2 text-center text-red-600">${c.A}</td>
+            <td class="p-2 text-center font-semibold ${c.score < 70 ? 'text-red-600' : c.score < 90 ? 'text-yellow-600' : 'text-green-600'}">${c.score}%</td>
+            <td class="p-2 text-center">
+              <button onclick="toggleRow('${rowId}', this)">
+                <i data-feather="chevron-down"></i>
+              </button>
+            </td>
+          </tr>
+          <tr id="${rowId}" class="hidden bg-gray-50">
+            <td colspan="6" class="p-3">
+              <table class="table-fixed border-collapse text-xs w-full">
+                <thead>
+                  <tr class="bg-gray-200 text-gray-700">
+                    <th class="p-2 text-left w-48">Agent</th>
+                    <th class="p-2 text-left w-24">Status</th>
+                    <th class="p-2 text-center w-20">Score</th>
+                    <th class="p-2 text-left w-64">Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${c.agents.map(a => `
+                    <tr class="border-b">
+                      <td class="p-2">${a.name}</td>
+                      <td class="p-2 ${a.status === 'Absent' ? 'text-red-600' : a.status === 'Late' ? 'text-yellow-600' : 'text-green-600'}">${a.status}</td>
+                      <td class="p-2 text-center">${a.score}%</td>
+                      <td class="p-2">${a.notes || "-"}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </td>
+          </tr>
+        `;
+      });
+      feather.replace();
+    }
+
+    // Render Attendance Detail
+    function renderAttendance() {
+      const tbody = document.getElementById("attendance-body");
+      tbody.innerHTML = "";
+
+      const grouped = {};
+      attendanceData.forEach(item => {
+        if (!grouped[item.campaign]) grouped[item.campaign] = [];
+        grouped[item.campaign].push(item);
+      });
+
+      Object.keys(grouped).forEach((campaign, idx) => {
+        const rowId = `attendance-${idx}`;
+        tbody.innerHTML += `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-2 font-medium">${campaign}</td>
+            <td class="p-2 text-center">${grouped[campaign].length}</td>
+            <td class="p-2 text-center">
+              <button onclick="toggleRow('${rowId}', this)">
+                <i data-feather="chevron-down"></i>
+              </button>
+            </td>
+          </tr>
+          <tr id="${rowId}" class="hidden bg-gray-50">
+            <td colspan="3" class="p-3">
+              <table class="table-fixed border-collapse text-xs w-full">
+                <thead>
+                  <tr class="bg-gray-200 text-gray-700">
+                    <th class="p-2 text-left w-32">Date</th>
+                    <th class="p-2 text-left w-48">Employee Name</th>
+                    <th class="p-2 text-center w-20">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${grouped[campaign].map(a => `
+                    <tr class="border-b">
+                      <td class="p-2">${a.date}</td>
+                      <td class="p-2">${a.name}</td>
+                      <td class="p-2 text-center ${a.status === 'A' ? 'text-red-600' : a.status === 'L' ? 'text-yellow-600' : a.status === 'P' ? 'text-green-600' : 'text-gray-600'}">${a.status}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </td>
+          </tr>
+        `;
+      });
+      feather.replace();
+    }
+
+    function toggleRow(rowId, btn) {
+      const row = document.getElementById(rowId);
+      row.classList.toggle("hidden");
+      btn.querySelector("svg").classList.toggle("rotate-180");
+    }
+
+    renderReports();
+    renderAttendance();
+  </script>
+</body>
+</html>
