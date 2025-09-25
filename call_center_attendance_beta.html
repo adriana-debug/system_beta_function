@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Call Center Attendance – September</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    <h2 class="text-center text-2xl font-bold text-gray-800 mb-6">Call Center Attendance – September</h2>
+
+<!-- Legend -->
+<div class="flex justify-center gap-6 mb-6 flex-wrap text-sm">
+  <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-[#38761D]"></span>Present</div>
+  <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-[#00FF00]"></span>Half Day</div>
+  <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-[#F59E0B]"></span>Late</div>
+  <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-[#8E7CC3]"></span>Terminated</div>
+  <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-[#0000FF]"></span>Vacation Leave</div>
+  <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-[#00FFFF]"></span>Suspended</div>
+  <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-[#9CA3AF]"></span>Day Off</div>
+  <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-[#EF4444]"></span>Absent</div>
+  <div class="flex items-center gap-2">
+    <span class="w-4 h-4 rounded bg-[repeating-linear-gradient(45deg,#E5E7EB_0px,#E5E7EB_2px,#D1D5DB_2px,#D1D5DB_4px)]"></span>
+    Not Marked
+  </div>
+</div>
+
+    <!-- Campaign Calendars -->
+    <div id="campaign-calendars" class="space-y-5"></div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbwuhbrM5WhurujJJtZMZTZ6YJJnrfc8xP54qhtvoHAu-vWzY75BwCW94fr5b27z970/exec"; // replace with your deployed Code.gs URL
+
+
+
+
+const statusColors = {
+  P:    "bg-[#38761D]",                 // Present
+  HD:   "bg-[#00FF00]",                 // Half Day
+  L:    "bg-[#F59E0B]",                 // Late (generic)
+  L15:  "bg-[#F59E0B]",                 // Late 1–15 min
+  L30:  "bg-[#F59E0B]",                 // Late 16–30 min
+  L45:  "bg-[#F59E0B]",                 // Late 31–45 min
+  L60:  "bg-[#F59E0B]",                 // Late 46–60 min
+  T:    "bg-[#8E7CC3]",                 // Terminated
+  VL:   "bg-[#0000FF]",                 // Vacation Leave
+  SUS:  "bg-[#00FFFF]",                 // Suspended
+  Off:  "bg-[#9CA3AF]",                 // Day Off
+  A:    "bg-[#EF4444]",                 // Absent
+  NA:   "bg-[repeating-linear-gradient(45deg,#E5E7EB_0px,#E5E7EB_2px,#D1D5DB_2px,#D1D5DB_4px)]" // Not Marked
+};
+
+
+    async function loadAttendance() {
+      const res = await fetch(API_URL);
+      const rawData = await res.json();
+
+      // Group data: campaign → employee → days
+      const campaigns = {};
+
+      rawData.forEach(row => {
+        const { date, name, campaign, status } = row;
+        const day = new Date(date).getDate(); // extract day number (1–30)
+
+        if (!campaigns[campaign]) campaigns[campaign] = {};
+        if (!campaigns[campaign][name]) campaigns[campaign][name] = Array(30).fill("NA");
+
+        campaigns[campaign][name][day - 1] = status || "NA";
+      });
+
+      const container = document.getElementById("campaign-calendars");
+
+      Object.entries(campaigns).forEach(([campaign, employees]) => {
+        const section = document.createElement("div");
+
+        section.innerHTML = `
+          <h3 class="text-l font-semibold text-gray-700 mb-4">${campaign}</h3>
+          <div class="overflow-x-auto border rounded-lg shadow bg-white">
+            <table class="table-fixed border-collapse w-full text-xs">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="border px-2 py-1 text-left w-40">Employee</th>
+                  ${[...Array(30).keys()].map(d => `<th class='border px-1 py-1 w-6 text-center'>${d+1}</th>`).join('')}
+                </tr>
+              </thead>
+              <tbody>
+                ${Object.entries(employees).map(([name, days]) => `
+                  <tr>
+                    <td class="border px-2 py-1 font-medium text-gray-700">${name}</td>
+                    ${days.map(status => `
+                      <td class="border w-6 h-6 ${statusColors[status] || statusColors["NA"]}" title="${status}"></td>
+                    `).join('')}
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+
+        container.appendChild(section);
+      });
+    }
+
+    loadAttendance();
+  </script>
+</body>
+</html>
