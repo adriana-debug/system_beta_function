@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Minds BPO</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+  <style>
+    :root {
+      --dm-primary: #04101d; /* deep navy */
+      --dm-secondary: #a3b612; /* olive */
+      --dm-accent: #cce416; /* lime */
+      --dm-muted: #6b7280; /* gray-500 */
+      --dm-bg: #ffffff;
+      --dm-surface: #f3f4f6;
+      /* Chart-specific palette (keeps banner colors untouched) */
+      --chart-primary: #cbe123; /* Pear */
+      --chart-secondary: #66686e; /* Shuttle Gray */
+      --chart-tertiary: #7a880d; /* Olive Green */
+      --chart-accent: #f0f3d3; /* Beige */
+      --chart-text: #060d26; /* Black Pearl */
+    }
+
+    body.dark {
+      --dm-bg: #0f172a;
+      --dm-surface: #1f2937;
+      --dm-muted: #cbd5e1;
+    }
+
+    /* Spinner */
+    .themed-spinner {
+      border-width: 4px;
+      border-style: solid;
+      border-color: rgba(0,0,0,0.08);
+      border-top-color: var(--dm-primary);
+      width: 2rem; height: 2rem; border-radius: 9999px;
+    }
+
+    /* Banner */
+    .banner-gradient {
+      background: linear-gradient(135deg, var(--dm-primary) 0%, var(--dm-secondary) 50%, var(--dm-accent) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Modern Table */
+    .modern-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+    }
+    .modern-table thead tr th {
+      background: var(--dm-surface);
+      padding: 12px;
+      text-align: left;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--dm-muted);
+    }
+    .modern-table tbody tr {
+      background: var(--dm-bg);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      transition: transform 0.2s;
+    }
+    .modern-table tbody tr:hover {
+      transform: scale(1.01);
+    }
+    .modern-table td {
+      padding: 12px;
+      font-size: 14px;
+      color: var(--dm-muted);
+      border-top: 1px solid rgba(0,0,0,0.06);
+    }
+    body.dark .modern-table thead tr th {
+      background: var(--dm-surface);
+      color: var(--dm-muted);
+    }
+    body.dark .modern-table tbody tr {
+      background: var(--dm-surface);
+    }
+    body.dark .modern-table td {
+      color: var(--dm-muted);
+      border-top-color: rgba(255,255,255,0.03);
+    }
+
+    /* Google Table styles (keeps Tables uniform) */
+    .google-visualization-table-table {
+      border-collapse: separate !important;
+      border-spacing: 0 !important;
+      width: 100% !important;
+      font-size: 0.9375rem;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      background: var(--dm-bg);
+    }
+    .google-visualization-table-th {
+      background-color: var(--dm-surface) !important;
+      color: var(--dm-muted) !important;
+      font-weight: 700 !important;
+      padding: 0.75rem !important;
+      border-bottom: 1px solid rgba(0,0,0,0.06) !important;
+      text-align: center !important;
+    }
+    .google-visualization-table-td {
+      padding: 0.75rem !important;
+      border-bottom: 1px solid rgba(0,0,0,0.04) !important;
+      color: var(--dm-muted) !important;
+      text-align: center !important;
+      background: transparent !important;
+    }
+    .google-visualization-table-tr:hover .google-visualization-table-td {
+      background-color: rgba(163,182,18,0.04) !important;
+    }
+    .google-visualization-table-tr:nth-child(even) .google-visualization-table-td {
+      background-color: rgba(0,0,0,0.02) !important;
+    }
+    /* Dropdown menu (simple) */
+    .dropdown-content { display: none; position: absolute; background: white; border: 1px solid rgba(0,0,0,0.06); border-radius: 6px; padding: 6px 0; min-width: 160px; z-index: 40; }
+    .dropdown-content a { display:block; padding: 8px 12px; color: #374151; text-decoration:none; }
+    .dropdown-content a:hover { background:#f3f4f6; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<!-- Main container to align banner, filters and content -->
+<div class="max-w-7xl mx-auto px-6">
+
+<script>
+  // Redirect to login if not authenticated (keeps intended return URL)
+  (function(){
+    const authed = localStorage.getItem('dashboardAuth') === 'true' || sessionStorage.getItem('dashboardAuth') === 'true';
+    if (!authed) {
+      const params = new URLSearchParams(window.location.search);
+      params.set('return', 'index.html');
+      window.location.href = 'login.html?' + params.toString();
+    }
+  })();
+</script>
+
+  <!-- Banner -->
+  <div class="banner-gradient text-white rounded-lg p-6 mb-4 relative flex items-center gap-4">
+    <div class="flex-shrink-0 w-12 h-12 bg-white rounded-md overflow-hidden rotate-45 relative">
+      <img src="dmi_logo.jpg" alt="Logo"
+           class="w-full h-full object-cover absolute top-0 left-0 rotate-[315deg] scale-125">
+    </div>
+    <div>
+      <h1 class="text-3xl font-bold">Welcome to Your Dashboard</h1>
+      <p class="text-sm opacity-80">Track your team's performance in real time</p>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="flex flex-wrap gap-4 mb-6">
+    <div class="relative">
+      <button onclick="toggleDropdown('team-options')" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-[150px]"><span id="selected-team">All Teams</span></button>
+      <div class="dropdown-content" id="team-options"></div>
+    </div>
+    <div class="relative">
+      <button onclick="toggleDropdown('agent-options')" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-[150px]"><span id="selected-agent">All Agents</span></button>
+      <div class="dropdown-content" id="agent-options"></div>
+    </div>
+    <div class="relative">
+      <button onclick="toggleDropdown('month-options')" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-[150px]"><span id="selected-month">All Months</span></button>
+      <div class="dropdown-content" id="month-options"></div>
+    </div>
+    <button onclick="resetFilters()" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100" title="Reset Filters"><i data-feather="rotate-ccw"></i></button>
+    <button id="themeToggle" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"><i data-feather="moon"></i></button>
+  </div>
+
+  <!-- Spinner -->
+  <div id="spinner" class="flex justify-center items-center py-6 hidden">
+    <div class="themed-spinner animate-spin"></div>
+  </div>
+
+
+
+    <!-- Email Section -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+      <h2 class="text-lg font-semibold mb-4"><i data-feather="mail"></i> Email</h2>
+      <div class="grid grid-cols-5 gap-8">
+        <div><p class="text-sm text-gray-500 mb-1">Total Emails</p><p class="text-2xl font-semibold" id="email-total">--</p></div>
+        <div><p class="text-sm text-gray-500 mb-1">CSAT</p><p class="text-2xl font-semibold" id="email-csat">--</p></div>
+        <div><p class="text-sm text-gray-500 mb-1">First Response</p><p class="text-2xl font-semibold" id="email-frt">--</p></div>
+        <div><p class="text-sm text-gray-500 mb-1">Resolution</p><p class="text-2xl font-semibold" id="email-res">--</p></div>
+        <div><p class="text-sm text-gray-500 mb-1">SLA</p><p class="text-2xl font-semibold" id="email-sla">--</p></div>
+      </div>
+    </div>
+
+    <!-- Chat Section -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+      <h2 class="text-lg font-semibold mb-4"><i data-feather="message-circle"></i> Chat</h2>
+      <div class="grid grid-cols-5 gap-8">
+        <div><p class="text-sm text-gray-500 mb-1">Total Chats</p><p class="text-2xl font-semibold" id="chat-total">--</p></div>
+        <div><p class="text-sm text-gray-500 mb-1">CSAT</p><p class="text-2xl font-semibold" id="chat-csat">--</p></div>
+        <div><p class="text-sm text-gray-500 mb-1">First Response</p><p class="text-2xl font-semibold" id="chat-frt">--</p></div>
+        <div><p class="text-sm text-gray-500 mb-1">Resolution</p><p class="text-2xl font-semibold" id="chat-res">--</p></div>
+        <div><p class="text-sm text-gray-500 mb-1">SLA</p><p class="text-2xl font-semibold" id="chat-sla">--</p></div>
+      </div>
+    </div>
+
+    <!-- Calls Section -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+      <h2 class="text-lg font-semibold mb-4"><i data-feather="phone"></i> Calls</h2>
+      <div class="grid grid-cols-4 gap-8">
+        <div><p class="text-sm text-gray-500 mb-1">Total Calls</p><p class="text-2xl font-semibold" id="call-total">--</p></div>
+        <div><p class="text-sm text-gray-500 mb-1">Abandonment Rate</p><p class="text-2xl font-semibold" id="call-abandon">--</p></div>
+        <div><p class="text-sm text-gray-500 mb-1">Transfers</p><p class="text-2xl font-semibold" id="call-transfers">--</p></div>
+        <div><p class="text-sm text-gray-500 mb-1">SLA</p><p class="text-2xl font-semibold" id="call-sla">--</p></div>
+      </div>
+    </div>
+
+    
+  <!-- Google Chart Section -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+      <h2 class="text-lg font-semibold mb-4"><i data-feather="bar-chart-2" class="icon"></i> Chart Overview</h2>
+      <div id="google-chart" style="width:100%;height:400px;"></div>
+
+    </div>
+
+    <!-- Weekly Average Chart -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+      <h2 class="text-lg font-semibold mb-6">Weekly Average - Tasks (Email/Chat/Calls)</h2>
+      <div id="weeklyAverageTasksChart" style="width:100%; height:400px;"></div>
+    </div>
+
+    <!-- Daily Trend Table -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+      <h2 class="text-lg font-semibold mb-6">Daily Trend - Overall</h2>
+      <div id="dailyTrendTable" class="overflow-x-auto"></div>
+      <div class="mt-4 overflow-x-auto">
+
+      </div>
+    </div>
+
+    <!-- Agent Trend Table -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+      <h2 class="text-lg font-semibold mb-6">Agent Performance Trend</h2>
+      <div id="agentTrendTable" class="overflow-x-auto"></div>
+      <div class="mt-4">
+    </div>
+
+  </div>
+
+  <script>
+    feather.replace();
+
+    // Load required Google packages
+    google.charts.load('current', { packages: ['corechart', 'table'] });
+    google.charts.setOnLoadCallback(drawDashboard);
+
+    function drawDashboard() {
+      drawChannelOverview();
+      drawWeeklyAverageTasksChart();
+      drawDailyTrendTable();
+      drawAgentTrendTable();
+    }
+
+    // Utility to read palette variables
+    function palette() {
+      const styles = getComputedStyle(document.documentElement);
+      return {
+        // keep original design tokens available
+        dmPrimary: styles.getPropertyValue('--dm-primary').trim() || '#04101d',
+        dmSecondary: styles.getPropertyValue('--dm-secondary').trim() || '#a3b612',
+        dmAccent: styles.getPropertyValue('--dm-accent').trim() || '#cce416',
+        dmMuted: styles.getPropertyValue('--dm-muted').trim() || '#6b7280',
+        // chart-specific colors (new palette requested)
+        chartPrimary: styles.getPropertyValue('--chart-primary').trim() || '#cbe123',
+        chartSecondary: styles.getPropertyValue('--chart-secondary').trim() || '#66686e',
+        chartTertiary: styles.getPropertyValue('--chart-tertiary').trim() || '#7a880d',
+        chartAccent: styles.getPropertyValue('--chart-accent').trim() || '#f0f3d3',
+        chartText: styles.getPropertyValue('--chart-text').trim() || '#060d26',
+        isDark: document.body.classList.contains('dark')
+      };
+    }
+
+    // Helper: convert hex to rgba with alpha
+    function hexToRgba(hex, alpha){
+      if(!hex) return `rgba(0,0,0,${alpha})`;
+      const h = hex.replace('#','').trim();
+      const bigint = parseInt(h.length===3 ? h.split('').map(c=>c+c).join('') : h, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    // Channel Overview (simple line chart)
+    function drawChannelOverview() {
+      const p = palette();
+      const data = google.visualization.arrayToDataTable([
+        ['Month', 'Emails', 'Chats', 'Calls'],
+        ['Jan', 1000, 400, 200],
+        ['Feb', 1170, 460, 250],
+        ['Mar', 660, 1120, 300],
+        ['Apr', 1030, 540, 350]
+      ]);
+      const options = {
+        title: 'Channel Overview',
+        curveType: 'function',
+        legend: { position: 'bottom', textStyle: { color: p.chartText } },
+        colors: [p.chartPrimary, p.chartSecondary, p.chartTertiary],
+        backgroundColor: 'transparent',
+        hAxis: { textStyle: { color: p.chartText } },
+        vAxis: { textStyle: { color: p.chartText } }
+      };
+      const chart = new google.visualization.LineChart(document.getElementById('google-chart'));
+      chart.draw(data, options);
+    }
+
+    // Weekly Average Combo Chart
+    function drawWeeklyAverageTasksChart() {
+      const p = palette();
+      const data = google.visualization.arrayToDataTable([
+        ['Week', 'Email', 'Chat', 'Calls', 'Tasks'],
+        ['Week 1', 300, 400, 150, 298.33],
+        ['Week 2', 500, 600, 400, 523.67],
+        ['Week 3', 550, 580, 420, 531.67],
+        ['Week 4', 560, 590, 430, 538.67],
+        ['Week 5', 400, 500, 300, 458]
+      ]);
+      const options = {
+        seriesType: 'bars',
+        isStacked: true,
+        series: { 3: { type: 'line', color: p.chartAccent, lineWidth: 2, pointSize: 5 } },
+        colors: [p.chartPrimary, p.chartSecondary, p.chartTertiary],
+        backgroundColor: 'transparent',
+        chartArea: { left: 50, top: 20, width: '85%', height: '70%' },
+        legend: { position: 'top', textStyle: { color: p.chartText } },
+        vAxis: { minValue: 0, textStyle: { color: p.chartText }, gridlines: { color: hexToRgba(p.chartText, 0.08) } },
+        hAxis: { textStyle: { color: p.chartText } }
+      };
+      const chart = new google.visualization.ComboChart(document.getElementById('weeklyAverageTasksChart'));
+      chart.draw(data, options);
+    }
+
+    // Daily Trend Table
+    function drawDailyTrendTable() {
+      const data = new google.visualization.DataTable();
+      data.addColumn('string', 'Date');
+      data.addColumn('number', 'Total');
+      data.addColumn('number', 'Email');
+      data.addColumn('number', 'Chat');
+      data.addColumn('number', 'Calls');
+      data.addColumn('number', 'CSAT');
+      data.addColumn('string', 'First Response');
+      data.addColumn('string', 'Resolution');
+      data.addColumn('string', 'Abandonment');
+      data.addColumn('string', 'SLA');
+
+      data.addRows([
+        ['2025-09-01', 890, 300, 400, 190, 4.8, '8m', '1.8h', '2.1%', '98%'],
+        ['2025-09-02', 865, 310, 380, 175, 4.7, '9m', '1.9h', '2.3%', '97%'],
+        ['2025-09-03', 920, 320, 400, 200, 4.9, '7m', '1.7h', '2.0%', '99%'],
+        ['2025-09-04', 880, 305, 390, 185, 4.8, '8m', '1.8h', '2.2%', '98%']
+      ]);
+
+      const table = new google.visualization.Table(document.getElementById('dailyTrendTable'));
+      table.draw(data, { showRowNumber: false, width: '100%', allowHtml: true });
+    }
+
+    // Agent Trend Table
+    function drawAgentTrendTable() {
+      const data = new google.visualization.DataTable();
+      data.addColumn('string', 'Agent');
+      data.addColumn('number', 'Total');
+      data.addColumn('number', 'Email');
+      data.addColumn('number', 'Chat');
+      data.addColumn('number', 'Calls');
+      data.addColumn('number', 'CSAT');
+      data.addColumn('string', 'First Response');
+      data.addColumn('string', 'Resolution');
+      data.addColumn('string', 'Transfer Rate');
+      data.addColumn('string', 'SLA');
+
+      data.addRows([
+        ['Sarah Johnson', 142, 65, 52, 25, 4.8, '8m', '1.8h', '2.1%', '98%'],
+        ['Mike Chen', 128, 58, 48, 22, 4.7, '10m', '2.0h', '2.5%', '96%'],
+        ['Emma Davis', 135, 62, 50, 23, 4.6, '9m', '1.9h', '2.3%', '97%'],
+        ['Alex Thompson', 138, 63, 51, 24, 4.7, '9m', '1.8h', '2.2%', '97%'],
+        ['Rachel Kim', 132, 60, 49, 23, 4.8, '8m', '1.7h', '2.0%', '98%']
+      ]);
+
+      const table = new google.visualization.Table(document.getElementById('agentTrendTable'));
+      table.draw(data, { showRowNumber: false, width: '100%', allowHtml: true });
+    }
+
+    // Spinner Example: show briefly on load
+    document.addEventListener('DOMContentLoaded', () => {
+      const spinner = document.getElementById('spinner');
+      spinner.classList.remove('hidden');
+      setTimeout(() => spinner.classList.add('hidden'), 1000);
+    });
+    // Theme persistence and toggle wiring
+    (function(){
+      const toggle = document.getElementById('themeToggle');
+      if (localStorage.getItem('dm-theme') === 'dark') document.body.classList.add('dark');
+      if (toggle) toggle.addEventListener('click', () => { const isDark = document.body.classList.toggle('dark'); localStorage.setItem('dm-theme', isDark ? 'dark' : 'light'); if (typeof drawDashboard === 'function') drawDashboard(); });
+    })();
+
+    // APPSCRIPT_URL fallback
+    if (typeof APPSCRIPT_URL === 'undefined') window.APPSCRIPT_URL = null;
+
+    // Initialize Chart.js trend if canvas exists
+    let trendChart = null;
+    (function(){
+      const canvas = document.getElementById('trendChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const p = palette();
+      trendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Interactions',
+            data: [],
+            borderColor: p.chartPrimary,
+            backgroundColor: hexToRgba(p.chartPrimary, 0.12),
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: { plugins: { legend:{ display:false } }, responsive:true, maintainAspectRatio:false }
+      });
+    })();
+
+    // Dropdown helpers
+    function toggleDropdown(id){ document.querySelectorAll('.dropdown-content').forEach(el=>{ el.style.display = (el.id===id && el.style.display!=='block') ? 'block' : 'none'; }); }
+    function closeDropdowns(){ document.querySelectorAll('.dropdown-content').forEach(el=>el.style.display='none'); }
+    document.addEventListener('click', function(e){ if(!e.target.closest('.dropdown-content') && !e.target.closest('button')) closeDropdowns(); });
+
+    async function loadDropdowns(){
+      const spinner = document.getElementById('spinner'); if (spinner) spinner.classList.remove('hidden');
+      let data = { teams: ['Team A','Team B'], agents:['All Agents'], months:['All Months'] };
+      if (APPSCRIPT_URL){ try{ const res=await fetch(`${APPSCRIPT_URL}?action=dropdowns`); data = await res.json(); }catch(e){ console.warn(e); } }
+      const teamMenu = document.getElementById('team-options'); if (teamMenu) teamMenu.innerHTML = `<a href="#" onclick="selectTeam('All Teams')">All Teams</a>` + (data.teams||[]).map(t=>`<a href="#" onclick="selectTeam('${t}')">${t}</a>`).join('');
+      const agentMenu = document.getElementById('agent-options'); if (agentMenu) agentMenu.innerHTML = `<a href="#" onclick="selectAgent('All Agents')">All Agents</a>` + (data.agents||[]).map(a=>`<a href="#" onclick="selectAgent('${a}')">${a}</a>`).join('');
+      const monthMenu = document.getElementById('month-options'); if (monthMenu) monthMenu.innerHTML = (data.months||[]).map(m=>`<a href="#" onclick="selectMonth('${m}')">${m}</a>`).join('');
+      if (spinner) spinner.classList.add('hidden');
+    }
+
+    function selectTeam(team){ const el=document.getElementById('selected-team'); if(el) el.textContent = team; closeDropdowns(); if(typeof drawDashboard === 'function') drawDashboard(); }
+    function selectAgent(agent){ const el=document.getElementById('selected-agent'); if(el) el.textContent = agent; closeDropdowns(); if(typeof drawDashboard === 'function') drawDashboard(); }
+    function selectMonth(month){ const el=document.getElementById('selected-month'); if(el) el.textContent = month; closeDropdowns(); if(typeof drawDashboard === 'function') drawDashboard(); }
+
+    async function updateDashboard(){
+      const spinner = document.getElementById('spinner'); if (spinner) spinner.classList.remove('hidden');
+      const team = document.getElementById('selected-team')?.textContent || 'All Teams';
+      const agent = document.getElementById('selected-agent')?.textContent || 'All Agents';
+      const month = document.getElementById('selected-month')?.textContent || 'All Months';
+      if (!APPSCRIPT_URL) { if(spinner) spinner.classList.add('hidden'); return; }
+      try{ const res = await fetch(`${APPSCRIPT_URL}?team=${encodeURIComponent(team)}&agent=${encodeURIComponent(agent)}&month=${encodeURIComponent(month)}`); const data = await res.json(); if(data.email){ document.getElementById('email-total').textContent = data.email.total ?? '--'; document.getElementById('email-csat').textContent = data.email.csat ?? '--'; } if(data.chat){ document.getElementById('chat-total').textContent = data.chat.total ?? '--'; document.getElementById('chat-csat').textContent = data.chat.csat ?? '--'; } if(data.call){ document.getElementById('call-total').textContent = data.call.total ?? '--'; document.getElementById('call-abandon').textContent = (data.call.abandon ?? '--') + '%'; }
+        // populate leaderboard
+        const lb = document.getElementById('leaderboard-body'); if(lb && data.leaderboard){ lb.innerHTML=''; data.leaderboard.forEach(r=>{ lb.innerHTML += `<tr><td class="px-4 py-2">${r.name}</td><td class="px-4 py-2">${r.interactions}</td><td class="px-4 py-2">${r.csat}%</td><td class="px-4 py-2">${r.sla}%</td></tr>`; }); }
+        // update Chart.js trend if provided
+        if (trendChart && data.trend){ trendChart.data.labels = data.trend.labels || []; trendChart.data.datasets[0].data = data.trend.values || []; trendChart.update(); }
+      }catch(e){ console.warn('updateDashboard failed', e); }
+      if (spinner) spinner.classList.add('hidden');
+    }
+
+    async function loadTrendTable(){ const tbody = document.getElementById('trend-table-body'); if(!tbody) return; tbody.innerHTML = '<tr><td class="px-4 py-2" colspan="10">No data</td></tr>'; if(!APPSCRIPT_URL) return; try{ const res = await fetch(`${APPSCRIPT_URL}?action=trendTable`); const rows = await res.json(); if(!rows || rows.length===0) return; tbody.innerHTML=''; rows.forEach(r=>{ tbody.innerHTML += `<tr><td class="px-4 py-2">${r.date}</td><td class="px-4 py-2">${r.total}</td><td class="px-4 py-2">${r.email}</td><td class="px-4 py-2">${r.chat}</td><td class="px-4 py-2">${r.calls}</td><td class="px-4 py-2">${r.csat}</td><td class="px-4 py-2">${r.frt}</td><td class="px-4 py-2">${r.res}</td><td class="px-4 py-2">${r.abandon}</td><td class="px-4 py-2">${r.sla}</td></tr>`; }); }catch(e){ console.warn(e); } }
+
+    function resetFilters(){ document.getElementById('selected-team').textContent='All Teams'; document.getElementById('selected-agent').textContent='All Agents'; document.getElementById('selected-month').textContent='All Months'; if(typeof drawDashboard==='function') drawDashboard(); }
+
+    // Initialize UI on load
+    window.addEventListener('load', ()=>{ if(window.feather) feather.replace(); loadDropdowns(); updateDashboard(); loadTrendTable(); setInterval(()=>{ updateDashboard(); loadTrendTable(); }, 300000); });
+  </script>
+</body>
+</html>
