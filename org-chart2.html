@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hierarchical Org Chart</title>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+      padding: 0;
+      color: #1f2937;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Banner/Header */
+    header {
+      width: 100%;
+      background: linear-gradient(90deg, #2563eb, #1e40af);
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 2rem 0 1rem;
+      color: #111827;
+    }
+
+    #chart_wrapper {
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+      padding-bottom: 2rem;
+    }
+
+    /* Default Org chart node styling */
+    .google-visualization-orgchart-node {
+      border: none !important;
+      border-radius: 0.75rem !important;
+      background: #3b82f6 !important; /* blue default */
+      color: white !important;
+      padding: 0.75rem 1rem !important;
+      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3) !important;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      width: 180px !important;
+      text-align: center;
+      white-space: normal !important;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .google-visualization-orgchart-node:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.6) !important;
+      z-index: 10;
+      position: relative;
+    }
+
+    /* Role-specific colors */
+    .node-ceo {
+      background: #dc2626 !important; /* Red */
+    }
+    .node-coo {
+      background: #16a34a !important; /* Green */
+    }
+    .node-pm {
+      background: #9333ea !important; /* Purple */
+    }
+
+    /* Name + title separation */
+    .node-content strong {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+    }
+    .node-content small {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 400;
+      opacity: 0.9;
+    }
+  </style>
+
+  <script type="text/javascript">
+    google.charts.load('current', { packages: ["orgchart"] });
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+      const data = new google.visualization.DataTable();
+      data.addColumn('string', 'Name');
+      data.addColumn('string', 'Manager');
+      data.addColumn('string', 'Tooltip');
+
+      // helper function to wrap nodes with styled HTML
+      const nodeHTML = (name, title, roleClass="") => 
+        `<div class="node-content ${roleClass}">
+          <strong>${name}</strong>
+          <small>${title}</small>
+        </div>`;
+
+      data.addRows([
+        // Level 1
+        [{v:'CEO', f:nodeHTML('CEO','Chief Executive Officer','node-ceo')}, '', 'Chief Executive Officer'],
+
+        // Level 2
+        [{v:'COO', f:nodeHTML('COO','Chief Operating Officer','node-coo')}, 'CEO', 'Chief Operating Officer'],
+
+        // Level 3
+        [{v:'Gevene Tamon', f:nodeHTML('Gevene Tamon','Project Manager','node-pm')}, 'COO', 'Project Manager'],
+        [{v:'Bryan Ian Torres', f:nodeHTML('Bryan Ian Torres','Team Lead')}, 'COO', 'Team Lead'],
+
+        // Level 4
+        [{v:'Team Alpha', f:nodeHTML('Team Alpha','Sub-team')}, 'Gevene Tamon', 'Team Alpha'],
+        [{v:'Team Bravo', f:nodeHTML('Team Bravo','Sub-team')}, 'Gevene Tamon', 'Team Bravo'],
+        [{v:'Mary Jysa Ballaran', f:nodeHTML('Mary Jysa Ballaran','Team Member')}, 'Gevene Tamon', 'Team Member'],
+
+        // Level 5
+        [{v:'Xamuel Patrick Azañes', f:nodeHTML('Xamuel Patrick Azañes','Team Member')}, 'Team Alpha', 'Team Member'],
+        [{v:'Nika Benjamin', f:nodeHTML('Nika Benjamin','Team Member')}, 'Team Bravo', 'Team Member'],
+        [{v:'Ralph Dela Torre', f:nodeHTML('Ralph Dela Torre','Trainee')}, 'Mary Jysa Ballaran', 'Trainee'],
+
+        // Level 6
+        [{v:'Angelo Bravo', f:nodeHTML('Angelo Bravo','Team Member')}, 'Xamuel Patrick Azañes', 'Team Member'],
+
+        // Level 7
+        [{v:'Joan Obiso', f:nodeHTML('Joan Obiso','Team Member')}, 'Angelo Bravo', 'Team Member'],
+
+        // Level 6 (continued)
+        [{v:'Adrian Avenido', f:nodeHTML('Adrian Avenido','Team Member')}, 'Nika Benjamin', 'Team Member'],
+
+        // Level 4 (continued)
+        [{v:'Jonhsean Toyado', f:nodeHTML('Jonhsean Toyado','Team Lead')}, 'Bryan Ian Torres', 'Team Lead'],
+      ]);
+
+      const chart = new google.visualization.OrgChart(document.getElementById('chart_div'));
+      chart.draw(data, { allowHtml: true, allowCollapse: true });
+    }
+  </script>
+</head>
+
+<body>
+  <header>
+    <h1>Digital Minds BPO</h1>
+  </header>
+
+  <h2>Hierarchical Org Chart</h2>
+  <div id="chart_wrapper">
+    <div id="chart_div"></div>
+  </div>
+</body>
+</html>
