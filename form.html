@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Minds BPO</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+
+  <style>
+    :root {
+      --primary-color: #04101d;
+      --secondary-color: #a3b612;
+      --accent-color: #cce416;
+    }
+
+    body {
+      background-color: #f9fafb;
+      color: #1f2937;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.dark {
+      background-color: #111827;
+      color: #e5e7eb;
+    }
+
+    /* Button color */
+    .btn-primary {
+      background-color: var(--accent-color);
+      color: #000;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+
+    .btn-primary:hover {
+      background-color: #bada14;
+    }
+
+    /* Theme toggle button */
+    .theme-toggle {
+      cursor: pointer;
+      padding: 0; /* removed padding */
+      background: transparent; /* transparent background */
+      border: none; /* no border */
+      outline: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .theme-toggle i {
+      stroke-width: 2;
+    }
+  </style>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            pear: '#cde232',
+            blackpearl: '#060e2a',
+            wasabi: '#7b9025',
+            waterloo: '#7c8494'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen flex flex-col bg-gray-50">
+
+  <!-- Header -->
+  <header
+    class="flex justify-between items-center p-6 bg-pear dark:bg-blackpearl shadow w-full fixed top-0 left-0 z-20">
+    <h1 class="text-2xl font-bold text-black dark:text-pear">Employee Coaching</h1>
+    <div class="absolute top-6 right-6">
+      <button id="themeToggle" class="theme-toggle">
+        <i data-feather="moon"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Container -->
+  <div class="max-w-7xl mx-auto p-6 space-y-6 pt-28 w-full">
+    <div class="flex justify-end">
+      <button onclick="openModal()" class="btn-primary px-6 py-2 rounded-lg shadow font-medium">
+        + Add Coaching Session
+      </button>
+    </div>
+
+    <!-- Past Coaching Sessions Table -->
+    <div class="bg-white dark:bg-blackpearl rounded-xl shadow p-6">
+      <h2 class="text-xl font-semibold mb-4 dark:text-pear">Past Coaching Sessions</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-waterloo dark:bg-wasabi text-white">
+            <tr>
+              <th class="text-left px-4 py-2">Date</th>
+              <th class="text-left px-4 py-2">Coach</th>
+              <th class="text-left px-4 py-2">Employee</th>
+              <th class="text-left px-4 py-2">Focus Area</th>
+              <th class="text-left px-4 py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="sessionsTable" class="divide-y dark:divide-gray-700"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modalBg" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div class="bg-white dark:bg-blackpearl rounded-xl shadow-lg w-full max-w-3xl p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="modalTitle" class="text-lg font-semibold dark:text-pear">Add Coaching Session</h3>
+        <button onclick="closeModal()" class="text-gray-500 hover:text-black dark:hover:text-pear">&times;</button>
+      </div>
+      <form id="coachingForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="hidden" name="id" />
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Employee Name</label>
+          <input type="text" name="employee"
+            class="w-full border rounded-lg px-4 py-2 text-sm dark:bg-blackpearl dark:border-gray-700 dark:text-white">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Coach Name</label>
+          <input type="text" name="coach"
+            class="w-full border rounded-lg px-4 py-2 text-sm dark:bg-blackpearl dark:border-gray-700 dark:text-white">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Employee Number</label>
+          <input type="text" name="employeenumber"
+            class="w-full border rounded-lg px-4 py-2 text-sm dark:bg-blackpearl dark:border-gray-700 dark:text-white">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Session Date</label>
+          <input type="date" name="date"
+            class="w-full border rounded-lg px-4 py-2 text-sm dark:bg-blackpearl dark:border-gray-700 dark:text-white">
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium mb-1">Performance/Behavior Observed</label>
+          <textarea name="performance" rows="3"
+            class="w-full border rounded-lg px-4 py-2 text-sm dark:bg-blackpearl dark:border-gray-700 dark:text-white"></textarea>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium mb-1">Coaching Provided</label>
+          <textarea name="coachingprovided" rows="3"
+            class="w-full border rounded-lg px-4 py-2 text-sm dark:bg-blackpearl dark:border-gray-700 dark:text-white"></textarea>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium mb-1">Agreed Action Plan</label>
+          <textarea name="actionplan" rows="3"
+            class="w-full border rounded-lg px-4 py-2 text-sm dark:bg-blackpearl dark:border-gray-700 dark:text-white"></textarea>
+        </div>
+
+        <div class="md:col-span-2 flex justify-end space-x-3 pt-4">
+          <button type="button" onclick="closeModal()"
+            class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600">Cancel</button>
+          <button type="submit" class="px-6 py-2 rounded btn-primary shadow">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loadingModal"
+    class="hidden fixed inset-0 bg-black bg-opacity-70 flex flex-col justify-center items-center z-50">
+    <div class="w-24 h-24 border-4 border-pear border-t-transparent rounded-full animate-spin"></div>
+    <p id="loadingText" class="mt-4 text-pear font-medium">Loading...</p>
+  </div>
+
+  <script>
+    // Dark mode toggle
+    feather.replace();
+    const toggleBtn = document.getElementById('themeToggle');
+    toggleBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      toggleBtn.innerHTML = document.body.classList.contains('dark')
+        ? feather.icons.sun.toSvg()
+        : feather.icons.moon.toSvg();
+    });
+
+    const API_URL = "https://script.google.com/macros/s/AKfycbwCKmWP6XnOaaxoPJRNktq_kWUzlbW85tIYhr1L6W2WxmUHeXUj_1a_BKzEIRDt6wu0/exec";
+
+    function showLoading(message = "Loading...") {
+      document.getElementById('loadingText').innerText = message;
+      document.getElementById('loadingModal').classList.remove('hidden');
+    }
+    function hideLoading() { document.getElementById('loadingModal').classList.add('hidden'); }
+
+    const form = document.getElementById("coachingForm");
+
+    function openModal(editing = false) {
+      document.getElementById('modalBg').classList.remove('hidden');
+      document.getElementById("modalTitle").innerText = editing ? "Edit Coaching Session" : "Add Coaching Session";
+    }
+    function closeModal() {
+      document.getElementById('modalBg').classList.add('hidden');
+      form.reset();
+      delete form.dataset.editId;
+      [...form.elements].forEach(el => el.disabled = false);
+      form.querySelector('button[type="submit"]').classList.remove('hidden');
+    }
+
+    // Load sessions
+    async function loadSessions() {
+      showLoading("Fetching coaching sessions...");
+      const res = await fetch(API_URL);
+      const sessions = await res.json();
+      const table = document.getElementById("sessionsTable");
+      table.innerHTML = "";
+      sessions.forEach(session => {
+        table.innerHTML += `
+          <tr>
+            <td class="px-4 py-2">${session.date || session.Date}</td>
+            <td class="px-4 py-2">${session.coach || session.Coach}</td>
+            <td class="px-4 py-2">${session.employee || session.Employee}</td>
+            <td class="px-4 py-2">${session.performance || session.Performance}</td>
+            <td class="px-4 py-2 flex space-x-2">
+              <button class="text-blue-600" onclick='viewSession(${JSON.stringify(session)})'>View</button>
+              <button class="text-yellow-600" onclick='editSession(${JSON.stringify(session)})'>Edit</button>
+              <button class="text-red-600" onclick='deleteSession(${session.ID || session.id})'>Delete</button>
+            </td>
+          </tr>
+        `;
+      });
+      hideLoading();
+    }
+
+    function viewSession(session) {
+      openModal(false);
+      Object.keys(session).forEach(key => {
+        if (form[key]) {
+          form[key].value = session[key];
+          form[key].disabled = true;
+        }
+      });
+      form.querySelector('button[type="submit"]').classList.add('hidden');
+    }
+
+    function editSession(session) {
+      openModal(true);
+      Object.keys(session).forEach(key => {
+        if (form[key]) form[key].value = session[key];
+      });
+      form.dataset.editId = session.ID || session.id;
+    }
+
+    async function deleteSession(id) {
+      if (!confirm("Delete this session?")) return;
+      showLoading("Deleting session...");
+      await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ _method: "DELETE", id })
+      });
+      await loadSessions();
+      hideLoading();
+    }
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      showLoading(this.dataset.editId ? "Updating session..." : "Saving session...");
+      const formData = Object.fromEntries(new FormData(this).entries());
+
+      if (this.dataset.editId) {
+        await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({ _method: "PUT", id: this.dataset.editId, ...formData })
+        });
+        delete this.dataset.editId;
+      } else {
+        await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify(formData)
+        });
+      }
+
+      hideLoading();
+      closeModal();
+      loadSessions();
+    });
+
+    window.onload = loadSessions;
+  </script>
+</body>
+
+</html>

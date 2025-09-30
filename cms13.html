@@ -110,8 +110,6 @@
                 </a>
             </nav>
 
-
-
             <div class="p-4">
                 <button
                     class="w-full py-2 bg-brand hover:bg-brandlight rounded-lg font-semibold text-slate-900 transition">Logout</button>
@@ -316,7 +314,6 @@
                 </div>
             </section>
 
-
             <section id="attendance-calendar" class="page-section">
                 <div class="bg-white rounded-xl shadow-lg p-6">
 
@@ -328,7 +325,7 @@
                             <button id="monthly-tab" onclick="switchAttendanceTab('monthly')"
                                 class="tab py-3 px-5 text-sm font-semibold rounded-t-lg focus:outline-none">Monthly
                                 View</button>
-                            <button id="custom-tab" onclick="switchAttendanceTab('custom'); loadCustomCalendar()"
+                            <button id="custom-tab" onclick="switchAttendanceTab('custom')"
                                 class="tab py-3 px-5 text-sm font-semibold rounded-t-lg focus:outline-none">Custom</button>
                         </nav>
                     </div>
@@ -348,6 +345,7 @@
                     </div>
                 </div>
             </section>
+
             <section id="billing" class="page-section px-6 py-4">
                 <h1 class="text-3xl font-bold mb-4">Billing</h1>
                 <p class="text-gray-600 mb-6">Overview of billing metrics, trends, and campaign comparison.</p>
@@ -547,15 +545,12 @@
                         </details>
                     </div>
                 </section>
-
-
-
             </section>
 
             <section id="headcount" class="page-section">
                 <div class="flex items-center justify-between mb-4">
                     <h1 class="text-3xl font-bold">Headcount</h1>
-                    <button onclick="openCrudModal('addEmployee','NEW')"
+                    <button onclick="openCrudModal('NEW')"
                         class="px-4 py-2 bg-brand text-black rounded hover:bg-brandlight"> + Add Employee </button>
                 </div>
 
@@ -608,27 +603,134 @@
                     Report</button>
             </section>
 
+            <section id="coaching" class="page-section">
+                <div class="flex items-center justify-between mb-6">
+                    <h1 class="text-3xl font-bold text-slate-900">Coaching Sessions</h1>
+                    <button onclick="openModal(false)"
+                        class="px-4 py-2 bg-brand text-black rounded hover:bg-brandlight transition font-semibold">
+                        + New Session
+                    </button>
+                </div>
 
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-slate-900">Coaching Log</h2>
+                        <input type="text" id="searchCoaching" oninput="filterCoachingSessions()"
+                            placeholder="Search employee name or number..."
+                            class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand w-64">
+                    </div>
 
+                    <div class="overflow-x-auto">
+                        <div id="coachingTableStatus" class="p-4 text-center text-gray-500 hidden"></div>
+                        <table class="min-w-full text-sm text-left border-collapse">
+                            <thead class="bg-gray-100 text-gray-700 uppercase text-xs">
+                                <tr>
+                                    <th class="px-4 py-3">Date</th>
+                                    <th class="px-4 py-3">Coach</th>
+                                    <th class="px-4 py-3">Employee</th>
+                                    <th class="px-4 py-3">Employee No</th>
+                                    <th class="px-4 py-3">Performance</th>
+                                    <th class="px-4 py-3 hidden md:table-cell">Coaching Provided</th>
+                                    <th class="px-4 py-3 hidden md:table-cell">Action Plan</th>
+                                    <th class="px-4 py-3 hidden md:table-cell">Agent Acknowledge</th>
+                                    <th class="px-4 py-3 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sessionsTable" class="divide-y divide-gray-200">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
 
+            <div id="modalBg"
+                class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+                <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl p-8 relative max-h-[90vh] overflow-y-auto">
+                    <button onclick="closeModal()"
+                        class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                    <h3 id="modalTitle" class="text-2xl font-bold mb-6 text-slate-900">Record New Coaching Session</h3>
 
+                    <form id="coachingForm" data-edit-id="">
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
+                                <input type="date" id="date" name="date" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand p-2">
+                            </div>
+                            <div>
+                                <label for="coach" class="block text-sm font-medium text-gray-700">Coach</label>
+                                <input type="text" id="coach" name="coach" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand p-2">
+                            </div>
+                        </div>
 
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="employee" class="block text-sm font-medium text-gray-700">Employee Name</label>
+                                <input type="text" id="employee" name="employee" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand p-2">
+                            </div>
+                            <div>
+                                <label for="employeenumber" class="block text-sm font-medium text-gray-700">Employee Number</label>
+                                <input type="text" id="employeenumber" name="employeenumber" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand p-2">
+                            </div>
+                        </div>
 
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="agentacknowledged" class="block text-sm font-medium text-gray-700">Agent Acknowledge</label>
+                                <select id="agentacknowledged" name="agentacknowledged" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand p-2">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                        </div>
 
+                        <div class="space-y-4 mb-6">
+                            <div>
+                                <label for="performance" class="block text-sm font-medium text-gray-700">Performance Notes</label>
+                                <textarea id="performance" name="performance" rows="2" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand p-2"></textarea>
+                            </div>
+                            <div>
+                                <label for="coachingprovided" class="block text-sm font-medium text-gray-700">Coaching Provided</label>
+                                <textarea id="coachingprovided" name="coachingprovided" rows="2" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand p-2"></textarea>
+                            </div>
+                            <div>
+                                <label for="actionplan" class="block text-sm font-medium text-gray-700">Action Plan</label>
+                                <textarea id="actionplan" name="actionplan" rows="2" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand p-2"></textarea>
+                            </div>
+                        </div>
 
+                        <div class="flex justify-end mt-4 space-x-2">
+                            <button type="button" onclick="closeModal()"
+                                class="px-6 py-2 rounded bg-gray-200 hover:bg-gray-300 font-medium">Cancel</button>
+                            <button type="submit" id="coachingSubmitButton"
+                                class="px-6 py-2 rounded bg-brand hover:bg-brandlight text-black font-semibold transition">Save Session</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
-
-
-
-
-            
-
-
-
-
-
-
-
+            <div id="loadingModal"
+                class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-[100]">
+                <div class="bg-white p-6 rounded-lg shadow-xl flex items-center space-x-3">
+                    <svg class="animate-spin h-5 w-5 text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                    <p id="loadingText" class="text-gray-700 font-medium">Loading...</p>
+                </div>
+            </div>
 
             <section id="macro" class="page-section">
                 <h1 class="text-3xl font-bold mb-4">Macros/Automation</h1>
@@ -639,8 +741,6 @@
 
         </main>
     </div>
-
-
 
     <div id="crudModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white rounded-xl shadow-lg w-full max-w-lg p-6 relative">
@@ -658,8 +758,6 @@
             </div>
         </div>
     </div>
-
-
 
     <div id="downloadModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-6 relative">
@@ -716,262 +814,594 @@
     </div>
 
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize main page navigation and other components when the DOM is fully loaded.
+            initializePageNavigation();
+            initializeAttendanceTabs();
+            renderHeadcountTable();
+        });
 
 
+        /* -------------------------------------------
+         * 1. GLOBAL UTILITY & API ENDPOINTS
+         * ------------------------------------------- */
 
-   
+        const API_ENDPOINTS = {
+            ATTENDANCE: "https://script.google.com/macros/s/AKfycbzrN_zWK3AtRd5gO5XG-nA5WYIvcDPnlUJ73PFmNghOzRfXs8r6he97FYxzmcoYXHihwg/exec",
+            COACHING_LOGS: "https://script.google.com/macros/s/AKfycbwCKmWP6XnOaaxoPJRNktq_kWUzlbW85tIYhr1L6W2WxmUHeXUj_1a_BKzEIRDt6wu0/exec"
+        };
 
+        const API_URL_CRUD = "/api/headcount"; // Headcount API
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<script>
-/* ==================================================================
-   0. ICONS + THEME TOGGLE
-   Connected to: Header (theme toggle button)
-   Purpose: Switch between light/dark mode using Feather icons
-================================================================== */
-feather.replace();
-const toggleBtn = document.getElementById('themeToggle');
-toggleBtn.addEventListener('click', () => {
-  document.body.classList.toggle('dark');
-  toggleBtn.innerHTML = document.body.classList.contains('dark')
-    ? feather.icons.sun.toSvg()
-    : feather.icons.moon.toSvg();
-});
-
-
-/* ==================================================================
-   1. GLOBAL INITIALIZATION
-   Purpose: Setup navigation, attendance tabs, headcount table,
-            and fetch coaching logs when the DOM is ready.
-================================================================== */
-document.addEventListener('DOMContentLoaded', () => {
-  initializePageNavigation();   // Sidebar nav links
-  initializeAttendanceTabs();   // Attendance Calendar tabs
-  renderHeadcountTable();       // Headcount page
-});
-
-
-/* ==================================================================
-   2. DATA DEFINITIONS
-   Purpose: API endpoints + sample agents
-================================================================== */
-const API_URL = "https://script.google.com/macros/s/AKfycbyn9CG1Lk3S5bXtfEEbvH5H-8GfBBOvY4OGSJPyIM5RZSDBCOf4fwkXVvnKjzZGvqUL/exec"; 
-const sampleAgents = [
-  { emp: 'DMI-0001', name: 'Jane Doe', phone: '09171234567', emergency: '09181234567', dept: 'Support', doj: '2024-01-10', lwd: '', status: 'Active' },
-  { emp: 'DMI-0002', name: 'John Smith', phone: '09172345678', emergency: '09182345678', dept: 'Sales', doj: '2024-02-05', lwd: '', status: 'Active' },
-  { emp: 'DMI-0003', name: 'Maria Cruz', phone: '09173456789', emergency: '09183456789', dept: 'Support', doj: '2023-11-15', lwd: '2024-09-25', status: 'On Leave' },
-];
+        // Global Loading Functions (Used for Headcount CRUD)
+        function showLoading(message = "Loading...") {
+            if (document.getElementById('loadingText')) {
+                document.getElementById('loadingText').innerText = message;
+                document.getElementById('loadingModal').classList.remove('hidden');
+            }
+        }
+        function hideLoading() {
+            if (document.getElementById('loadingModal')) {
+                document.getElementById('loadingModal').classList.add('hidden');
+            }
+        }
+        
+        // Local Loading Functions (Used for Coaching Logs table)
+        function showLocalLoading(message) {
+            const statusEl = document.getElementById('coachingTableStatus');
+            if (statusEl) {
+                statusEl.innerHTML = `<i class="fas fa-spinner fa-spin mr-2 text-brand"></i>${message}`;
+                statusEl.classList.remove('hidden');
+                document.getElementById('sessionsTable').classList.add('hidden');
+            }
+        }
+        function hideLocalLoading() {
+            const statusEl = document.getElementById('coachingTableStatus');
+            if (statusEl) {
+                statusEl.classList.add('hidden');
+                document.getElementById('sessionsTable').classList.remove('hidden');
+            }
+        }
+        function showLocalError(message) {
+            const statusEl = document.getElementById('coachingTableStatus');
+            if (statusEl) {
+                statusEl.innerHTML = `<i class="fas fa-exclamation-triangle mr-2 text-red-500"></i>${message}`;
+                statusEl.classList.remove('hidden');
+                document.getElementById('sessionsTable').classList.add('hidden');
+            }
+        }
 
 
-/* ==================================================================
-   3. LOADING OVERLAY UTILITIES
-   Purpose: Show/Hide modal overlay while fetching API
-================================================================== */
-function showLoading(message = "Loading...") {
-  document.getElementById('loadingText').innerText = message;
-  document.getElementById('loadingModal').classList.remove('hidden');
-}
-function hideLoading() {
-  document.getElementById('loadingModal').classList.add('hidden');
-}
+        /* -------------------------------------------
+         * 2. MAIN PAGE NAVIGATION LOGIC
+         * ------------------------------------------- */
+
+        function initializePageNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pageSections = document.querySelectorAll('.page-section');
+            const defaultPageId = 'dashboard';
+
+            function navigateTo(pageId) {
+                // Update link styles (highlight active link)
+                navLinks.forEach(link => {
+                    if (link.dataset.page === pageId) {
+                        link.classList.add('bg-brandlight');
+                    } else {
+                        link.classList.remove('bg-brandlight');
+                    }
+                });
+
+                // Show/Hide page sections
+                pageSections.forEach(section => {
+                    if (section.id === pageId) {
+                        section.classList.add('active');
+                        // Special handling for the coaching page
+                        if (pageId === 'coaching' && typeof window.loadSessions === 'function') {
+                            window.loadSessions();
+                        }
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+            }
+
+            // Set up click listeners for all sidebar links
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    navigateTo(link.dataset.page);
+                });
+            });
+
+            // Set default page on load
+            navigateTo(defaultPageId);
+        }
 
 
-/* ==================================================================
-   4. PAGE NAVIGATION LOGIC
-   Connected to: ALL NAV LINKS
-   Purpose: Sidebar navigation system (Dashboard, Campaigns, etc.)
-================================================================== */
-function initializePageNavigation() {
-  const navLinks = document.querySelectorAll('.nav-link');
-  const pageSections = document.querySelectorAll('.page-section');
-  const defaultPageId = 'dashboard';
+        /* -------------------------------------------
+         * 3. ATTENDANCE TABS & DATA LOGIC
+         * ------------------------------------------- */
 
-  function navigateTo(pageId) {
-    navLinks.forEach(link => {
-      link.classList.toggle('bg-brandlight', link.dataset.page === pageId);
-    });
-    pageSections.forEach(section => {
-      section.classList.toggle('active', section.id === pageId);
-    });
-  }
+        function initializeAttendanceTabs() {
+            const tabs = document.querySelectorAll("#attendance-calendar .tab");
+            const contents = {
+                'weekly-tab': document.getElementById('weekly-content'),
+                'monthly-tab': document.getElementById('monthly-content'),
+                'custom-tab': document.getElementById('custom-content')
+            };
 
-  navLinks.forEach(link => {
-    link.addEventListener('click', e => {
-      e.preventDefault();
-      navigateTo(link.dataset.page);
-    });
-  });
+            function switchTab(tabId) {
+                tabs.forEach(t => t.classList.remove("active"));
+                document.getElementById(tabId).classList.add("active");
 
-  navigateTo(defaultPageId);
-}
+                Object.keys(contents).forEach(key => {
+                    const content = contents[key];
+                    if (key === tabId) {
+                        content.classList.remove('hidden');
+                    } else {
+                        content.classList.add('hidden');
+                    }
+                });
+            }
 
+            // Global function for the onclick events in the HTML
+            window.switchAttendanceTab = function (tabName) {
+                switchTab(tabName + '-tab');
+            }
 
-/* ==================================================================
-   5. ATTENDANCE TABS LOGIC
-   Connected to: Attendance Calendar nav link
-================================================================== */
-function initializeAttendanceTabs() {
-  const tabs = document.querySelectorAll("#attendance-calendar .tab");
-  const contents = {
-    'weekly-tab': document.getElementById('weekly-content'),
-    'monthly-tab': document.getElementById('monthly-content'),
-    'custom-tab': document.getElementById('custom-content')
-  };
+            // Initialize to show weekly view by default
+            switchTab('weekly-tab');
+        }
 
-  function switchTab(tabId) {
-    tabs.forEach(t => t.classList.remove("active"));
-    document.getElementById(tabId).classList.add("active");
-    Object.keys(contents).forEach(key => {
-      contents[key].classList.toggle('hidden', key !== tabId);
-    });
-  }
-
-  tabs.forEach(tab => {
-    tab.addEventListener("click", () => {
-      switchTab(tab.id);
-      if (tab.id === 'custom-tab') loadCustomCalendar();
-    });
-  });
-
-  switchTab('weekly-tab'); // default
-}
+        // Placeholder Attendance Data Functions (kept for future implementation)
+        const ATTENDANCE_BASE_URL = API_ENDPOINTS.ATTENDANCE;
+        // ... (other attendance placeholder functions)
 
 
-/* ==================================================================
-   6. HEADCOUNT CRUD LOGIC
-   Connected to: Headcount nav link
-   Purpose: Employee table + CRUD modal
-================================================================== */
-function renderHeadcountTable() {
-  // ... your existing headcount CRUD functions here ...
-}
+        /* -------------------------------------------
+         * 4. HEADCOUNT CRUD AND TABLE LOGIC
+         * ------------------------------------------- */
+
+        const sampleAgents = [
+            { emp: 'DMI-0001', name: 'Jane Doe', phone: '09171234567', emergency: '09181234567', dept: 'Support', doj: '2024-01-10', lwd: '', status: 'Active' },
+            { emp: 'DMI-0002', name: 'John Smith', phone: '09172345678', emergency: '09182345678', dept: 'Sales', doj: '2024-02-05', lwd: '', status: 'Active' },
+            { emp: 'DMI-0003', name: 'Maria Cruz', phone: '09173456789', emergency: '09183456789', dept: 'Support', doj: '2023-11-15', lwd: '2024-09-25', status: 'On Leave' },
+        ];
+        
+        function renderHeadcountTable() {
+            const tableBody = document.getElementById('headcountTableBody');
+            if (!tableBody) return;
+
+            tableBody.innerHTML = sampleAgents.map(agent => `
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3">${agent.emp}</td>
+                <td class="px-4 py-3">${agent.name}</td>
+                <td class="px-4 py-3">${agent.phone}</td>
+                <td class="px-4 py-3">${agent.emergency}</td>
+                <td class="px-4 py-3">${agent.dept}</td>
+                <td class="px-4 py-3">${agent.doj || '-'}</td>
+                <td class="px-4 py-3">${agent.lwd || '-'}</td>
+                <td class="px-4 py-3">
+                    <span class="px-2 py-1 rounded-full text-xs font-semibold ${agent.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${agent.status}</span>
+                </td>
+                <td class="px-4 py-3 text-center space-x-2">
+                    <button onclick="openCrudModal('view','${agent.emp}')" class="text-blue-500 hover:underline">View</button>
+                    <button onclick="openCrudModal('edit','${agent.emp}')" class="text-green-500 hover:underline">Edit</button>
+                    <button onclick="openCrudModal('delete','${agent.emp}')" class="text-red-500 hover:underline">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+        }
+        
+        // Search/Filter function (placeholder)
+        window.filterHeadcount = function() {
+            const searchInput = document.getElementById('searchHeadcount').value.toLowerCase();
+            const rows = document.getElementById('headcountTableBody').getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const rowText = rows[i].textContent.toLowerCase();
+                rows[i].style.display = rowText.includes(searchInput) ? '' : 'none';
+            }
+        }
+
+        // Headcount CRUD Modal Functions
+        const crudModal = document.getElementById('crudModal');
+        const crudModalTitle = document.getElementById('crudModalTitle');
+        const crudModalBody = document.getElementById('crudModalBody');
+        const crudModalAction = document.getElementById('crudModalAction');
+
+        window.openCrudModal = function (action, id) {
+            crudModal.classList.remove('hidden');
+            crudModalBody.innerHTML = ''; // Clear previous content
+
+            let agent = sampleAgents.find(a => a.emp === id);
+
+            // Reset action button style
+            crudModalAction.classList.remove('bg-red-500', 'hover:bg-red-600', 'text-white');
+            crudModalAction.classList.add('bg-brand', 'hover:bg-brandlight', 'text-black');
+
+            switch (action) {
+                case 'NEW':
+                    crudModalTitle.textContent = "Add New Employee";
+                    crudModalBody.innerHTML = generateFormHtml({});
+                    crudModalAction.textContent = "Create Employee";
+                    crudModalAction.onclick = () => saveCrudModal('POST');
+                    break;
+                case 'view':
+                    crudModalTitle.textContent = `View Employee: ${agent.name}`;
+                    crudModalBody.innerHTML = generateViewHtml(agent);
+                    crudModalAction.textContent = "Close";
+                    crudModalAction.onclick = closeCrudModal; // Closes the modal
+                    crudModalAction.classList.add('hidden'); // Hide the main action button for view
+                    document.querySelector('#crudModal .flex-end button[onclick="closeCrudModal()"]').classList.remove('hidden');
+                    break;
+                case 'edit':
+                    crudModalTitle.textContent = `Edit Employee: ${agent.name}`;
+                    crudModalBody.innerHTML = generateFormHtml(agent);
+                    crudModalAction.textContent = "Save Changes";
+                    crudModalAction.onclick = () => saveCrudModal('PUT', id);
+                    crudModalAction.classList.remove('hidden');
+                    break;
+                case 'delete':
+                    crudModalTitle.textContent = "Confirm Deletion";
+                    crudModalBody.innerHTML = `<p>Are you sure you want to delete <strong>${agent.name} (${id})</strong>?</p>`;
+                    crudModalAction.textContent = "Delete";
+                    crudModalAction.classList.remove('bg-brand');
+                    crudModalAction.classList.add('bg-red-500', 'hover:bg-red-600', 'text-white');
+                    crudModalAction.onclick = () => deleteCrudModal(id);
+                    crudModalAction.classList.remove('hidden');
+                    break;
+            }
+        }
+
+        window.closeCrudModal = function () {
+            crudModal.classList.add('hidden');
+            // Reset delete button style
+            crudModalAction.classList.remove('bg-red-500', 'hover:bg-red-600', 'text-white');
+            crudModalAction.classList.add('bg-brand', 'hover:bg-brandlight', 'text-black');
+            crudModalAction.classList.remove('hidden'); // Ensure action button is visible on next open
+        }
+        
+        function generateFormHtml(data) { /* ... (generateFormHtml function from original script) ... */
+             return `
+            <form id="crudForm">
+                <label class="block text-sm font-medium text-gray-700">Name:</label><input type="text" name="name" value="${data.name || ''}" class="w-full border p-2 rounded mb-2">
+                <label class="block text-sm font-medium text-gray-700">Department:</label><input type="text" name="dept" value="${data.dept || ''}" class="w-full border p-2 rounded mb-2">
+                <label class="block text-sm font-medium text-gray-700">Phone:</label><input type="text" name="phone" value="${data.phone || ''}" class="w-full border p-2 rounded mb-2">
+                <label class="block text-sm font-medium text-gray-700">DOJ:</label><input type="date" name="doj" value="${data.doj || ''}" class="w-full border p-2 rounded mb-2">
+            </form>
+            `;
+        }
+
+        function generateViewHtml(data) { /* ... (generateViewHtml function from original script) ... */
+            return `
+            <p><strong>Employee ID:</strong> ${data.emp}</p>
+            <p><strong>Name:</strong> ${data.name}</p>
+            <p><strong>Department:</strong> ${data.dept}</p>
+            <p><strong>Status:</strong> ${data.status}</p>
+            <p><strong>Phone:</strong> ${data.phone}</p>
+            <p><strong>Emergency:</strong> ${data.emergency}</p>
+            <p><strong>Date of Join:</strong> ${data.doj}</p>
+            <p><strong>Last Working Day:</strong> ${data.lwd || '-'}</p>
+        `;
+        }
+
+        async function saveCrudModal(method, id = null) { /* ... (saveCrudModal function from original script) ... */
+            showLoading(method === 'POST' ? "Creating employee..." : "Updating employee...");
+            const formData = new FormData(document.getElementById('crudForm'));
+            const data = Object.fromEntries(formData.entries());
+            data.emp = id || 'DMI-' + Math.floor(Math.random() * 10000).toString().padStart(4, '0'); // Simple ID generation
+
+            try {
+                // Placeholder API call
+                const response = await fetch(API_URL_CRUD, {
+                    method: 'POST', // Use POST for both PUT/POST with a method override for simplicity
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ _method: id ? 'PUT' : 'POST', id, ...data })
+                });
+
+                if (response.ok) {
+                    alert(`Employee ${id ? 'updated' : 'created'} successfully!`);
+                    // Simulate array update (for a real app, this should update the actual data source)
+                    const index = sampleAgents.findIndex(a => a.emp === id);
+                    if (index > -1) {
+                         Object.assign(sampleAgents[index], data); // Update existing
+                    } else {
+                        sampleAgents.push(data); // Add new
+                    }
+                    renderHeadcountTable();
+                    closeCrudModal();
+                } else {
+                    throw new Error('API request failed');
+                }
+            } catch (error) {
+                alert(`Error processing request: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function deleteCrudModal(id) { /* ... (deleteCrudModal function from original script) ... */
+            showLoading("Deleting employee...");
+            try {
+                // Placeholder API call
+                const response = await fetch(API_URL_CRUD, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ _method: 'DELETE', id })
+                });
+
+                if (response.ok) {
+                    alert(`Employee ${id} deleted successfully!`);
+                    // Simulate array update
+                    const index = sampleAgents.findIndex(a => a.emp === id);
+                    if (index > -1) {
+                        sampleAgents.splice(index, 1);
+                    }
+                    renderHeadcountTable();
+                    closeCrudModal();
+                } else {
+                    throw new Error('API request failed');
+                }
+            } catch (error) {
+                alert(`Error processing deletion: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
 
 
-/* ==================================================================
-   7. COACHING LOGS LOGIC
-   Connected to: Coaching Logs nav link
-   Purpose: Add/Edit/Delete/View sessions using API
-================================================================== */
-const form = document.getElementById("coachingForm");
+        /* -------------------------------------------
+         * 5. COACHING LOGS LOGIC (REFORMATTED)
+         * ------------------------------------------- */
 
-function openModal(editing = false) {
-  document.getElementById('modalBg').classList.remove('hidden');
-  document.getElementById("modalTitle").innerText = editing ? "Edit Coaching Session" : "Add Coaching Session";
-}
-function closeModal() {
-  document.getElementById('modalBg').classList.add('hidden');
-  form.reset();
-  delete form.dataset.editId;
-  [...form.elements].forEach(el => el.disabled = false);
-  form.querySelector('button[type="submit"]').classList.remove('hidden');
-}
+        const COACHING_API_URL = API_ENDPOINTS.COACHING_LOGS;
+        const form = document.getElementById("coachingForm");
 
-// Load sessions from API
-async function loadSessions() {
-  showLoading("Fetching coaching sessions...");
-  const res = await fetch(API_URL);
-  const sessions = await res.json();
-  const table = document.getElementById("sessionsTable");
-  table.innerHTML = "";
-  sessions.forEach(session => {
-    table.innerHTML += `
-      <tr>
-        <td class="px-4 py-2">${session.date || session.Date}</td>
-        <td class="px-4 py-2">${session.coach || session.Coach}</td>
-        <td class="px-4 py-2">${session.employee || session.Employee}</td>
-        <td class="px-4 py-2">${session.performance || session.Performance}</td>
-        <td class="px-4 py-2">${session.acknowledge || "Pending"}</td>
-        <td class="px-4 py-2 flex space-x-2">
-          <button class="text-blue-600" onclick='viewSession(${JSON.stringify(session)})'>View</button>
-          <button class="text-yellow-600" onclick='editSession(${JSON.stringify(session)})'>Edit</button>
-          <button class="text-red-600" onclick='deleteSession(${session.ID || session.id})'>Delete</button>
-        </td>
-      </tr>
-    `;
-  });
-  hideLoading();
-}
+        if (form) {
+            window.openModal = function (editing = false) {
+                document.getElementById('modalBg').classList.remove('hidden');
+                document.getElementById("modalTitle").innerText = editing ? "Edit Coaching Session" : "Add Coaching Session";
+                // Reset form fields and view state
+                form.reset();
+                delete form.dataset.editId;
+                [...form.elements].forEach(el => el.disabled = false);
+                document.getElementById('coachingSubmitButton').classList.remove('hidden');
+            }
 
-function viewSession(session) {
-  openModal(false);
-  Object.keys(session).forEach(key => {
-    if (form[key]) {
-      form[key].value = session[key];
-      form[key].disabled = true;
-    }
-  });
-  form.querySelector('button[type="submit"]').classList.add('hidden');
-}
+            window.closeModal = function () {
+                document.getElementById('modalBg').classList.add('hidden');
+                form.reset();
+                delete form.dataset.editId;
+                [...form.elements].forEach(el => el.disabled = false);
+                document.getElementById('coachingSubmitButton').classList.remove('hidden');
+            }
 
-function editSession(session) {
-  openModal(true);
-  Object.keys(session).forEach(key => {
-    if (form[key]) form[key].value = session[key];
-  });
-  form.dataset.editId = session.ID || session.id;
-}
+            window.filterCoachingSessions = function () {
+                // Placeholder for filtering logic
+                console.log("Filtering coaching sessions...");
+            }
 
-async function deleteSession(id) {
-  if (!confirm("Delete this session?")) return;
-  showLoading("Deleting session...");
-  await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({ _method: "DELETE", id })
-  });
-  await loadSessions();
-  hideLoading();
-}
+            // Load sessions
+            window.loadSessions = async function () {
+                showLocalLoading("Fetching coaching sessions...");
+                try {
+                    const res = await fetch(COACHING_API_URL);
+                    
+                    // Bug Fix: Explicitly check for response ok status
+                    if (!res.ok) {
+                        const errorText = await res.text();
+                        throw new Error(`Server status ${res.status}: ${errorText.substring(0, 100)}...`);
+                    }
 
-form.addEventListener("submit", async function (e) {
-  e.preventDefault();
-  showLoading(this.dataset.editId ? "Updating session..." : "Saving session...");
-  const formData = Object.fromEntries(new FormData(this).entries());
+                    const sessions = await res.json();
+                    const table = document.getElementById("sessionsTable");
+                    
+                    if (table) {
+                        table.innerHTML = "";
+                        if (sessions.length === 0) {
+                             showLocalError("No coaching sessions found.");
+                             return;
+                        }
+                        
+                        hideLocalLoading();
 
-  if (this.dataset.editId) {
-    await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({ _method: "PUT", id: this.dataset.editId, ...formData })
-    });
-    delete this.dataset.editId;
-  } else {
-    await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify(formData)
-    });
-  }
+                        sessions.forEach(session => {
+                            // Escape single quotes for inline JS function call
+                            const sessionData = JSON.stringify(session).replace(/'/g, '&#39;'); 
+                            
+                            // Use short previews for long text fields
+                            const performancePreview = session.performance ? (session.performance.length > 50 ? session.performance.substring(0, 50) + '...' : session.performance) : '-';
+                            const coachingPreview = session.coachingprovided ? (session.coachingprovided.length > 50 ? session.coachingprovided.substring(0, 50) + '...' : session.coachingprovided) : '-';
+                            const actionPreview = session.actionplan ? (session.actionplan.length > 50 ? session.actionplan.substring(0, 50) + '...' : session.actionplan) : '-';
 
-  hideLoading();
-  closeModal();
-  loadSessions();
-});
+                            table.innerHTML += `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-2">${session.date || '-'}</td>
+                                    <td class="px-4 py-2">${session.coach || '-'}</td>
+                                    <td class="px-4 py-2">${session.employee || '-'}</td>
+                                    <td class="px-4 py-2">${session.employeenumber || '-'}</td>
+                                    <td class="px-4 py-2">${performancePreview}</td>
+                                    <td class="px-4 py-2 hidden md:table-cell">${coachingPreview}</td>
+                                    <td class="px-4 py-2 hidden md:table-cell">${actionPreview}</td>
+                                    <td class="px-4 py-2 hidden md:table-cell">${session.agentacknowledged || 'Pending'}</td>
+                                    <td class="px-4 py-2 text-center space-x-2">
+                                        <button class="text-blue-600 hover:underline" onclick='viewSession(${sessionData})'>View</button>
+                                        <button class="text-green-600 hover:underline" onclick='editSession(${sessionData})'>Edit</button>
+                                        <button class="text-red-600 hover:underline" onclick='deleteSession(${session.id || session.ID})'>Delete</button>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error loading coaching sessions:", error);
+                    showLocalError(`Failed to load sessions. Error: ${error.message}`);
+                }
+            }
+
+            // Make functions global so they work with inline onclick events
+            window.viewSession = function (session) {
+                openModal(false);
+                document.getElementById("modalTitle").innerText = `View Coaching Session (${session.employeenumber})`;
+
+                // Populate form fields, disable them, and hide the submit button
+                const fieldMap = {
+                    'employee': session.employee,
+                    'employeenumber': session.employeenumber, // Added Employee Number
+                    'agentacknowledged': session.agentacknowledged,
+                    'coachingprovided': session.coachingprovided,
+                    'actionplan': session.actionplan,
+                    'performance': session.performance,
+                    'date': session.date,
+                    'coach': session.coach
+                };
+                
+                Object.keys(fieldMap).forEach(key => {
+                    const el = form.elements.namedItem(key);
+                    if (el) {
+                        el.value = fieldMap[key] || '';
+                        el.disabled = true;
+                    }
+                });
+
+                document.getElementById('coachingSubmitButton').classList.add('hidden');
+            }
+
+            window.editSession = function (session) {
+                openModal(true);
+                document.getElementById("modalTitle").innerText = `Edit Coaching Session (${session.employeenumber})`;
+
+                // Populate form fields
+                 const fieldMap = {
+                    'employee': session.employee,
+                    'employeenumber': session.employeenumber, // Added Employee Number
+                    'agentacknowledged': session.agentacknowledged,
+                    'coachingprovided': session.coachingprovided,
+                    'actionplan': session.actionplan,
+                    'performance': session.performance,
+                    'date': session.date,
+                    'coach': session.coach
+                };
+                
+                Object.keys(fieldMap).forEach(key => {
+                    const el = form.elements.namedItem(key);
+                    if (el) {
+                        el.value = fieldMap[key] || '';
+                    }
+                });
+                
+                form.dataset.editId = session.ID || session.id;
+            }
+
+            window.deleteSession = async function (id) {
+                if (!confirm("Are you sure you want to permanently delete this coaching session?")) return;
+                showLocalLoading("Deleting session...");
+                try {
+                    const response = await fetch(COACHING_API_URL, {
+                        method: "POST",
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ _method: "DELETE", id: id })
+                    });
+                    
+                    // Bug Fix: Explicitly check for response ok status
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`Server status ${response.status}: ${errorText.substring(0, 100)}...`);
+                    }
+
+                    alert("Session deleted successfully.");
+                } catch (error) {
+                    alert("Error deleting session: " + error.message);
+                    showLocalError(`Failed to delete session: ${error.message}`);
+                }
+                await loadSessions();
+            }
+
+            form.addEventListener("submit", async function (e) {
+                e.preventDefault();
+                const isEdit = this.dataset.editId;
+                showLocalLoading(isEdit ? "Updating session..." : "Saving new session...");
+                const formData = Object.fromEntries(new FormData(this).entries());
+
+                try {
+                    const payload = isEdit ? { _method: "PUT", id: isEdit, ...formData } : formData;
+                    
+                    const response = await fetch(COACHING_API_URL, {
+                        method: "POST", 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    // Bug Fix: Explicitly check for response ok status
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`Server status ${response.status}: ${errorText.substring(0, 100)}...`);
+                    }
+
+                    alert(`Session ${isEdit ? 'updated' : 'saved'} successfully.`);
+                } catch (error) {
+                    alert(`Error processing session: ${error.message}`);
+                    showLocalError(`Failed to save session: ${error.message}`);
+                } finally {
+                    closeModal();
+                    loadSessions();
+                }
+            });
+        }
 
 
-/* ==================================================================
-   8. PAGE LOAD
-   Purpose: Auto-load Coaching Logs on startup
-================================================================== */
-window.onload = loadSessions;
+        /* -------------------------------------------
+         * 6. OTHER MODAL FUNCTIONS
+         * ------------------------------------------- */
 
-</script>
+        // Download Modal Functions
+        const downloadModal = document.getElementById('downloadModal');
+        window.openDownloadModal = function() {
+            downloadModal.classList.remove('hidden');
+        }
+        window.closeDownloadModal = function() {
+            downloadModal.classList.add('hidden');
+        }
+        window.downloadReport = function() {
+            alert("Download initiated! (Placeholder)");
+            closeDownloadModal();
+        }
+
+        // Report Request Modal Functions
+        const requestReportModal = document.getElementById('requestReportModal');
+        window.openRequestReportModal = function() {
+            requestReportModal.classList.remove('hidden');
+        }
+        window.closeRequestReportModal = function() {
+            requestReportModal.classList.add('hidden');
+        }
+        window.submitReportRequest = function() {
+            const name = document.getElementById('reportName').value;
+            const desc = document.getElementById('reportDescription').value;
+            alert(`Report Requested:\nName: ${name}\nDescription: ${desc}`);
+            closeRequestReportModal();
+        }
 
 
+        /* -------------------------------------------
+         * 7. FINAL INITIALIZATION (ONLOAD)
+         * ------------------------------------------- */
 
+        window.onload = async () => {
+            // 1. Load attendance-related data (Clusters and initial dashboard data)
+            const now = new Date();
+            if (document.getElementById("monthSelector")) {
+                document.getElementById("monthSelector").value = now.getMonth() + 1;
+            }
+            // loadAttendanceData(); // Commented out as required HTML elements are missing
 
+            // 2. Load coaching logs data only if the initial page is 'coaching' or a subsequent navigation occurs.
+            // Initial call is handled by initializePageNavigation if 'coaching' is the default page or on click.
+        };
 
+    </script>
 </body>
 
 </html>
