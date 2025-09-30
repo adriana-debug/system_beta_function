@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Minds BPO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Using your CSS variables for custom colors
+                        // brand maps to your accent/secondary color for buttons, etc.
+                        'brand': 'var(--accent-color)', // #cce416
+                        'brandlight': '#bada14', // A slightly lighter/hover version
+                        'blackpearl': 'var(--primary-color)', // #04101d
+                        'pear': '#e5e7eb', // Used as a light text/background color
+                        'waterloo': '#565f6f', // A dark grey for table header
+                        'wasabi': '#2c370b', // A dark version of your brand color
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://unpkg.com/feather-icons"></script>
+
+    <style>
+        :root {
+            --primary-color: #04101d;
+            --secondary-color: #a3b612;
+            --accent-color: #cce416;
+        }
+
+        body {
+            background-color: #f9fafb;
+            color: #1f2937;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body.dark {
+            background-color: #111827;
+            color: #e5e7eb;
+        }
+
+        .btn-primary {
+            /* This class is no longer strictly needed but kept for context */
+            background-color: var(--accent-color);
+            color: #000;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #bada14;
+        }
+
+        .theme-toggle {
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1f2937; /* Default color */
+        }
+
+        body.dark .theme-toggle {
+            color: #e5e7eb; /* Dark mode color */
+        }
+
+        .theme-toggle i {
+            stroke-width: 2;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col bg-gray-50">
+
+
+    <div class="max-w-7xl mx-auto p-6 space-y-6 pt-28 w-full">
+
+        <section id="coaching" class="page-section">
+            <h1 class="text-3xl font-bold mb-4 dark:text-white">Coaching Log</h1>
+
+            <div class="flex justify-end mb-6">
+                <button onclick="openCoachingModal()"
+                    class="bg-brand hover:bg-brandlight text-slate-900 px-6 py-2 rounded-lg shadow font-medium transition">
+                    <i class="fas fa-plus mr-2"></i>Add Coaching Session
+                </button>
+            </div>
+
+            <div class="bg-white dark:bg-blackpearl rounded-xl shadow-lg p-6 relative">
+                <h2 class="text-xl font-semibold mb-4 text-slate-900 dark:text-pear">Past Coaching Sessions</h2>
+
+                <div id="coachingLoadingSpinner"
+                    class="hidden absolute inset-0 bg-white/70 backdrop-blur-sm flex justify-center items-center z-40 rounded-xl dark:bg-blackpearl/70">
+                    <div class="flex flex-col items-center">
+                        <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-brand" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                        </svg>
+                        <p id="coachingLoadingText" class="mt-2 text-slate-700 dark:text-pear">Loading data...</p>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead class="bg-waterloo dark:bg-wasabi text-white">
+                            <tr>
+                                <th class="text-left px-4 py-3">Date</th>
+                                <th class="text-left px-4 py-3">Coach</th>
+                                <th class="text-left px-4 py-3">Employee</th>
+                                <th class="text-left px-4 py-3">Employee No.</th>
+                                <th class="text-left px-4 py-3">Focus Area</th>
+                                <th class="text-left px-4 py-3">Acknowledge</th>
+                                <th class="text-left px-4 py-3">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="coachingSessionsTable" class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-gray-500 dark:text-gray-400">Loading
+                                    coaching data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <div id="modalBg" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div class="bg-white dark:bg-blackpearl rounded-xl shadow-lg w-full max-w-3xl p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="modalTitle" class="text-lg font-semibold dark:text-pear">Add Coaching Session</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-black dark:hover:text-pear">&times;</button>
+            </div>
+            <form id="coachingForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="hidden" name="id" />
+
+                <div>
+                    <label class="block text-sm font-medium mb-1 dark:text-gray-300">Employee Name</label>
+                    <input type="text" name="employee"
+                        class="w-full border rounded-lg px-4 py-2 text-sm dark:bg-blackpearl dark:border-gray-700 dark:text-white">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1 dark:text-gray-300">Coach Name</label>
+                    <input type="text" name="coach"
+                        class="w-full border rounded-lg px-4 py-2 text-sm dark:bg-blackpearl dark:border-gray-700 dark:text-white">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1 dark:text-gray-300">Employee Number</label>
+                    <input type="text" name="employeenumber"
+                        class="w-full border rounded-lg px-4 py-2 text-sm dark:bg-blackpearl dark:border-gray-700 dark:text-white">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1 dark:text-gray-300">Session Date</label>
+                    <input type="date" name="date"
+                        class="w-full border rounded-lg px-4 py-2 text-sm dark:bg-blackpearl dark:border-gray-700 dark:text-white">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium mb-1 dark:text-gray-300">Performance/Behavior Observed</label>
+                    <textarea name="performance" rows="3"
+                        class="w-full border rounded-lg px-4 py-2 text-sm dark:bg-blackpearl dark:border-gray-700 dark:text-white"></textarea>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium mb-1 dark:text-gray-300">Coaching Provided</label>
+                    <textarea name="coachingprovided" rows="3"
+                        class="w-full border rounded-lg px-4 py-2 text-sm dark:bg-blackpearl dark:border-gray-700 dark:text-white"></textarea>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium mb-1 dark:text-gray-300">Agreed Action Plan</label>
+                    <textarea name="actionplan" rows="3"
+                        class="w-full border rounded-lg px-4 py-2 text-sm dark:bg-blackpearl dark:border-gray-700 dark:text-white"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1 dark:text-gray-300">Acknowledge</label>
+                    <select name="acknowledge"
+                        class="w-full border rounded-lg px-4 py-2 text-sm dark:bg-blackpearl dark:border-gray-700 dark:text-white">
+                        <option value="Pending" selected>Pending</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2 flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeModal()"
+                        class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white">Cancel</button>
+                    <button type="submit" class="px-6 py-2 rounded bg-brand hover:bg-brandlight text-slate-900 shadow font-medium">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="loadingModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-70 flex flex-col justify-center items-center z-50">
+        <div class="w-24 h-24 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
+        <p id="loadingText" class="mt-4 text-brand font-medium">Loading...</p>
+    </div>
+
+    <script>
+        feather.replace();
+        const toggleBtn = document.getElementById('themeToggle');
+        toggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            toggleBtn.innerHTML = document.body.classList.contains('dark')
+                ? feather.icons.sun.toSvg()
+                : feather.icons.moon.toSvg();
+        });
+
+        const API_URL = "https://script.google.com/macros/s/AKfycbyn9CG1Lk3S5bXtfEEbvH5H-8GfBBOvY4OGSJPyIM5RZSDBCOf4fwkXVvnKjzZGvqUL/exec";
+
+        function showLoading(message = "Loading...") {
+            document.getElementById('loadingText').innerText = message;
+            document.getElementById('loadingModal').classList.remove('hidden');
+        }
+        function hideLoading() { document.getElementById('loadingModal').classList.add('hidden'); }
+
+        const form = document.getElementById("coachingForm");
+
+        // The button now calls this new function name
+        function openCoachingModal(editing = false) {
+            document.getElementById('modalBg').classList.remove('hidden');
+            document.getElementById("modalTitle").innerText = editing ? "Edit Coaching Session" : "Add Coaching Session";
+        }
+
+        function closeModal() {
+            document.getElementById('modalBg').classList.add('hidden');
+            form.reset();
+            delete form.dataset.editId;
+            [...form.elements].forEach(el => el.disabled = false);
+            form.querySelector('button[type="submit"]').classList.remove('hidden');
+        }
+
+        // Load sessions
+        async function loadSessions() {
+            // Show new loading spinner inside the table
+            document.getElementById('coachingLoadingSpinner').classList.remove('hidden');
+            document.getElementById('coachingLoadingText').innerText = "Fetching coaching sessions...";
+
+            try {
+                const res = await fetch(API_URL);
+                const sessions = await res.json();
+                // Updated ID to match your new structure
+                const table = document.getElementById("coachingSessionsTable"); 
+                table.innerHTML = "";
+                
+                if (sessions.length === 0) {
+                    table.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-gray-500 dark:text-gray-400">No coaching sessions found.</td></tr>`;
+                } else {
+                    sessions.forEach(session => {
+                        // Added employee number field (employeenumber) and updated focus area to performance
+                        table.innerHTML += `
+                            <tr class="dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition duration-150">
+                                <td class="px-4 py-2">${session.date || session.Date}</td>
+                                <td class="px-4 py-2">${session.coach || session.Coach}</td>
+                                <td class="px-4 py-2">${session.employee || session.Employee}</td>
+                                <td class="px-4 py-2">${session.employeenumber || session.EmployeeNumber || 'N/A'}</td>
+                                <td class="px-4 py-2">${session.performance || session.Performance}</td>
+                                <td class="px-4 py-2">${session.acknowledge || "Pending"}</td>
+                                <td class="px-4 py-2 flex space-x-2">
+                                    <button class="text-blue-600 dark:text-blue-400 hover:underline" onclick='viewSession(${JSON.stringify(session)})'>View</button>
+                                    <button class="text-yellow-600 dark:text-yellow-400 hover:underline" onclick='editSession(${JSON.stringify(session)})'>Edit</button>
+                                    <button class="text-red-600 dark:text-red-400 hover:underline" onclick='deleteSession(${session.ID || session.id})'>Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch (error) {
+                console.error("Error loading sessions:", error);
+                document.getElementById("coachingSessionsTable").innerHTML = `<tr><td colspan="7" class="text-center py-4 text-red-500">Failed to load data. Please check the API URL.</td></tr>`;
+            }
+
+            document.getElementById('coachingLoadingSpinner').classList.add('hidden');
+        }
+
+        function viewSession(session) {
+            openCoachingModal(false);
+            Object.keys(session).forEach(key => {
+                if (form[key]) {
+                    form[key].value = session[key];
+                    form[key].disabled = true;
+                }
+            });
+            form.querySelector('button[type="submit"]').classList.add('hidden');
+        }
+
+        function editSession(session) {
+            openCoachingModal(true);
+            Object.keys(session).forEach(key => {
+                // Use a standard key lookup to handle both "ID" and "id" from the API
+                const formKey = key.toLowerCase();
+                const formElement = form.querySelector(`[name="${formKey}"]`);
+                if (formElement) {
+                    formElement.value = session[key];
+                    formElement.disabled = false;
+                }
+            });
+            form.dataset.editId = session.ID || session.id;
+        }
+
+        async function deleteSession(id) {
+            if (!confirm("Are you sure you want to delete this session?")) return;
+            showLoading("Deleting session...");
+            await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ _method: "DELETE", id })
+            });
+            await loadSessions();
+            hideLoading();
+        }
+
+        form.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            showLoading(this.dataset.editId ? "Updating session..." : "Saving session...");
+            const formData = Object.fromEntries(new FormData(this).entries());
+
+            // Normalize keys to lowercase to match the API if necessary, or just send what the form provides
+            // For simplicity, we send the keys as is.
+
+            if (this.dataset.editId) {
+                await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ _method: "PUT", id: this.dataset.editId, ...formData })
+                });
+                delete this.dataset.editId;
+            } else {
+                await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify(formData)
+                });
+            }
+
+            hideLoading();
+            closeModal();
+            loadSessions();
+        });
+
+        window.onload = loadSessions;
+    </script>
+</body>
+
+</html>

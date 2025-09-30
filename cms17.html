@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPO Dashboard</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://unpkg.com/feather-icons"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#CBEB33', // Primary brand color
+                        brandlight: '#D9F25A', // Lighter brand color for hover/background
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Global Page Navigation: Hides all non-active pages by default */
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        /* Styles for Attendance Tab component (currently unused in body but kept for completeness) */
+        .tab {
+            color: black;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .tab:hover {
+            background-color: #f0f9c0;
+            color: black;
+        }
+
+        .tab.active {
+            border-bottom: 2px solid #cce416;
+            background-color: #f0f9c0;
+            color: black;
+        }
+
+        /* Styles for Coaching buttons (Tailwind is preferred, but custom class kept if needed) */
+        .btn-primary-coaching {
+            background-color: var(--accent-color, #cce416);
+            color: #000;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn-primary-coaching:hover {
+            background-color: #D9F25A;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-slate-800">
+    <div class="flex min-h-screen">
+
+        <aside class="w-64 bg-white shadow-xl flex flex-col">
+            <div class="p-6 flex flex-col items-center gap-2">
+                <img src="dmi_logo.jpg" alt="Digital Minds BPO Logo" class="w-20 h-20 rounded-full object-cover mb-2">
+                <h1 class="text-xl font-bold text-slate-900 text-center">Digital Minds BPO</h1>
+            </div>
+
+            <nav class="flex-1 px-4 space-y-2">
+                <a href="#" data-page="dashboard"
+                    class="nav-link flex items-center px-4 py-3 rounded-lg hover:bg-brandlight transition">
+                    <i class="fas fa-tachometer-alt mr-3 text-slate-700"></i> Dashboard
+                </a>
+
+                <a href="#" data-page="campaigns"
+                    class="nav-link flex items-center px-4 py-3 rounded-lg hover:bg-brandlight transition">
+                    <i class="fas fa-bullhorn mr-3 text-slate-700"></i> Campaigns
+                </a>
+
+                <a href="#" data-page="headcount"
+                    class="nav-link flex items-center px-4 py-3 rounded-lg hover:bg-brandlight transition">
+                    <i class="fas fa-users mr-3 text-slate-700"></i> Headcount
+                </a>
+
+                <a href="#" data-page="attendance-calendar"
+                    class="nav-link flex items-center px-4 py-3 rounded-lg hover:bg-brandlight transition">
+                    <i class="fas fa-calendar-check mr-3 text-slate-700"></i> Attendance Calendar
+                </a>
+
+                <a href="#" data-page="billing"
+                    class="nav-link flex items-center px-4 py-3 rounded-lg hover:bg-brandlight transition">
+                    <i class="fas fa-file-invoice-dollar mr-3 text-slate-700"></i> Billing
+                </a>
+
+                <a href="#" data-page="scorecards"
+                    class="nav-link flex items-center px-4 py-3 rounded-lg hover:bg-brandlight transition">
+                    <i class="fas fa-clipboard-list mr-3 text-slate-700"></i> Scorecards
+                </a>
+
+                <a href="#" data-page="coaching"
+                    class="nav-link flex items-center px-4 py-3 rounded-lg hover:bg-brandlight transition">
+                    <i class="fas fa-comments mr-3 text-slate-700"></i> Coaching Log
+                </a>
+
+                <a href="#" data-page="reports"
+                    class="nav-link flex items-center px-4 py-3 rounded-lg hover:bg-brandlight transition">
+                    <i class="fas fa-chart-line mr-3 text-slate-700"></i> Reports
+                </a>
+                
+                <p class="text-xs text-gray-400 mt-6 uppercase px-4">Macro</p>
+                <a href="#" data-page="macro"
+                    class="nav-link flex items-center px-4 py-3 rounded-lg hover:bg-brandlight transition">
+                    <i class="fas fa-bolt mr-3 text-slate-700"></i> Macros
+                </a>
+            </nav>
+
+            <div class="p-4">
+                <button
+                    class="w-full py-2 bg-brand hover:bg-brandlight rounded-lg font-semibold text-slate-900 transition">Logout</button>
+            </div>
+        </aside>
+        <main class="flex-1 p-6">
+
+            <section id="dashboard" class="page-section active">
+                <h1 class="text-3xl font-bold mb-4">Dashboard</h1>
+                <div class="bg-white rounded-xl shadow-md p-6 h-96 flex items-center justify-center text-gray-400">
+                    Key performance indicators and charts go here.
+                </div>
+            </section>
+            
+            <section id="campaigns" class="page-section">
+                <h1 class="text-3xl font-bold mb-4">Campaigns</h1>
+            </section>
+            
+            <section id="headcount" class="page-section">
+                <h1 class="text-3xl font-bold mb-4">Headcount</h1>
+            </section>
+
+            <section id="attendance-calendar" class="page-section">
+                <h1 class="text-3xl font-bold mb-4">Attendance Calendar</h1>
+            </section>
+
+            <section id="billing" class="page-section">
+                <h1 class="text-3xl font-bold mb-4">Billing</h1>
+            </section>
+
+            <section id="scorecards" class="page-section">
+                <h1 class="text-3xl font-bold mb-4">Scorecards</h1>
+            </section>
+            
+            <section id="reports" class="page-section">
+                <h1 class="text-3xl font-bold mb-4">Reports</h1>
+            </section>
+
+
+            <section id="coaching" class="page-section">
+                <h1 class="text-3xl font-bold mb-4">Coaching Log</h1>
+
+                <div class="flex justify-end mb-6">
+                    <button onclick="openCoachingModal()"
+                        class="bg-brand hover:bg-brandlight text-slate-900 px-6 py-2 rounded-lg shadow font-medium transition">
+                        <i class="fas fa-plus mr-2"></i>Add Coaching Session
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6 relative">
+                    <h2 class="text-xl font-semibold mb-4 text-slate-900">Past Coaching Sessions</h2>
+
+                    <div id="coachingLoadingSpinner"
+                        class="hidden absolute inset-0 bg-white/70 backdrop-blur-sm flex justify-center items-center z-40 rounded-xl">
+                        <div class="flex flex-col items-center">
+                            <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-brand" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                            <p id="coachingLoadingText" class="mt-2 text-slate-700">Loading data...</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-gray-100 text-gray-700">
+                                <tr>
+                                    <th class="text-left px-4 py-3">Date</th>
+                                    <th class="text-left px-4 py-3">Coach</th>
+                                    <th class="text-left px-4 py-3">Employee</th>
+                                    <th class="text-left px-4 py-3">Employee No.</th>
+                                    <th class="text-left px-4 py-3">Focus Area</th>
+                                    <th class="text-left px-4 py-3">Acknowledge</th>
+                                    <th class="text-left px-4 py-3">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="coachingSessionsTable" class="divide-y divide-gray-200">
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-gray-500">Loading coaching data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            <section id="macro" class="page-section">
+                <h1 class="text-3xl font-bold mb-4">Macros/Automation</h1>
+                <div class="bg-white rounded-xl shadow-md p-6 h-96 flex items-center justify-center text-gray-400">
+                    Macro creation and management interface.
+                </div>
+            </section>
+
+        </main>
+        </div>
+
+    <div id="coachingModalBg" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[1050]">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl p-6 relative">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 id="coachingModalTitle" class="text-xl font-semibold text-slate-900">Add Coaching Session</h3>
+                <button onclick="closeCoachingModal()" class="text-gray-500 hover:text-gray-900 text-2xl leading-none">&times;</button>
+            </div>
+
+            <form id="coachingForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="hidden" name="id" />
+
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-slate-700" for="employeeNumber">Employee Number</label>
+                    <input type="text" id="employeeNumber" name="employeenumber" required
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-brand focus:border-brand">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-slate-700" for="sessionDate">Session Date</label>
+                    <input type="date" id="sessionDate" name="date" required
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-brand focus:border-brand">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-slate-700" for="employeeName">Employee Name</label>
+                    <input type="text" id="employeeName" name="employee" required
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-brand focus:border-brand">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-slate-700" for="coachName">Coach Name</label>
+                    <input type="text" id="coachName" name="coach" required
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-brand focus:border-brand">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium mb-1 text-slate-700" for="performanceObserved">Performance/Behavior Observed (Focus Area)</label>
+                    <textarea id="performanceObserved" name="performance" rows="3" required
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-brand focus:border-brand"></textarea>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium mb-1 text-slate-700" for="coachingProvided">Coaching Provided</label>
+                    <textarea id="coachingProvided" name="coachingprovided" rows="3" required
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-brand focus:border-brand"></textarea>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium mb-1 text-slate-700" for="actionPlan">Agreed Action Plan</label>
+                    <textarea id="actionPlan" name="actionplan" rows="3" required
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-brand focus:border-brand"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-slate-700" for="acknowledgeStatus">Acknowledge</label>
+                    <select id="acknowledgeStatus" name="acknowledge"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-brand focus:border-brand">
+                        <option value="Pending" selected>Pending</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2 flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeCoachingModal()"
+                        class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 font-medium transition">Cancel</button>
+                    <button type="submit"
+                        class="px-6 py-2 rounded-lg bg-brand hover:bg-brandlight text-slate-900 font-medium shadow transition">
+                        <i class="fas fa-save mr-1"></i>
+                        <span id="coachingFormSubmitText">Save</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize components when the DOM is fully loaded.
+            initializePageNavigation();
+            // initializeAttendanceTabs(); // This function is not defined, removed to avoid error.
+            // renderHeadcountTable(); // This function is not defined, removed to avoid error.
+            loadSessions(); // Load coaching sessions on page load.
+        });
+
+
+        /* --------------------------------------
+           DATA DEFINITIONS & UTILITY FUNCTIONS
+        -------------------------------------- */
+
+        // Coaching API (Ensure this is correct for your Google Sheet)
+        const API_URL_COACHING = "https://script.google.com/macros/s/AKfycbyn9CG1Lk3S5bXtfEEbvH5H-8GfBBOvY4OGSJPyIM5RZSDBCOf4fwkXVvnKjzZGvqUL/exec";
+        
+
+        // Local Coaching Loading Elements
+        const coachingLoadingSpinner = document.getElementById('coachingLoadingSpinner');
+        const coachingLoadingText = document.getElementById('coachingLoadingText');
+
+        function showCoachingLoading(message = "Processing...") {
+            if (coachingLoadingText && coachingLoadingSpinner) {
+                coachingLoadingText.textContent = message;
+                coachingLoadingSpinner.classList.remove('hidden');
+            }
+        }
+
+        function hideCoachingLoading() {
+            if (coachingLoadingSpinner) {
+                coachingLoadingSpinner.classList.add('hidden');
+            }
+        }
+
+
+        /* --------------------------------------
+           MAIN PAGE NAVIGATION LOGIC
+        -------------------------------------- */
+
+        function initializePageNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pageSections = document.querySelectorAll('.page-section');
+            const defaultPageId = 'dashboard';
+
+            function navigateTo(pageId) {
+                // Update link styles (highlight active link)
+                navLinks.forEach(link => {
+                    if (link.dataset.page === pageId) {
+                        link.classList.add('bg-brandlight');
+                    } else {
+                        link.classList.remove('bg-brandlight');
+                    }
+                });
+
+                // Show/Hide page sections
+                pageSections.forEach(section => {
+                    if (section.id === pageId) {
+                        section.classList.add('active');
+                        // NEW: Reload sessions when the coaching log is clicked
+                        if (pageId === 'coaching') {
+                            loadSessions(); 
+                        }
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+            }
+
+            // Set up click listeners for all sidebar links
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    navigateTo(link.dataset.page);
+                });
+            });
+
+            // Set default page on load
+            navigateTo(defaultPageId);
+        }
+
+        /* --------------------------------------
+           COACHING CRUD & TABLE LOGIC
+        -------------------------------------- */
+
+        const coachingForm = document.getElementById("coachingForm");
+        const coachingModalBg = document.getElementById('coachingModalBg');
+        const coachingTableBody = document.getElementById("coachingSessionsTable"); // Corrected ID
+
+        function openCoachingModal(editing = false) {
+            coachingModalBg.classList.remove('hidden');
+            document.getElementById("coachingModalTitle").innerText = editing ? "Edit Coaching Session" : "Add Coaching Session";
+        }
+
+        function closeCoachingModal() {
+            coachingModalBg.classList.add('hidden');
+            coachingForm.reset();
+            delete coachingForm.dataset.editId;
+            // Re-enable fields that might have been disabled for view mode
+            [...coachingForm.elements].forEach(el => el.disabled = false);
+            // Show the submit button again
+            coachingForm.querySelector('button[type="submit"]').classList.remove('hidden');
+        }
+
+        // Fetch and render sessions
+        async function loadSessions() {
+            showCoachingLoading("Fetching coaching sessions...");
+            
+            try {
+                const res = await fetch(API_URL_COACHING);
+                const sessions = await res.json();
+                coachingTableBody.innerHTML = ""; // Clear existing data
+
+                if (sessions && sessions.length > 0) {
+                    sessions.forEach(session => {
+                        // Normalize keys (matching form names)
+                        const date = session.date || session.Date || '-';
+                        const coach = session.coach || session.Coach || '-';
+                        const employee = session.employee || session.Employee || '-';
+                        const employeenumber = session.employeenumber || session.EmployeeNumber || session['Employee No.'] || '-'; // Added multiple fallbacks
+                        const performanceFull = session.performance || session.Performance || 'No Focus Area';
+                        const performanceShort = performanceFull.substring(0, 50) + (performanceFull.length > 50 ? '...' : '');
+                        const acknowledge = session.acknowledge || session.Acknowledge || "Pending";
+                        const sessionId = session.id || session.ID;
+
+                        coachingTableBody.innerHTML += `
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-2">${date}</td>
+                                <td class="px-4 py-2">${coach}</td>
+                                <td class="px-4 py-2">${employee}</td>
+                                <td class="px-4 py-2">${employeenumber}</td> 
+                                <td class="px-4 py-2">${performanceShort}</td>
+                                <td class="px-4 py-2">${acknowledge}</td>
+                                <td class="px-4 py-2 flex space-x-2">
+                                    <button class="text-blue-500 hover:underline" onclick='viewSession(${JSON.stringify(session)})'>View</button>
+                                    <button class="text-green-500 hover:underline" onclick='editSession(${JSON.stringify(session)})'>Edit</button>
+                                    <button class="text-red-500 hover:underline" onclick='deleteSession("${sessionId}")'>Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    coachingTableBody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-gray-500">No coaching sessions found.</td></tr>';
+                }
+
+            } catch (error) {
+                console.error("Error loading coaching sessions:", error);
+                coachingTableBody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-red-500">Failed to load sessions. Check API URL and network connection.</td></tr>';
+            }
+            hideCoachingLoading();
+        }
+
+        // View/Edit/Delete functions exposed globally
+        window.viewSession = function(session) {
+            openCoachingModal(false);
+            
+            // Populate form fields and disable them
+            ['id', 'employeenumber', 'date', 'employee', 'coach', 'performance', 'coachingprovided', 'actionplan', 'acknowledge'].forEach(key => {
+                let element = coachingForm[key];
+                if (element) {
+                    // Use fallback to original keys in case of API renaming
+                    const value = session[key] || session[key.charAt(0).toUpperCase() + key.slice(1)] || session.employeenumber;
+                    element.value = value || '';
+                    element.disabled = true;
+                }
+            });
+
+            // Hide the save button
+            coachingForm.querySelector('button[type="submit"]').classList.add('hidden');
+        }
+
+        window.editSession = function(session) {
+            openCoachingModal(true);
+            
+            // Populate form fields
+            ['id', 'employeenumber', 'date', 'employee', 'coach', 'performance', 'coachingprovided', 'actionplan', 'acknowledge'].forEach(key => {
+                let element = coachingForm[key];
+                if (element) {
+                    // Use fallback to original keys in case of API renaming
+                    const value = session[key] || session[key.charAt(0).toUpperCase() + key.slice(1)] || session.employeenumber;
+                    element.value = value || '';
+                    element.disabled = false; // Ensure fields are enabled for editing
+                }
+            });
+            coachingForm.dataset.editId = session.ID || session.id;
+            coachingForm.querySelector('button[type="submit"]').classList.remove('hidden');
+        }
+
+        window.deleteSession = async function(id) {
+            if (!id) { alert("Error: Session ID is missing."); return; }
+            if (!confirm("Are you sure you want to permanently delete this coaching session?")) return;
+            
+            showCoachingLoading("Deleting session...");
+
+            try {
+                const response = await fetch(API_URL_COACHING, {
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ _method: "DELETE", id: id })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API returned status ${response.status}`);
+                }
+
+                await loadSessions();
+            } catch (error) {
+                alert(`Error deleting session: ${error.message}. Please check your API script.`);
+                hideCoachingLoading();
+            }
+        }
+        
+        window.openCoachingModal = openCoachingModal;
+        window.closeCoachingModal = closeCoachingModal;
+
+
+        // Form Submission Handler
+        coachingForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            
+            const isEditing = this.dataset.editId;
+            showCoachingLoading(isEditing ? "Updating session..." : "Saving session...");
+
+            const formData = Object.fromEntries(new FormData(this).entries());
+            let bodyData;
+
+            if (isEditing) {
+                bodyData = { _method: "PUT", id: this.dataset.editId, ...formData };
+            } else {
+                // For a new record, the ID is not required
+                delete formData.id; 
+                bodyData = formData;
+            }
+
+            try {
+                const response = await fetch(API_URL_COACHING, {
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bodyData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API returned status ${response.status}`);
+                }
+
+                closeCoachingModal();
+                // After successful CRUD, loadSessions will fetch the new data and hide the spinner.
+                await loadSessions();
+
+            } catch (error) {
+                alert(`Error saving session: ${error.message}. Please check your API script.`);
+                hideCoachingLoading(); // Hide spinner if API fails and loadSessions is not called
+            }
+        });
+
+    </script>
+</body>
+
+</html>
