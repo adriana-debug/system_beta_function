@@ -1,0 +1,298 @@
+
+
+        <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPO Headcount Dashboard - Reduced Roster</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#CBEB33',
+                        brandlight: '#D9F25A'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base styles for page structure */
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+        
+        /* Consistent padding and border for the main table */
+        .main-table th, .main-table td {
+            padding: 12px 16px;
+            border-right: 1px solid #e5e7eb;
+        }
+        .main-table th:last-child, .main-table td:last-child {
+            border-right: none;
+        }
+        .main-table thead {
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        /* Styling for the sidebar's active link */
+        .nav-link.active {
+            background-color: #D9F25A; /* brandlight */
+            border-left: 4px solid #CBEB33; /* brand */
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="flex h-screen bg-gray-50">
+
+        <!-- 1. SIDEBAR NAVIGATION -->
+        <div class="flex flex-col w-64 bg-white border-r border-gray-200 shadow-lg">
+            <div class="flex items-center justify-center h-16 border-b border-gray-200">
+                <span class="text-xl font-bold text-gray-800">HR Analytics</span>
+            </div>
+            <nav class="flex-1 overflow-y-auto p-2">
+                <a href="#headcount" data-page="headcount" class="nav-link active flex items-center px-4 py-3 my-1 text-gray-800 rounded-lg hover:bg-gray-100 transition duration-150">
+                    <i class="fa-solid fa-gauge-high w-5 h-5 mr-3"></i>
+                    Dashboard Overview
+                </a>
+            </nav>
+        </div>
+
+        <!-- 2. MAIN CONTENT AREA -->
+        <div class="flex flex-col flex-1 overflow-y-auto">
+            <header class="flex items-center justify-between h-16 bg-white border-b border-gray-200 px-6 shadow-sm">
+                <h1 class="text-xl font-semibold text-gray-800">Headcount Roster</h1>
+                <!-- ADD EMPLOYEE BUTTON (Brand colored) -->
+                <button onclick="addEmployee()" class="px-5 py-2 bg-brand text-gray-800 font-semibold rounded-lg shadow hover:bg-brandlight transition duration-200 transform hover:scale-105">
+                    <i class="fa-solid fa-user-plus mr-2"></i>+ Add Employee
+                </button>
+            </header>
+
+            <main class="flex-1 p-6">
+                <section id="headcount" class="page-section active">
+
+                    <!-- SUMMARY CARDS -->
+                    <div id="summaryCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        
+                        <!-- Card 1: Total Employees -->
+                        <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-brand">
+                            <i class="fa-solid fa-users text-2xl text-gray-400"></i>
+                            <p class="text-sm font-medium text-gray-500 mt-2">Total Roster Count</p>
+                            <p id="totalEmployeesCount" class="text-4xl font-extrabold text-gray-900 mt-1">0</p>
+                        </div>
+                        
+                        <!-- Card 2: Active Employees -->
+                        <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500">
+                            <i class="fa-solid fa-person-circle-check text-2xl text-green-400"></i>
+                            <p class="text-sm font-medium text-gray-500 mt-2">Active Headcount</p>
+                            <p id="activeEmployeesCount" class="text-4xl font-extrabold text-gray-900 mt-1">0</p>
+                        </div>
+                        
+                        <!-- Card 3: On Leave/LOA -->
+                        <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-yellow-500">
+                            <i class="fa-solid fa-bed text-2xl text-yellow-500"></i>
+                            <p class="text-sm font-medium text-gray-500 mt-2">On Leave / LOA</p>
+                            <p id="onLeaveEmployeesCount" class="text-4xl font-extrabold text-gray-900 mt-1">0</p>
+                        </div>
+                        
+                        <!-- Card 4: Terminated -->
+                        <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-red-500">
+                            <i class="fa-solid fa-person-circle-xmark text-2xl text-red-500"></i>
+                            <p class="text-sm font-medium text-gray-500 mt-2">Terminated</p>
+                            <p id="terminatedEmployeesCount" class="text-4xl font-extrabold text-gray-900 mt-1">0</p>
+                        </div>
+                    </div>
+
+                    <!-- NOTE: Campaign Summary Table removed as requested -->
+
+
+                    <!-- EMPLOYEE DATA TABLE (REDUCED ROSTER) -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h2 class="text-2xl font-bold mb-4 text-gray-800">Employee Records</h2>
+
+                        <div class="overflow-x-auto">
+                            <!-- Corrected Table Structure for the 7 requested fields + Actions -->
+                            <table id="headcountTable" class="main-table min-w-full text-sm text-left border-collapse">
+                                <thead class="bg-gray-100 text-gray-700 uppercase text-xs sticky top-0">
+                                    <tr>
+                                        <!-- Visible Columns (7 Data + 1 Action = 8 Columns Total) -->
+                                        <th class="px-4 py-3 min-w-[80px]">Emp No</th>
+                                        <th class="px-4 py-3 min-w-[150px]">Name</th>
+                                        <th class="px-4 py-3 min-w-[120px]">Role</th>
+                                        <th class="px-4 py-3 min-w-[120px]">Campaign</th>
+                                        <th class="px-4 py-3 min-w-[100px]">DOJ</th>
+                                        <th class="px-4 py-3 min-w-[100px]">Status</th>
+                                        <th class="px-4 py-3 min-w-[100px]">Tenure</th>
+                                        <th class="px-4 py-3 text-center min-w-[80px]">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="headcountTableBody" class="divide-y divide-gray-200">
+                                    <tr><td colspan="8" class="text-center py-4 text-gray-500">Loading employee roster...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        /* -------------------------------------------
+         * 1. APP SCRIPT API CONFIG & CONSTANTS
+         * ------------------------------------------- */
+        // !! IMPORTANT: Replace this with your deployed Google Apps Script Web App URL
+        const APPS_SCRIPT_API_URL = 'https://script.google.com/macros/s/AKfycbzybaXbGcvVAPrN_2vuNGfIHPoIEtiJk4wgJgkONAVTuxwVWv_dPaljFUbPtCDKgXJQrA/exec';
+        // FIX: Updated to match the 7 data columns + 1 Action column
+        const TABLE_COLSPAN = 8; 
+
+        /* -------------------------------------------
+         * 2. CRUD PLACEHOLDER
+         * ------------------------------------------- */
+        function addEmployee() {
+            alert("Redirecting to the CRUD site for adding an employee... (Function not fully implemented)");
+        }
+        
+        function editEmployee(empId) {
+            alert(`Editing employee ${empId}. (Function not fully implemented)`);
+        }
+
+
+        /* -------------------------------------------
+         * 3. DATA FETCH AND RENDERING LOGIC
+         * ------------------------------------------- */
+
+        /**
+         * Fetches and renders the summary data.
+         */
+        async function fetchAndRenderSummary() {
+            try {
+                // Exponential backoff retry logic (for API stability)
+                let summary;
+                for (let i = 0; i < 3; i++) {
+                    const response = await fetch(`${APPS_SCRIPT_API_URL}?action=summary`);
+                    const result = await response.json();
+                    if (!result.error) {
+                        summary = result;
+                        break;
+                    }
+                    if (i < 2) await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                }
+                
+                if (!summary || summary.error) throw new Error(summary ? summary.error : 'API request failed after retries.');
+
+                // Summary Card Counts (Now receiving terminatedEmployees directly)
+                document.getElementById('totalEmployeesCount').textContent = summary.totalEmployees || 0;
+                document.getElementById('activeEmployeesCount').textContent = summary.activeEmployees || 0;
+                document.getElementById('onLeaveEmployeesCount').textContent = summary.onLeaveEmployees || 0;
+                document.getElementById('terminatedEmployeesCount').textContent = summary.terminatedEmployees || 0;
+                
+            } catch (error) {
+                console.error("Error fetching summary data:", error);
+                document.getElementById('totalEmployeesCount').textContent = 'ERR';
+                document.getElementById('activeEmployeesCount').textContent = 'ERR';
+                document.getElementById('onLeaveEmployeesCount').textContent = 'ERR';
+                document.getElementById('terminatedEmployeesCount').textContent = 'ERR';
+            }
+        }
+
+
+        /**
+         * Fetches and renders the detailed table data (Reduced Roster).
+         */
+        async function fetchAndRenderHeadcountData() {
+            const tableBody = document.getElementById('headcountTableBody');
+            tableBody.innerHTML = `<tr><td colspan="${TABLE_COLSPAN}" class="text-center py-4 text-gray-500">Fetching employee roster...</td></tr>`;
+
+            try {
+                // Exponential backoff retry logic
+                let data;
+                for (let i = 0; i < 3; i++) {
+                    const response = await fetch(APPS_SCRIPT_API_URL);
+                    const result = await response.json();
+                    if (!result.error) {
+                        data = result;
+                        break;
+                    }
+                    if (i < 2) await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                }
+
+                if (!data || data.error) throw new Error(data ? data.error : 'API request failed after retries.');
+
+                if (data.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="${TABLE_COLSPAN}" class="text-center py-4 text-gray-500">No employee data found.</td></tr>`;
+                    return;
+                }
+
+                tableBody.innerHTML = ''; // Clear loading row
+
+                data.forEach(employee => {
+                    const row = tableBody.insertRow();
+                    row.classList.add('bg-white', 'hover:bg-gray-50');
+                    
+                    // FIX: This array now contains ONLY the 7 requested columns in order
+                    const displayColumns = [
+                        'Employee No.', 'Name', 'Role', 'Campaign', 
+                        'Date of Joining (DOJ)', 'Status', 'Tenure'
+                    ];
+
+                    displayColumns.forEach(header => {
+                        const cell = row.insertCell();
+                        let value = employee[header] || '';
+
+                        // Apply styling/formatting for Status
+                        if (header === 'Status') {
+                            let colorClass = 'bg-gray-200 text-gray-800';
+                            // Status is correctly pulled from row[10] (K) in the Apps Script
+                            if (value === 'Active') colorClass = 'bg-green-100 text-green-800';
+                            else if (value === 'Terminated') colorClass = 'bg-red-100 text-red-800';
+                            else if (value === 'LOA' || value === 'On Leave') colorClass = 'bg-yellow-100 text-yellow-800';
+
+                            cell.innerHTML = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded ${colorClass}">${value}</span>`;
+                        } else if (header.includes('DOJ')) {
+                            cell.textContent = value.substring(0, 10);
+                        } else {
+                            cell.textContent = value;
+                        }
+
+                        cell.classList.add('px-4', 'py-3');
+                    });
+                    
+                    // ACTIONS Column
+                    const actionCell = row.insertCell();
+                    actionCell.classList.add('px-4', 'py-3', 'text-center');
+                    const empId = employee['Employee No.'];
+                    actionCell.innerHTML = `
+                        <button onclick="editEmployee('${empId}')" title="Edit Employee" class="text-blue-600 hover:text-blue-800 transition duration-150">
+                            <i class="fa-solid fa-pen-to-square text-lg"></i>
+                        </button>
+                    `;
+                });
+
+            } catch (error) {
+                console.error("Error fetching headcount data:", error);
+                tableBody.innerHTML = `<tr><td colspan="${TABLE_COLSPAN}" class="text-center py-4 text-red-500">Failed to load data. Check console for details.</td></tr>`;
+            }
+        }
+
+
+        /* ------------------------------------------
+         * 4. INITIALIZATION (ONLOAD)
+         * ------------------------------------------- */
+        window.onload = () => {
+            // Fetch both summary and detailed data concurrently
+            fetchAndRenderSummary();
+            fetchAndRenderHeadcountData();
+        };
+    </script>
+</body>
+
+</html>
