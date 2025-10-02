@@ -1,0 +1,203 @@
+
+
+
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Knowledge Base Wiki</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="flex">
+    <!-- Sidebar (kept design for Knowledge Base highlight only) -->
+    <aside class="w-64 bg-white h-screen shadow-md p-6">
+      <div class="flex items-center mb-8">
+        <img src="dmi_logo.png" alt="Logo" class="h-10 mr-2">
+        <span class="font-bold">Digital Minds BPO</span>
+      </div>
+      <nav class="space-y-2">
+        <a href="#" class="flex items-center p-2 rounded hover:bg-gray-100">
+          <span class="ml-2">Dashboard</span>
+        </a>
+        <a href="#" class="flex items-center p-2 rounded hover:bg-gray-100">
+          <span class="ml-2">Coaching Log</span>
+        </a>
+        <a href="#" class="flex items-center p-2 rounded hover:bg-gray-100">
+          <span class="ml-2">IR / NTE</span>
+        </a>
+        <a href="#" class="flex items-center p-2 rounded hover:bg-gray-100">
+          <span class="ml-2">SOP Documents</span>
+        </a>
+        <a href="#" class="flex items-center p-2 bg-lime-300 rounded">
+          <span class="ml-2 font-semibold">Knowledge Base</span>
+        </a>
+        <a href="#" class="flex items-center p-2 rounded hover:bg-gray-100">
+          <span class="ml-2">Tools</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-3xl font-bold">Knowledge Base Wiki</h1>
+        <button id="btnCreate" class="px-5 py-2 bg-lime-400 rounded-full shadow hover:bg-lime-300">
+          📄 Create New Document
+        </button>
+      </div>
+
+      <div class="mb-4">
+        <input id="kbSearch" type="text" placeholder="Search by Document Title, Tags, or Content Keywords..."
+          class="w-full border rounded-lg p-3 shadow-sm" />
+      </div>
+
+      <div class="grid grid-cols-12 gap-6">
+        <!-- Categories -->
+        <div class="col-span-3">
+          <h2 class="font-semibold mb-3">Categories</h2>
+          <ul id="categories" class="space-y-1">
+            <li><button class="cat-btn font-medium text-left w-full p-2 bg-gray-100 rounded" data-cat="all">All Documents</button></li>
+          </ul>
+
+          <h2 class="font-semibold mt-6 mb-3">Recent</h2>
+          <ul id="recentDocs" class="text-sm text-blue-600 space-y-1"></ul>
+        </div>
+
+        <!-- Documents List -->
+        <div class="col-span-9">
+          <h2 class="font-semibold mb-3">Documents List</h2>
+          <div id="grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Viewer Modal -->
+  <div id="viewer" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center p-6">
+    <div class="relative bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-8">
+      <!-- Watermark -->
+      <div class="absolute inset-0 pointer-events-none flex items-center justify-center opacity-5 select-none">
+        <span class="text-6xl font-bold text-lime-500">DIGITAL MINDS</span>
+      </div>
+
+      <div class="flex justify-between items-start">
+        <h2 id="vTitle" class="text-2xl font-bold"></h2>
+        <div>
+          <button id="btnEdit" class="mr-3 px-3 py-1 bg-blue-500 text-white rounded">✏ Edit</button>
+          <button id="btnClose" class="px-3 py-1 rounded border">✖</button>
+        </div>
+      </div>
+      <p id="vMeta" class="text-sm text-gray-600 mt-2"></p>
+      <div id="vContent" class="mt-6 prose"></div>
+    </div>
+  </div>
+
+  <script>
+    // ===== CONFIG =====
+    const SCRIPTS_URL = "https://script.google.com/macros/s/AKfycbwn0GPogd4Cy3TiEPR462FId4nP1DTy2r8Aciqxp389JS6lopKgV5j9u1My_g1YyE7t/exec";
+    const EDIT_REDIRECT_URL = "https://your-editor.example.com/edit";
+    const CREATE_REDIRECT_URL = "https://your-editor.example.com/create";
+    // ==================
+
+    let docs = [];
+
+    async function apiGet(params = {}) {
+      const qs = new URLSearchParams(params).toString();
+      const res = await fetch(SCRIPTS_URL + (qs ? "?" + qs : ""));
+      const j = await res.json();
+      if (!j.success) throw new Error(j.error);
+      return j.data;
+    }
+
+    async function apiPost(body = {}) {
+      const res = await fetch(SCRIPTS_URL, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const j = await res.json();
+      if (!j.success) throw new Error(j.error);
+      return j.data;
+    }
+
+    async function loadKB() {
+      docs = await apiGet({ action: "list" });
+      renderGrid(docs);
+      renderCategories(docs);
+      renderRecent(docs);
+    }
+
+    function renderGrid(list) {
+      const grid = document.getElementById('grid');
+      grid.innerHTML = list.map(doc => `
+        <div class="bg-white p-4 rounded-lg shadow hover:shadow-md cursor-pointer border-t-4 border-lime-400"
+             onclick="openViewer('${doc.id}')">
+          <h3 class="font-bold">${escapeHtml(doc.documentName)}</h3>
+          <p class="text-sm text-gray-600">${escapeHtml(doc.tags)}</p>
+          <p class="text-xs text-gray-500 mt-2">Category: ${escapeHtml(doc.campaign)}<br>Author: ${escapeHtml(doc.author)}</p>
+          <p class="text-xs text-gray-400 mt-1">Last Modified: ${escapeHtml(doc.lastModified)}</p>
+        </div>
+      `).join('');
+    }
+
+    function renderCategories(list) {
+      const cats = [...new Set(list.map(d => d.campaign).filter(Boolean))];
+      const ul = document.getElementById('categories');
+      ul.innerHTML = `<li><button class="cat-btn font-medium text-left w-full p-2 bg-gray-100 rounded" data-cat="all">All Documents (${list.length})</button></li>`
+        + cats.map(c => `<li><button class="cat-btn text-left w-full p-2 hover:bg-gray-100 rounded" data-cat="${c}">${c}</button></li>`).join('');
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const cat = btn.dataset.cat;
+          if (cat === "all") renderGrid(docs);
+          else renderGrid(docs.filter(d => d.campaign === cat));
+        });
+      });
+    }
+
+    function renderRecent(list) {
+      const sorted = [...list].sort((a,b)=> new Date(b.lastModified)-new Date(a.lastModified));
+      const ul = document.getElementById('recentDocs');
+      ul.innerHTML = sorted.slice(0,5).map(d => `<li class="cursor-pointer hover:underline" onclick="openViewer('${d.id}')">${escapeHtml(d.documentName)}</li>`).join('');
+    }
+
+    async function openViewer(id) {
+      const doc = await apiGet({ action: "get", id });
+      document.getElementById('vTitle').textContent = doc.documentName;
+      document.getElementById('vMeta').textContent = `Category: ${doc.campaign} | Author: ${doc.author} | Last Modified: ${doc.lastModified}`;
+      document.getElementById('vContent').innerHTML = nl2p(escapeHtml(doc.documentContent));
+      document.getElementById('viewer').dataset.currentId = id;
+      document.getElementById('viewer').classList.remove('hidden');
+    }
+
+    document.getElementById('btnClose').addEventListener('click', () => {
+      document.getElementById('viewer').classList.add('hidden');
+    });
+
+    document.getElementById('btnCreate').addEventListener('click', async () => {
+      const newDoc = await apiPost({ action: "create", documentName: "Untitled", campaign: "", tags: "", author: "", documentContent: "" });
+      window.location.href = CREATE_REDIRECT_URL + "?id=" + encodeURIComponent(newDoc.id) + "&return=" + encodeURIComponent(window.location.href);
+    });
+
+    document.getElementById('btnEdit').addEventListener('click', () => {
+      const id = document.getElementById('viewer').dataset.currentId;
+      window.location.href = EDIT_REDIRECT_URL + "?id=" + encodeURIComponent(id) + "&return=" + encodeURIComponent(window.location.href);
+    });
+
+    document.getElementById('kbSearch').addEventListener('input', e => {
+      const q = e.target.value.toLowerCase();
+      renderGrid(docs.filter(d =>
+        (d.documentName||"").toLowerCase().includes(q) ||
+        (d.tags||"").toLowerCase().includes(q) ||
+        (d.documentContent||"").toLowerCase().includes(q) ||
+        (d.campaign||"").toLowerCase().includes(q)
+      ));
+    });
+
+    function escapeHtml(s){return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+    function nl2p(s){return s.split(/\n\s*\n/).map(p=>"<p>"+p.replace(/\n/g,"<br/>")+"</p>").join("");}
+
+    loadKB();
+  </script>
+</body>
+</html>

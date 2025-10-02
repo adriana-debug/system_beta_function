@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Attendance Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+
+<div class="p-6 bg-white rounded-xl shadow-lg mb-6 flex flex-wrap gap-4 items-center">
+    <h3 class="text-xl font-bold mr-4">Filter Attendance</h3>
+    
+    <div class="flex items-center space-x-2">
+        <label for="monthSelector" class="font-medium text-gray-600">Month:</label>
+        <select id="monthSelector" 
+                class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-brand focus:border-brand">
+            </select>
+    </div>
+
+    <div class="flex items-center space-x-2">
+        <label for="rosterSelector" class="font-medium text-gray-600">Cluster:</label>
+        <select id="rosterSelector" 
+                class="block w-full p-2 border border-gray-300 rounded-lg focus:ring-brand focus:border-brand">
+            </select>
+    </div>
+
+    <button onclick="loadAll()" 
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">
+        <i data-feather="refresh-cw" class="h-5 w-5 inline mr-1"></i> Load Data
+    </button>
+</div>
+
+<div id="summaryFeed" class="mb-6">
+    <div class="text-center py-8 text-gray-400">Select a month and click "Load Data" or wait for automatic load.</div>
+</div>
+
+<div id="calendarFeed">
+    </div>
+
+<script>
+    // ⚠️ IMPORTANT: Replace this with your newly deployed ATTENDANCE GAS Web App URL
+    const ATTENDANCE_GAS_URL = 'YOUR_ATTENDANCE_GAS_WEB_APP_URL'; 
+    
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    // Configuration for rendering the status cells
+    const statusColors = {
+        "P": "bg-green-300",  // Present
+        "HD": "bg-yellow-300", // Half Day
+        "L": "bg-yellow-100",  // Late
+        "A": "bg-red-500",     // Absent
+        "VL": "bg-blue-300",   // Vacation Leave
+        "SL": "bg-blue-300",   // Sick Leave (added for completeness)
+        "SUS": "bg-gray-400",  // Suspension
+        "Off": "bg-gray-200",  // Day Off
+        "T": "bg-black text-white" // Terminated
+    };
+
+    // Utility function to get the number of days in the selected month
+    function getDaysInMonth(month, year) {
+        // Month is 1-12. Date(year, month, 0) returns the last day of the *previous* month.
+        return new Date(year, month, 0).getDate(); 
+    }
+
+    // ==========================================================
+    // 1. CORE FETCHING AND LOADING
+    // ==========================================================
+    async function loadAll() {
+        const month = document.getElementById("monthSelector").value;
+        const cluster = document.getElementById("rosterSelector").value;
+        const currentYear = new Date().getFullYear(); // Assume current year
+        
+        const summaryFeed = document.getElementById("summaryFeed");
+        const calendarFeed = document.getElementById("calendarFeed");
+        
+        if (summaryFeed) summaryFeed.innerHTML = '<div class="text-center py-8 text-gray-500"><i data-feather="loader" class="h-6 w-6 inline mr-2 animate-spin"></i> Loading summary...</div>';
+        if (calendarFeed) calendarFeed.innerHTML = '';
+
+        if (!month) {
+            if (summaryFeed) summaryFeed.innerHTML = '<div class="text-center py-8 text-gray-400">Please select a month.</div>';
+            if (calendarFeed) calendarFeed.innerHTML = '';
+            return;
+        }
+
+        try {
+            // Fetch Summary Data: ?api=summary
+            const summaryResponse = await fetch(`${ATTENDANCE_GAS_URL}?api=summary&month=${month}&cluster=${cluster}`);
+            const summaryData = await summaryResponse.json();
+            renderSummary(summaryData);
+            
+            // Fetch Campaign Calendar Data: ?api=calendars
+            const calendarResponse = await fetch(`${ATTENDANCE_GAS_URL}?api=calendars&month=${month}&cluster=${cluster}`);
+            const calendarData = await calendarResponse.json();
+            renderCalendars(calendarData, month, currentYear);
+
+        } catch (error) {
+            console.error("Error loading attendance data:", error);
+            const errorMessage = '<div class="text-center py-8 text-red-500">Failed to load data. Check GAS URL and API connection.</div>';
+            if (summaryFeed) summaryFeed.innerHTML = errorMessage;
+            if (calendarFeed) calendarFeed.innerHTML = '';
+        }
+    }
+
+    // ==========================================================
+    // 2. RENDER SUMMARY CARD
+    // ==========================================================
+    function renderSummary(data) {
+        const summaryFeed = document.getElementById("summaryFeed");
+        if (!summaryFeed) return;
+        
+        const { overall, campaigns } = data;
+        
+        // Filter out utility keys and Terminated status for the main card view
+        const overallItems = Object.entries(overall)
+            .filter(([key]) => key !== 'lostHours' && key !== 'T'); 
+            
+        let html = `
+            <div class="p-6 bg-white rounded-xl shadow-lg mb-6">
+                <h2 class="text-xl font-bold mb-4 border-b pb-2">Overall Monthly Summary</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    ${overallItems.map(([status, count]) => `
+                        <div class="p-4 rounded-lg bg-gray-100 text-center">
+                            <p class="text-3xl font-bold text-blue-600">${count}</p>
+                            <p class="text-sm font-semibold text-gray-600">${status === 'P' ? 'Present' : status === 'A' ? 'Absent' : status === 'L' ? 'Late' : status === 'HD' ? 'Half Day' : status}</p>
+                        </div>
+                    `).join('')}
+                </div>
+                <p class="text-lg font-semibold text-red-700">Total Lost Man-Hours: ${overall.lostHours || 0}</p>
+            </div>
+            
+            <h2 class="text-2xl font-bold mb-4">Campaign Breakdown</h2>
+            <div class="space-y-4">
+        `;
+        
+        // Render Campaign Breakdown
+        Object.entries(campaigns).forEach(([campName, campData]) => {
+            html += `
+                <div class="p-4 bg-white rounded-lg shadow">
+                    <h3 class="font-bold text-lg mb-3 text-gray-700">${campName}</h3>
+                    <div class="flex flex-wrap gap-4 text-sm">
+                        ${Object.entries(campData).filter(([key]) => key !== 'lostHours' && key !== 'T').map(([status, count]) => `
+                            <div class="flex items-center space-x-1">
+                                <span class="font-semibold">${status}:</span>
+                                <span>${count}</span>
+                            </div>
+                        `).join('')}
+                        <div class="font-semibold text-red-600 ml-auto">Lost Hours: ${campData.lostHours || 0}</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+        summaryFeed.innerHTML = html;
+    }
+
+    // ==========================================================
+    // 3. RENDER CAMPAIGN CALENDAR GRIDS
+    // ==========================================================
+    function renderCalendars(campaigns, month, year) {
+        const calendarFeed = document.getElementById("calendarFeed");
+        if (!calendarFeed) return;
+        calendarFeed.innerHTML = '';
+
+        const daysInMonth = getDaysInMonth(month, year);
+        const monthName = monthNames[month - 1];
+        
+        if (Object.keys(campaigns).length === 0) {
+            calendarFeed.innerHTML = '<div class="text-center py-8 text-gray-400">No calendar data found for this selection.</div>';
+            return;
+        }
+
+        Object.entries(campaigns).forEach(([campaignName, employees]) => {
+            const card = document.createElement('div');
+            card.className = "p-6 bg-white rounded-xl shadow-lg mb-6";
+            
+            card.innerHTML = `
+                <h3 class="text-xl font-bold mb-4 flex items-center">
+                    <i data-feather="calendar" class="h-6 w-6 mr-3 text-blue-600"></i>
+                    ${campaignName} - ${monthName} Attendance Roster
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="table-fixed border-collapse text-xs w-full min-w-[${40 + daysInMonth * 20}px]">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="border px-2 py-1 text-left w-40 sticky left-0 bg-gray-100 z-10">Employee</th>
+                                ${[...Array(daysInMonth).keys()].map(d=>`<th class="border px-1 py-1 w-6 text-center">${d+1}</th>`).join("")}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.entries(employees).map(([name, days]) => {
+                                // Trim the days array to the actual days in the month
+                                const actualDays = days.slice(0, daysInMonth);
+
+                                return `
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="border px-2 py-1 font-medium text-gray-700 sticky left-0 bg-white z-10">${name}</td>
+                                        ${actualDays.map(st => {
+                                            if (st === "NA") {
+                                                // Pattern for empty/NA days
+                                                return `<td class="border w-6 h-6" style="background:repeating-linear-gradient(45deg,#E5E7EB 0px,#E5E7EB 2px,#D1D5DB 2px,#D1D5DB 4px);" title="NA"></td>`;
+                                            }
+                                            // Use the statusColors map
+                                            return `<td class="border w-6 h-6 ${statusColors[st] || "bg-gray-300"}" title="${st}"></td>`;
+                                        }).join("")}
+                                    </tr>
+                                `;
+                            }).join("")}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            calendarFeed.appendChild(card);
+        });
+        
+        // Re-render Feather Icons if available
+        if (typeof feather !== 'undefined' && feather.replace) {
+            feather.replace();
+        }
+    }
+
+
+    // ==========================================================
+    // 4. INITIALIZATION AND SELECTORS
+    // ==========================================================
+    function initializeAttendanceDashboard() {
+        // 1. Populate the month selector (for the current year)
+        const monthSelector = document.getElementById("monthSelector");
+        if (monthSelector) {
+            const currentMonth = new Date().getMonth() + 1; // 1-12
+            monthNames.forEach((name, index) => {
+                const value = index + 1;
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = name;
+                if (value === currentMonth) {
+                    option.selected = true;
+                }
+                monthSelector.appendChild(option);
+            });
+        }
+
+        // 2. Fetch and populate the Cluster selector: ?api=clusters
+        const rosterSelector = document.getElementById("rosterSelector");
+        if (rosterSelector) {
+            try {
+                fetch(`${ATTENDANCE_GAS_URL}?api=clusters`)
+                    .then(response => response.json())
+                    .then(clusters => {
+                         // Add a default option for "All Clusters"
+                        let defaultOption = document.createElement('option');
+                        defaultOption.value = '';
+                        defaultOption.textContent = 'All Clusters';
+                        rosterSelector.appendChild(defaultOption);
+
+                        clusters.forEach(cluster => {
+                            const option = document.createElement('option');
+                            option.value = cluster;
+                            option.textContent = cluster;
+                            rosterSelector.appendChild(option);
+                        });
+                        
+                        // 3. Attach listeners and load initial data
+                        if (monthSelector) monthSelector.addEventListener("change", loadAll);
+                        if (rosterSelector) rosterSelector.addEventListener("change", loadAll);
+
+                        // Load initial data if both selectors exist and a month is selected
+                        if (monthSelector.value) {
+                            loadAll();
+                        }
+                    })
+                    .catch(error => console.error("Failed to load clusters:", error));
+            } catch (error) {
+                console.error("Failed to initiate cluster fetch:", error);
+            }
+        }
+        
+        // Load Feather icons for the current block
+        if (typeof feather !== 'undefined' && feather.replace) {
+            feather.replace();
+        }
+    }
+
+    // Since this file is dynamically loaded by cms10.html, 
+    // we define a global function for the parent to call.
+    if (document.getElementById("monthSelector")) {
+        window.initializeAttendanceDashboard = initializeAttendanceDashboard;
+    }
+</script>
+</body>
+</html>
