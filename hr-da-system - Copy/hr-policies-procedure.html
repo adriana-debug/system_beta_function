@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Policies & Procedures - HR Disciplinary System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'hr-primary': '#1e40af',
+            'hr-accent': '#3b82f6',
+            'dark-bg': '#0f172a',
+            'dark-surface': '#1e293b',
+            'dark-border': '#334155',
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 dark:bg-dark-bg text-gray-800 dark:text-white transition-colors duration-300">
+  
+  <!-- Header -->
+  <header class="bg-white dark:bg-dark-surface shadow-lg border-b dark:border-dark-border">
+    <div class="flex items-center justify-between px-6 py-4">
+      <div class="flex items-center gap-2">
+        <div class="w-10 h-10 bg-hr-primary rounded-lg flex items-center justify-center">
+          <i class="fas fa-shield-alt text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-hr-primary dark:text-white">HR Disciplinary System</h1>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Policy Management Platform</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-4">
+        <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-dark-surface transition">
+          <i id="themeIcon" class="fas fa-sun text-xl dark:text-white"></i>
+        </button>
+        <div class="relative">
+          <button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-dark-surface transition">
+            <i class="fas fa-bell text-xl"></i>
+            <span class="absolute -top-1 -right-1 bg-red-500 text-xs rounded-full h-5 w-5 flex items-center justify-center">7</span>
+          </button>
+        </div>
+        <div class="flex items-center space-x-2">
+          <img src="/placeholder.svg?height=32&width=32" alt="User" class="w-8 h-8 rounded-full" />
+          <div class="text-sm">
+            <div class="font-medium">Sarah Wilson</div>
+            <div class="text-gray-500 dark:text-gray-400 text-xs">HR Manager</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-dark-surface shadow-lg border-r dark:border-dark-border">
+      <nav class="mt-6">
+        <div class="px-6 py-2">
+          <h2 class="text-sm uppercase font-semibold text-gray-500 dark:text-gray-400 tracking-wider">Navigation</h2>
+        </div>
+        <ul class="space-y-2 px-4 mt-4">
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors">
+              <i class="fas fa-chart-line mr-3"></i>Dashboard
+            </a>
+          </li>
+          <li>
+            <div class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors cursor-pointer" onclick="toggleSubmenu('disciplinary')">
+              <i class="fas fa-exclamation-triangle mr-3"></i>
+              <span class="flex-1">Disciplinary Management</span>
+              <i class="fas fa-chevron-down text-xs" id="disciplinary-icon"></i>
+            </div>
+            <ul class="ml-8 mt-2 space-y-1" id="disciplinary-submenu">
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">Active Cases</a></li>
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">New Case</a></li>
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">Case History</a></li>
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">Appeals</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors">
+              <i class="fas fa-users mr-3"></i>Employee Records
+            </a>
+          </li>
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors">
+              <i class="fas fa-shield-alt mr-3"></i>Offense Management
+            </a>
+          </li>
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 bg-hr-primary text-white rounded-lg">
+              <i class="fas fa-book mr-3"></i>Policies & Procedures
+            </a>
+          </li>
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors">
+              <i class="fas fa-chart-bar mr-3"></i>Analytics & Reports
+            </a>
+          </li>
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors">
+              <i class="fas fa-clock mr-3"></i>Workflow Management
+            </a>
+          </li>
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors">
+              <i class="fas fa-file-alt mr-3"></i>Document Templates
+            </a>
+          </li>
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors">
+              <i class="fas fa-cog mr-3"></i>System Settings
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-8">
+      <!-- Page Header -->
+      <div class="mb-8">
+        <div class="flex justify-between items-center">
+          <div>
+            <nav class="text-sm text-gray-500 dark:text-gray-400 mb-2">
+              <a href="#" class="hover:text-hr-primary">Dashboard</a> 
+              <span class="mx-2">/</span>
+              <span class="text-hr-primary font-medium">Policies & Procedures</span>
+            </nav>
+            <h2 class="text-3xl font-bold text-hr-primary dark:text-white">Policies & Procedures</h2>
+            <p class="text-gray-500 dark:text-gray-400 mt-1">Manage company policies, procedures, and compliance documentation</p>
+          </div>
+          <div class="flex gap-3">
+            <button class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+              <i class="fas fa-download mr-2"></i>Export Policies
+            </button>
+            <button class="px-6 py-2 bg-hr-primary text-white font-semibold rounded-lg hover:bg-hr-accent transition-colors" onclick="openModal('newPolicyModal')">
+              <i class="fas fa-plus mr-2"></i>New Policy
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Policy Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Policies</p>
+              <p class="text-2xl font-bold text-hr-primary dark:text-white mt-1">42</p>
+            </div>
+            <div class="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+              <i class="fas fa-book text-hr-primary dark:text-hr-accent text-xl"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <span class="text-xs text-green-600 dark:text-green-400">+3 this month</span>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Pending Review</p>
+              <p class="text-2xl font-bold text-orange-600 dark:text-orange-400 mt-1">8</p>
+            </div>
+            <div class="p-3 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
+              <i class="fas fa-clock text-orange-600 dark:text-orange-400 text-xl"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <span class="text-xs text-orange-600 dark:text-orange-400">Requires attention</span>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Updated This Year</p>
+              <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">28</p>
+            </div>
+            <div class="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
+              <i class="fas fa-sync-alt text-green-600 dark:text-green-400 text-xl"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <span class="text-xs text-green-600 dark:text-green-400">67% updated</span>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Compliance Rate</p>
+              <p class="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">94%</p>
+            </div>
+            <div class="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+              <i class="fas fa-check-circle text-purple-600 dark:text-purple-400 text-xl"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <span class="text-xs text-purple-600 dark:text-purple-400">Above target</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Policy Tabs -->
+      <div class="mb-6">
+        <div class="border-b border-gray-200 dark:border-dark-border">
+          <nav class="-mb-px flex space-x-8">
+            <button class="policy-tab active py-2 px-1 border-b-2 border-hr-primary font-medium text-sm text-hr-primary" data-tab="company-policies">
+              Company Policies
+            </button>
+            <button class="policy-tab py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300" data-tab="procedures">
+              Procedures
+            </button>
+            <button class="policy-tab py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300" data-tab="compliance">
+              Compliance
+            </button>
+            <button class="policy-tab py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300" data-tab="templates">
+              Policy Templates
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Company Policies Tab -->
+      <div id="company-policies-tab" class="tab-content">
+        <!-- Search and Filters -->
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border p-6 mb-6">
+          <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
+            <div class="flex flex-wrap gap-4 flex-1">
+              <div class="relative">
+                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="text" placeholder="Search policies..." 
+                  class="pl-10 pr-4 py-2 w-80 rounded-lg border dark:border-dark-border dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent" />
+              </div>
+              <select class="px-4 py-2 rounded-lg border dark:border-dark-border dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+                <option>All Categories</option>
+                <option>HR Policies</option>
+                <option>Code of Conduct</option>
+                <option>Safety & Security</option>
+                <option>IT & Technology</option>
+                <option>Financial</option>
+              </select>
+              <select class="px-4 py-2 rounded-lg border dark:border-dark-border dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+                <option>All Status</option>
+                <option>Active</option>
+                <option>Draft</option>
+                <option>Under Review</option>
+                <option>Archived</option>
+              </select>
+            </div>
+            <div class="flex gap-3">
+              <button class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+                <i class="fas fa-filter mr-2"></i>Advanced Filters
+              </button>
+              <button class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+                <i class="fas fa-sort mr-2"></i>Sort
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Policy Categories -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <!-- HR Policies Category -->
+          <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border">
+            <div class="p-6 border-b dark:border-dark-border">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-users text-blue-600 dark:text-blue-400 text-xl"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">HR Policies</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">12 policies</p>
+                  </div>
+                </div>
+                <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+            <div class="p-6 space-y-3">
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-bg rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer" onclick="openPolicyDetails('employee-handbook')">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-check text-green-600 dark:text-green-400 text-sm"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900 dark:text-white">Employee Handbook</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Updated: Jan 2024</p>
+                  </div>
+                </div>
+                <span class="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 rounded-full">Active</span>
+              </div>
+
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-bg rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer" onclick="openPolicyDetails('disciplinary-policy')">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-check text-green-600 dark:text-green-400 text-sm"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900 dark:text-white">Disciplinary Policy</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Updated: Dec 2023</p>
+                  </div>
+                </div>
+                <span class="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 rounded-full">Active</span>
+              </div>
+
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-bg rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer" onclick="openPolicyDetails('attendance-policy')">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-clock text-orange-600 dark:text-orange-400 text-sm"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900 dark:text-white">Attendance Policy</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Updated: Nov 2023</p>
+                  </div>
+                </div>
+                <span class="px-2 py-1 text-xs bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400 rounded-full">Review</span>
+              </div>
+
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-bg rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer" onclick="openPolicyDetails('performance-management')">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-check text-green-600 dark:text-green-400 text-sm"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900 dark:text-white">Performance Management</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Updated: Jan 2024</p>
+                  </div>
+                </div>
+                <span class="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 rounded-full">Active</span>
+              </div>
+
+              <button class="w-full text-sm text-hr-primary dark:text-hr-accent hover:underline mt-3">
+                View All HR Policies (12)
+              </button>
+            </div>
+          </div>
+
+          <!-- Code of Conduct Category -->
+          <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border">
+            <div class="p-6 border-b dark:border-dark-border">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-balance-scale text-purple-600 dark:text-purple-400 text-xl"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">Code of Conduct</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">8 policies</p>
+                  </div>
+                </div>
+                <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+            <div class="p-6 space-y-3">
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-bg rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer" onclick="openPolicyDetails('ethics-policy')">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-check text-green-600 dark:text-green-400 text-sm"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900 dark:text-white">Ethics Policy</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Updated: Jan 2024</p>
+                  </div>
+                </div>
+                <span class="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 rounded-full">Active</span>
+              </div>
+
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-bg rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer" onclick="openPolicyDetails('anti-harassment')">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-check text-green-600 dark:text-green-400 text-sm"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900 dark:text-white">Anti-Harassment Policy</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Updated: Dec 2023</p>
+                  </div>
+                </div>
+                <span class="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 rounded-full">Active</span>
+              </div>
+
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-bg rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer" onclick="openPolicyDetails('conflict-of-interest')">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-edit text-yellow-600 dark:text-yellow-400 text-sm"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900 dark:text-white">Conflict of Interest</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Updated: Oct 2023</p>
+                  </div>
+                </div>
+                <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400 rounded-full">Draft</span>
+              </div>
+
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-bg rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer" onclick="openPolicyDetails('whistleblower')">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-check text-green-600 dark:text-green-400 text-sm"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900 dark:text-white">Whistleblower Policy</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Updated: Nov 2023</p>
+                  </div>
+                </div>
+                <span class="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 rounded-full">Active</span>
+              </div>
+
+              <button class="w-full text-sm text-hr-primary dark:text-hr-accent hover:underline mt-3">
+                View All Code of Conduct (8)
+              </button>
+            </div>
+          </div>
+
+          <!-- Safety & Security Category -->
+          <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border">
+            <div class="p-6 border-b dark:border-dark-border">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-shield-alt text-red-600 dark:text-red-400 text-xl"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-gray-900 dark:text-white">Safety & Security</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">10 policies</p>
+                  </div>
+                </div>
+                <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+            <div class="p-6 space-y-3">
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-bg rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer" onclick="openPolicyDetails('workplace-safety')">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-check text-green-600 dark:text-green-400 text-sm"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900 dark:text-white">Workplace Safety</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Updated: Jan 2024</p>
+                  </div>
+                </div>
+                <span class="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 rounded-full">Active</span>
+              </div>
+
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-bg rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer" onclick="openPolicyDetails('data-security')">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-clock text-orange-600 dark:text-orange-400 text-sm"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900 dark:text-white">Data Security Policy</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Updated: Sep 2023</p>
+                  </div>
+                </div>
+                <span class="px-2 py-1 text-xs bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400 rounded-full">Review</span>
+              </div>
+
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-bg rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer" onclick="openPolicyDetails('emergency-procedures')">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-check text-green-600 dark:text-green-400 text-sm"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900 dark:text-white">Emergency Procedures</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Updated: Dec 2023</p>
+                  </div>
+                </div>
+                <span class="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 rounded-full">Active</span>
+              </div>
+
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-bg rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer" onclick="openPolicyDetails('access-control')">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-check text-green-600 dark:text-green-400 text-sm"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium text-gray-900 dark:text-white">Access Control Policy</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Updated: Nov 2023</p>
+                  </div>
+                </div>
+                <span class="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 rounded-full">Active</span>
+              </div>
+
+              <button class="w-full text-sm text-hr-primary dark:text-hr-accent hover:underline mt-3">
+                View All Safety & Security (10)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Policy Updates -->
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border">
+          <div class="p-6 border-b dark:border-dark-border">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold text-hr-primary dark:text-white">
+                <i class="fas fa-history mr-2"></i>Recent Policy Updates
+              </h3>
+              <button class="px-4 py-2 text-sm border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+                View All Updates
+              </button>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-50 dark:bg-dark-bg">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Policy</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Category</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Version</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Updated By</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 dark:divide-dark-border">
+                <tr class="hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">Employee Handbook</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Comprehensive employee guidelines</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">HR Policies</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">v2.3</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Sarah Wilson</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Jan 15, 2024</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">Active</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div class="flex gap-2">
+                      <button class="text-hr-primary dark:text-hr-accent hover:underline">View</button>
+                      <button class="text-gray-600 dark:text-gray-400 hover:underline">Edit</button>
+                      <button class="text-blue-600 dark:text-blue-400 hover:underline">History</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">Performance Management</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Performance evaluation procedures</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">HR Policies</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">v1.8</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Mike Davis</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Jan 12, 2024</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">Active</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div class="flex gap-2">
+                      <button class="text-hr-primary dark:text-hr-accent hover:underline">View</button>
+                      <button class="text-gray-600 dark:text-gray-400 hover:underline">Edit</button>
+                      <button class="text-blue-600 dark:text-blue-400 hover:underline">History</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">Ethics Policy</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Code of ethics and conduct</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Code of Conduct</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">v3.1</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Emily Chen</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Jan 10, 2024</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">Active</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div class="flex gap-2">
+                      <button class="text-hr-primary dark:text-hr-accent hover:underline">View</button>
+                      <button class="text-gray-600 dark:text-gray-400 hover:underline">Edit</button>
+                      <button class="text-blue-600 dark:text-blue-400 hover:underline">History</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">Workplace Safety</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Safety protocols and procedures</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Safety & Security</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">v2.0</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">David Wilson</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Jan 8, 2024</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">Active</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div class="flex gap-2">
+                      <button class="text-hr-primary dark:text-hr-accent hover:underline">View</button>
+                      <button class="text-gray-600 dark:text-gray-400 hover:underline">Edit</button>
+                      <button class="text-blue-600 dark:text-blue-400 hover:underline">History</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Procedures Tab -->
+      <div id="procedures-tab" class="tab-content hidden">
+        <div class="text-center py-12">
+          <i class="fas fa-cogs text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Procedures Content</h3>
+          <p class="text-gray-500 dark:text-gray-400">This section will contain detailed procedures and workflows.</p>
+        </div>
+      </div>
+
+      <!-- Compliance Tab -->
+      <div id="compliance-tab" class="tab-content hidden">
+        <div class="text-center py-12">
+          <i class="fas fa-check-circle text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Compliance Content</h3>
+          <p class="text-gray-500 dark:text-gray-400">This section will contain compliance tracking and reporting.</p>
+        </div>
+      </div>
+
+      <!-- Policy Templates Tab -->
+      <div id="templates-tab" class="tab-content hidden">
+        <div class="text-center py-12">
+          <i class="fas fa-file-alt text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Policy Templates</h3>
+          <p class="text-gray-500 dark:text-gray-400">This section will contain policy templates and creation tools.</p>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+        © 2024 HR Disciplinary Policy Software. All rights reserved.
+      </div>
+    </main>
+  </div>
+
+  <!-- Policy Details Modal -->
+  <div id="policyDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white dark:bg-dark-surface rounded-xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b dark:border-dark-border">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-hr-primary dark:text-white">Policy Details - <span id="policyTitle">Employee Handbook</span></h3>
+          <button onclick="closeModal('policyDetailsModal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Policy Content -->
+          <div class="lg:col-span-2 space-y-6">
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Policy Information</h4>
+              <div class="bg-gray-50 dark:bg-dark-bg rounded-lg p-4 space-y-3">
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Category:</span>
+                  <span class="font-medium">HR Policies</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Version:</span>
+                  <span class="font-medium">v2.3</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Status:</span>
+                  <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">Active</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Effective Date:</span>
+                  <span class="font-medium">January 15, 2024</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Next Review:</span>
+                  <span class="font-medium">January 15, 2025</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Policy Summary</h4>
+              <div class="bg-gray-50 dark:bg-dark-bg rounded-lg p-4">
+                <p class="text-gray-600 dark:text-gray-400">
+                  This comprehensive employee handbook outlines the company's policies, procedures, and expectations for all employees. It covers employment practices, workplace conduct, benefits, and disciplinary procedures. All employees are required to read, understand, and comply with the policies outlined in this handbook.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Key Sections</h4>
+              <div class="space-y-3">
+                <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-dark-bg rounded-lg">
+                  <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
+                    <span class="text-blue-600 dark:text-blue-400 text-sm font-medium">1</span>
+                  </div>
+                  <div>
+                    <h5 class="font-medium text-gray-900 dark:text-white">Employment Policies</h5>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Hiring, onboarding, and employment terms</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-dark-bg rounded-lg">
+                  <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
+                    <span class="text-blue-600 dark:text-blue-400 text-sm font-medium">2</span>
+                  </div>
+                  <div>
+                    <h5 class="font-medium text-gray-900 dark:text-white">Code of Conduct</h5>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Expected behavior and ethical standards</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-dark-bg rounded-lg">
+                  <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
+                    <span class="text-blue-600 dark:text-blue-400 text-sm font-medium">3</span>
+                  </div>
+                  <div>
+                    <h5 class="font-medium text-gray-900 dark:text-white">Benefits & Compensation</h5>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Employee benefits and compensation structure</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-dark-bg rounded-lg">
+                  <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
+                    <span class="text-blue-600 dark:text-blue-400 text-sm font-medium">4</span>
+                  </div>
+                  <div>
+                    <h5 class="font-medium text-gray-900 dark:text-white">Disciplinary Procedures</h5>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Progressive discipline and corrective actions</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Policy Metadata -->
+          <div class="space-y-6">
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Document Details</h4>
+              <div class="bg-gray-50 dark:bg-dark-bg rounded-lg p-4 space-y-3">
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Created By:</span>
+                  <span class="font-medium">Sarah Wilson</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Last Updated:</span>
+                  <span class="font-medium">Jan 15, 2024</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Approved By:</span>
+                  <span class="font-medium">John Smith</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">File Size:</span>
+                  <span class="font-medium">2.4 MB</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Pages:</span>
+                  <span class="font-medium">45</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Compliance</h4>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">Employee Acknowledgment</span>
+                  <span class="text-sm font-medium text-green-600 dark:text-green-400">98%</span>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div class="bg-green-500 h-2 rounded-full" style="width: 98%;"></div>
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">1,220 of 1,247 employees acknowledged</div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Related Documents</h4>
+              <div class="space-y-2">
+                <div class="flex items-center gap-2 p-2 bg-gray-50 dark:bg-dark-bg rounded">
+                  <i class="fas fa-file-alt text-blue-500"></i>
+                  <span class="text-sm">Disciplinary Policy</span>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-gray-50 dark:bg-dark-bg rounded">
+                  <i class="fas fa-file-alt text-green-500"></i>
+                  <span class="text-sm">Code of Conduct</span>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-gray-50 dark:bg-dark-bg rounded">
+                  <i class="fas fa-file-alt text-purple-500"></i>
+                  <span class="text-sm">Benefits Guide</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Version History</h4>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">v2.3</span>
+                  <span class="text-gray-500 dark:text-gray-400">Jan 15, 2024</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">v2.2</span>
+                  <span class="text-gray-500 dark:text-gray-400">Oct 12, 2023</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">v2.1</span>
+                  <span class="text-gray-500 dark:text-gray-400">Jul 8, 2023</span>
+                </div>
+                <button class="text-hr-primary dark:text-hr-accent hover:underline text-sm">View All Versions</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-6 border-t dark:border-dark-border mt-6">
+          <button onclick="closeModal('policyDetailsModal')" class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+            Close
+          </button>
+          <button class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+            <i class="fas fa-download mr-2"></i>Download
+          </button>
+          <button class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+            <i class="fas fa-edit mr-2"></i>Edit Policy
+          </button>
+          <button class="px-6 py-2 bg-hr-primary text-white font-semibold rounded-lg hover:bg-hr-accent transition-colors">
+            <i class="fas fa-share mr-2"></i>Share
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Policy Modal -->
+  <div id="newPolicyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white dark:bg-dark-surface rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b dark:border-dark-border">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-hr-primary dark:text-white">Create New Policy</h3>
+          <button onclick="closeModal('newPolicyModal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+      </div>
+      <div class="p-6">
+        <form class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Policy Title</label>
+              <input type="text" placeholder="Enter policy title" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
+              <select class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+                <option>Select category...</option>
+                <option>HR Policies</option>
+                <option>Code of Conduct</option>
+                <option>Safety & Security</option>
+                <option>IT & Technology</option>
+                <option>Financial</option>
+                <option>Operations</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Policy Description</label>
+            <textarea rows="3" placeholder="Provide a brief description of the policy" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent"></textarea>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Effective Date</label>
+              <input type="date" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Review Date</label>
+              <input type="date" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Policy Document</label>
+            <div class="border-2 border-dashed border-gray-300 dark:border-dark-border rounded-lg p-6 text-center">
+              <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-3"></i>
+              <p class="text-gray-600 dark:text-gray-400 mb-2">Upload policy document</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">PDF, DOC, DOCX up to 10MB</p>
+              <input type="file" class="hidden" accept=".pdf,.doc,.docx">
+              <button type="button" class="mt-3 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                Choose File
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Approval Settings</label>
+            <div class="space-y-2">
+              <label class="flex items-center">
+                <input type="checkbox" class="rounded border-gray-300 text-hr-primary focus:ring-hr-accent">
+                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Requires management approval</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" class="rounded border-gray-300 text-hr-primary focus:ring-hr-accent">
+                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Send notification to all employees</span>
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" class="rounded border-gray-300 text-hr-primary focus:ring-hr-accent">
+                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Require employee acknowledgment</span>
+              </label>
+            </div>
+          </div>
+          <div class="flex justify-end gap-3 pt-4">
+            <button type="button" onclick="closeModal('newPolicyModal')" class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+              Cancel
+            </button>
+            <button type="button" class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+              Save as Draft
+            </button>
+            <button type="submit" class="px-6 py-2 bg-hr-primary text-white font-semibold rounded-lg hover:bg-hr-accent transition-colors">
+              Create Policy
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Theme toggle functionality
+    const toggleButton = document.getElementById('themeToggle');
+    const icon = document.getElementById('themeIcon');
+    const html = document.documentElement;
+
+    const updateIcon = () => {
+      icon.classList.toggle('fa-sun', !html.classList.contains('dark'));
+      icon.classList.toggle('fa-moon', html.classList.contains('dark'));
+    };
+
+    toggleButton.addEventListener('click', () => {
+      html.classList.toggle('dark');
+      localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+      updateIcon();
+    });
+
+    // Initial theme setup
+    if (localStorage.getItem('theme') === 'light') {
+      html.classList.remove('dark');
+    } else {
+      html.classList.add('dark');
+    }
+    updateIcon();
+
+    // Submenu toggle functionality
+    function toggleSubmenu(menuId) {
+      const submenu = document.getElementById(menuId + '-submenu');
+      const icon = document.getElementById(menuId + '-icon');
+      
+      submenu.classList.toggle('hidden');
+      icon.classList.toggle('fa-chevron-down');
+      icon.classList.toggle('fa-chevron-right');
+    }
+
+    // Tab functionality
+    const tabButtons = document.querySelectorAll('.policy-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const tabName = button.getAttribute('data-tab');
+        
+        // Remove active class from all tabs
+        tabButtons.forEach(btn => {
+          btn.classList.remove('active', 'border-hr-primary', 'text-hr-primary');
+          btn.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300', 'dark:text-gray-400', 'dark:hover:text-gray-300');
+        });
+        
+        // Add active class to clicked tab
+        button.classList.add('active', 'border-hr-primary', 'text-hr-primary');
+        button.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300', 'dark:text-gray-400', 'dark:hover:text-gray-300');
+        
+        // Hide all tab contents
+        tabContents.forEach(content => {
+          content.classList.add('hidden');
+        });
+        
+        // Show selected tab content
+        document.getElementById(tabName + '-tab').classList.remove('hidden');
+      });
+    });
+
+    // Modal functionality
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+
+    function openPolicyDetails(policyId) {
+      const policyTitles = {
+        'employee-handbook': 'Employee Handbook',
+        'disciplinary-policy': 'Disciplinary Policy',
+        'attendance-policy': 'Attendance Policy',
+        'performance-management': 'Performance Management Policy',
+        'ethics-policy': 'Ethics Policy',
+        'anti-harassment': 'Anti-Harassment Policy',
+        'conflict-of-interest': 'Conflict of Interest Policy',
+        'whistleblower': 'Whistleblower Policy',
+        'workplace-safety': 'Workplace Safety Policy',
+        'data-security': 'Data Security Policy',
+        'emergency-procedures': 'Emergency Procedures',
+        'access-control': 'Access Control Policy'
+      };
+      
+      document.getElementById('policyTitle').textContent = policyTitles[policyId] || 'Policy Details';
+      openModal('policyDetailsModal');
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(event) {
+      const modals = document.querySelectorAll('[id$="Modal"]');
+      modals.forEach(modal => {
+        if (event.target === modal) {
+          closeModal(modal.id);
+        }
+      });
+    });
+
+    // Search functionality
+    document.querySelector('input[placeholder*="Search policies"]').addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const policyCards = document.querySelectorAll('.bg-white.dark\\:bg-dark-surface.rounded-xl.shadow-lg');
+      
+      policyCards.forEach(card => {
+        const cardText = card.textContent.toLowerCase();
+        if (cardText.includes(searchTerm)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+
+    // Initialize submenu states
+    document.addEventListener('DOMContentLoaded', function() {
+      // Show disciplinary submenu by default
+      const disciplinarySubmenu = document.getElementById('disciplinary-submenu');
+      const disciplinaryIcon = document.getElementById('disciplinary-icon');
+      disciplinarySubmenu.classList.remove('hidden');
+      disciplinaryIcon.classList.remove('fa-chevron-down');
+      disciplinaryIcon.classList.add('fa-chevron-right');
+    });
+  </script>
+
+</body>
+</html>

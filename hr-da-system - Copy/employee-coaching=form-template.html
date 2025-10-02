@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Coaching Form Template</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#2563eb',
+                        'secondary': '#64748b',
+                        'accent': '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @media print {
+            body { print-color-adjust: exact; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg my-8">
+        <!-- Header Section -->
+        <div class="border-b-2 border-primary pb-6 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fas fa-user-tie text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Employee Coaching Form</h1>
+                        <p class="text-sm text-gray-600">Professional Development & Performance Support</p>
+                    </div>
+                </div>
+                <div class="no-print flex gap-2">
+                    <button onclick="window.print()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-print mr-2"></i>Print
+                    </button>
+                    <button onclick="saveForm()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-save mr-2"></i>Save
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Company Name</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter company name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Employee Name</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter employee name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Department</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <option value="">Select Department</option>
+                            <option value="hr">Human Resources</option>
+                            <option value="sales">Sales</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="it">Information Technology</option>
+                            <option value="finance">Finance</option>
+                            <option value="operations">Operations</option>
+                            <option value="customer-service">Customer Service</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Coaching Session Date</label>
+                        <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Employee ID</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter employee ID">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Coach/Supervisor Name</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter coach/supervisor name">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Purpose Section -->
+        <div class="mb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fas fa-bullseye text-primary text-lg"></i>
+                <h2 class="text-xl font-bold text-gray-900">Session Purpose</h2>
+            </div>
+            <div class="bg-blue-50 rounded-lg p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Coaching Type</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <option value="">Select Coaching Type</option>
+                            <option value="performance-improvement">Performance Improvement</option>
+                            <option value="behavioral-adjustment">Behavioral Adjustment</option>
+                            <option value="career-development">Career Development</option>
+                            <option value="compliance-issue">Compliance Issue</option>
+                            <option value="skill-development">Skill Development</option>
+                            <option value="goal-setting">Goal Setting</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Brief Description</label>
+                        <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Provide a brief description of the coaching session purpose"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Observed Behaviors Section -->
+        <div class="mb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fas fa-search text-primary text-lg"></i>
+                <h2 class="text-xl font-bold text-gray-900">Observed Behaviors or Issues</h2>
+            </div>
+            <div class="bg-yellow-50 rounded-lg p-6">
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Behavior/Performance Category</label>
+                    <select id="behaviorCategory" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" onchange="updateKeywords()">
+                        <option value="">Select Category</option>
+                        <option value="attendance">Attendance & Punctuality</option>
+                        <option value="communication">Communication</option>
+                        <option value="teamwork">Teamwork</option>
+                        <option value="task-completion">Task Completion</option>
+                        <option value="leadership">Leadership</option>
+                        <option value="attitude">Attitude</option>
+                        <option value="compliance">Compliance</option>
+                        <option value="customer-service">Customer Service</option>
+                        <option value="technical-skills">Technical Skills</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Templated Keywords</label>
+                    <p class="text-sm text-gray-600 mb-3">Select applicable keywords or add your own:</p>
+                    <div id="keywordContainer" class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
+                        <!-- Keywords will be populated by JavaScript -->
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="customKeyword" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Add custom keyword">
+                        <button onclick="addCustomKeyword()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Notes/Examples</label>
+                    <textarea rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Provide specific examples and detailed notes about observed behaviors or issues"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Goals and Expectations Section -->
+        <div class="mb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fas fa-target text-primary text-lg"></i>
+                <h2 class="text-xl font-bold text-gray-900">Goals and Expectations</h2>
+            </div>
+            <div class="bg-green-50 rounded-lg p-6">
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">SMART Goal Template</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-crosshairs text-green-600 mr-1"></i>Specific
+                            </label>
+                            <textarea rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="What exactly needs to be accomplished?"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-ruler text-green-600 mr-1"></i>Measurable
+                            </label>
+                            <textarea rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="How will progress be measured?"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-check-circle text-green-600 mr-1"></i>Achievable
+                            </label>
+                            <textarea rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Is this goal realistic and attainable?"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-link text-green-600 mr-1"></i>Relevant
+                            </label>
+                            <textarea rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="How does this align with broader objectives?"></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-clock text-green-600 mr-1"></i>Time-bound
+                        </label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="What is the deadline or timeframe?">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Expected Outcomes</label>
+                    <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Describe the expected results and benefits of achieving this goal"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Plan Section -->
+        <div class="mb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fas fa-tools text-primary text-lg"></i>
+                <h2 class="text-xl font-bold text-gray-900">Action Plan</h2>
+            </div>
+            <div class="bg-purple-50 rounded-lg p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-user-check text-purple-600 mr-1"></i>Employee Commitments
+                        </label>
+                        <textarea rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="• What specific actions will the employee take?&#10;• What behaviors will they change or improve?&#10;• What resources will they utilize?"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-hands-helping text-purple-600 mr-1"></i>Support Provided by Coach
+                        </label>
+                        <textarea rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="• What support will be provided?&#10;• What resources are available?&#10;• How will progress be monitored?"></textarea>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-calendar-alt text-purple-600 mr-1"></i>Timeline for Completion
+                    </label>
+                    <div class="overflow-x-auto">
+                        <table class="w-full border border-gray-300 rounded-lg">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">Milestone</th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">Target Date</th>
+                                    <th class="px-4 py-2 text-left text-sm font-semibold text-gray-700 border-b">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b">
+                                    <td class="px-4 py-2"><input type="text" class="w-full px-2 py-1 border border-gray-300 rounded" placeholder="First milestone"></td>
+                                    <td class="px-4 py-2"><input type="date" class="w-full px-2 py-1 border border-gray-300 rounded"></td>
+                                    <td class="px-4 py-2">
+                                        <select class="w-full px-2 py-1 border border-gray-300 rounded">
+                                            <option value="pending">Pending</option>
+                                            <option value="in-progress">In Progress</option>
+                                            <option value="completed">Completed</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="px-4 py-2"><input type="text" class="w-full px-2 py-1 border border-gray-300 rounded" placeholder="Second milestone"></td>
+                                    <td class="px-4 py-2"><input type="date" class="w-full px-2 py-1 border border-gray-300 rounded"></td>
+                                    <td class="px-4 py-2">
+                                        <select class="w-full px-2 py-1 border border-gray-300 rounded">
+                                            <option value="pending">Pending</option>
+                                            <option value="in-progress">In Progress</option>
+                                            <option value="completed">Completed</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-2"><input type="text" class="w-full px-2 py-1 border border-gray-300 rounded" placeholder="Final milestone"></td>
+                                    <td class="px-4 py-2"><input type="date" class="w-full px-2 py-1 border border-gray-300 rounded"></td>
+                                    <td class="px-4 py-2">
+                                        <select class="w-full px-2 py-1 border border-gray-300 rounded">
+                                            <option value="pending">Pending</option>
+                                            <option value="in-progress">In Progress</option>
+                                            <option value="completed">Completed</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Follow-Up Schedule Section -->
+        <div class="mb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fas fa-calendar-check text-primary text-lg"></i>
+                <h2 class="text-xl font-bold text-gray-900">Follow-Up Schedule</h2>
+            </div>
+            <div class="bg-indigo-50 rounded-lg p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Next Coaching Session Date</label>
+                        <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Progress Indicators</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                <span class="ml-2 text-sm text-gray-700">Improved attendance</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                <span class="ml-2 text-sm text-gray-700">Timely task completion</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                <span class="ml-2 text-sm text-gray-700">Positive peer feedback</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                <span class="ml-2 text-sm text-gray-700">Compliance with policies</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                <span class="ml-2 text-sm text-gray-700">Increased engagement</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                <span class="ml-2 text-sm text-gray-700">Skill development progress</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="mb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fas fa-comments text-primary text-lg"></i>
+                <h2 class="text-xl font-bold text-gray-900">Comments</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-blue-50 rounded-lg p-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-user text-blue-600 mr-1"></i>Employee Comments
+                    </label>
+                    <textarea rows="5" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Employee's thoughts, concerns, or feedback about the coaching session and action plan"></textarea>
+                </div>
+                <div class="bg-green-50 rounded-lg p-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-user-tie text-green-600 mr-1"></i>Coach Comments
+                    </label>
+                    <textarea rows="5" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Coach's observations, additional notes, and recommendations"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acknowledgment Section -->
+        <div class="border-t-2 border-primary pt-6">
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fas fa-signature text-primary text-lg"></i>
+                <h2 class="text-xl font-bold text-gray-900">Acknowledgment and Signatures</h2>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Employee Signature</label>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 h-20 flex items-center justify-center text-gray-500">
+                                Digital signature or print for manual signing
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Employee Date</label>
+                            <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Coach/Supervisor Signature</label>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 h-20 flex items-center justify-center text-gray-500">
+                                Digital signature or print for manual signing
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Coach Date</label>
+                            <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 p-4 bg-blue-100 rounded-lg">
+                    <p class="text-sm text-blue-800">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <strong>Acknowledgment:</strong> By signing this form, both parties acknowledge that they have discussed the contents of this coaching session, understand the expectations and action plan, and commit to working together toward the stated goals. This document will be kept confidential and stored in the employee's personnel file.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-sm text-gray-500">
+            <p>This form is designed to support employee development and should be used in conjunction with company HR policies.</p>
+            <p class="mt-1">© 2024 Employee Coaching Form Template - Confidential Document</p>
+        </div>
+    </div>
+
+    <script>
+        // Keyword templates for different categories
+        const keywordTemplates = {
+            'attendance': [
+                'Chronic tardiness', 'Excessive absences', 'Unexcused absences', 'Poor time management',
+                'Leaving early', 'Extended breaks', 'Punctual arrival', 'Consistent attendance'
+            ],
+            'communication': [
+                'Poor listening skills', 'Unclear instructions', 'Disrespectful tone', 'Lack of feedback',
+                'Effective communication', 'Active listening', 'Clear articulation', 'Professional demeanor'
+            ],
+            'teamwork': [
+                'Lack of collaboration', 'Conflicts with colleagues', 'Not sharing information', 'Resistant to team decisions',
+                'Strong collaboration', 'Supportive teammate', 'Shares knowledge', 'Builds consensus'
+            ],
+            'task-completion': [
+                'Missed deadlines', 'Incomplete work', 'Poor quality output', 'Lack of attention to detail',
+                'Timely completion', 'High quality work', 'Attention to detail', 'Exceeds expectations'
+            ],
+            'leadership': [
+                'Lack of initiative', 'Poor delegation', 'Inconsistent decision making', 'Avoids responsibility',
+                'Strong leadership', 'Takes initiative', 'Effective delegation', 'Decisive actions'
+            ],
+            'attitude': [
+                'Negative attitude', 'Resistance to change', 'Low engagement', 'Complaints frequently',
+                'Positive attitude', 'Embraces change', 'High engagement', 'Solution-oriented'
+            ],
+            'compliance': [
+                'Failure to follow procedures', 'Safety violations', 'Policy non-compliance', 'Ignores protocols',
+                'Follows procedures', 'Safety conscious', 'Policy compliant', 'Adheres to protocols'
+            ],
+            'customer-service': [
+                'Poor customer interaction', 'Slow response time', 'Lacks empathy', 'Unprofessional behavior',
+                'Excellent customer service', 'Quick response', 'Empathetic approach', 'Professional demeanor'
+            ],
+            'technical-skills': [
+                'Lacks technical knowledge', 'Slow to learn new systems', 'Makes frequent errors', 'Avoids technology',
+                'Strong technical skills', 'Quick learner', 'Error-free work', 'Tech-savvy'
+            ]
+        };
+
+        let selectedKeywords = [];
+
+        function updateKeywords() {
+            const category = document.getElementById('behaviorCategory').value;
+            const container = document.getElementById('keywordContainer');
+            container.innerHTML = '';
+            selectedKeywords = [];
+
+            if (category && keywordTemplates[category]) {
+                keywordTemplates[category].forEach(keyword => {
+                    const keywordElement = document.createElement('div');
+                    keywordElement.className = 'flex items-center';
+                    keywordElement.innerHTML = `
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary mr-2" 
+                                   onchange="toggleKeyword('${keyword}', this)">
+                            <span class="text-sm text-gray-700">${keyword}</span>
+                        </label>
+                    `;
+                    container.appendChild(keywordElement);
+                });
+            }
+        }
+
+        function toggleKeyword(keyword, checkbox) {
+            if (checkbox.checked) {
+                selectedKeywords.push(keyword);
+            } else {
+                selectedKeywords = selectedKeywords.filter(k => k !== keyword);
+            }
+        }
+
+        function addCustomKeyword() {
+            const input = document.getElementById('customKeyword');
+            const keyword = input.value.trim();
+            
+            if (keyword && !selectedKeywords.includes(keyword)) {
+                const container = document.getElementById('keywordContainer');
+                const keywordElement = document.createElement('div');
+                keywordElement.className = 'flex items-center';
+                keywordElement.innerHTML = `
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary mr-2" 
+                               checked onchange="toggleKeyword('${keyword}', this)">
+                        <span class="text-sm text-gray-700 font-medium">${keyword}</span>
+                    </label>
+                `;
+                container.appendChild(keywordElement);
+                selectedKeywords.push(keyword);
+                input.value = '';
+            }
+        }
+
+        function saveForm() {
+            // In a real implementation, this would save the form data
+            alert('Form saved successfully! In a real implementation, this would save to your HR system.');
+        }
+
+        // Set today's date as default for coaching session date
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            const dateInputs = document.querySelectorAll('input[type="date"]');
+            if (dateInputs.length > 0) {
+                dateInputs[0].value = today; // Set coaching session date to today
+            }
+        });
+    </script>
+</body>
+</html>
