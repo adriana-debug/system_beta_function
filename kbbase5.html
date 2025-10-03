@@ -1,0 +1,637 @@
+
+
+
+        <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Minds BPO - Knowledge Base</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <script>
+        // --- Tailwind Configuration (Ensures Dark/Light mode color scheme) ---
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-accent': '#CBEB33', // Primary Coaching Accent Color
+                        'brand-dark': '#B5D12F',
+                        'bg-dark': '#0f172a',      // Dark background (slate-900)
+                        'text-dark': '#f1f5f9',    // Light text (slate-100)
+                        'bg-light': '#f8fafc',     // Light background (slate-50)
+                        'text-light': '#1e293b',   // Dark text (slate-800)
+                        'card-dark': '#1e293b',    // Dark mode card background
+                        'border-dark': '#334155',  // Dark mode border color
+                        'danger': '#ef4444',
+                        'danger-dark': '#dc2626'
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        .animate-spin-slow {
+            animation: spin 2.5s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* Ensures inputs are visible in dark mode by overriding defaults if necessary */
+        input[type="text"], textarea {
+            color: var(--text-dark); 
+            background-color: var(--card-dark);
+        }
+        .dark input[type="text"], .dark textarea {
+            color: #f1f5f9; /* Explicitly light text */
+            background-color: #1e293b; /* Explicitly dark card background */
+            border-color: #334155;
+        }
+
+        /* Style for the content in the read-only view modal */
+        #vContent {
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body
+    class="min-h-screen bg-bg-light text-text-light dark:bg-bg-dark dark:text-text-dark transition-colors duration-500 font-sans">
+
+    <header
+        class="flex justify-between items-center px-8 py-4 bg-white dark:bg-card-dark shadow-lg w-full fixed top-0 left-0 z-20 transition-all duration-500 border-b border-gray-100 dark:border-border-dark">
+        <h1 class="text-3xl font-extrabold text-text-light dark:text-text-dark transition-colors duration-500">
+            <span class="text-brand-accent">Digital</span> Knowledge Base
+        </h1>
+        <button id="themeToggle"
+            class="p-2 rounded-full text-text-light dark:text-text-dark bg-gray-100 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark transition-all duration-300 transform hover:scale-105"
+            aria-label="Toggle Dark Mode">
+        </button>
+    </header>
+
+    <div class="max-w-7xl mx-auto p-4 md:p-8 mt-24 space-y-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+            <h2 class="text-3xl font-extrabold text-text-light dark:text-text-dark">KB Documents</h2>
+            <div class="flex items-center space-x-4">
+                <button onclick="changeView('grid')" id="btnGrid"
+                    class="p-3 rounded-full bg-brand-accent text-bg-dark shadow transition hover:bg-brand-dark" title="Tile View">
+                    <i class="fas fa-th-large"></i>
+                </button>
+                <button onclick="changeView('list')" id="btnList"
+                    class="p-3 rounded-full bg-gray-200 dark:bg-border-dark text-text-light dark:text-text-dark shadow transition hover:bg-brand-accent hover:text-bg-dark" title="List View">
+                    <i class="fas fa-list"></i>
+                </button>
+                <button onclick="openCrudModal()"
+                    class="inline-flex items-center bg-brand-accent hover:bg-brand-dark text-bg-dark px-6 py-3 rounded-full shadow-lg font-bold transition duration-300 transform hover:scale-[1.03] text-lg">
+                    <i class="fas fa-plus-circle mr-3"></i>New Document
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-12 gap-6">
+            <div class="col-span-12 md:col-span-3">
+                <input id="kbSearch" type="text" placeholder="Search Title, Tags, or Owner..."
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition shadow-lg mb-6">
+                
+                <div class="bg-white dark:bg-card-dark p-6 rounded-2xl shadow-xl space-y-4 border border-gray-100 dark:border-border-dark">
+                    <h3 class="font-bold text-lg border-b pb-2 dark:border-border-dark text-text-light dark:text-text-dark">Categories</h3>
+                    <ul id="categories" class="space-y-1">
+                        </ul>
+                </div>
+            </div>
+
+            <div class="col-span-12 md:col-span-9">
+                <div id="grid-view" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    </div>
+                
+                <div id="list-view" class="hidden bg-white dark:bg-card-dark rounded-2xl shadow-2xl overflow-hidden transition-colors duration-500 border border-gray-100 dark:border-border-dark">
+                    <table class="min-w-full text-sm">
+                        <thead class="bg-gray-100 dark:bg-border-dark text-left">
+                            <tr>
+                                <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Document Title</th>
+                                <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Category</th>
+                                <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Owner</th>
+                                <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Last Modified</th>
+                                <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider text-center px-6 py-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listTableBody" class="divide-y divide-gray-200 dark:divide-border-dark">
+                            <tr class="text-center">
+                                <td colspan="5" class="p-8 text-gray-500 dark:text-gray-400">
+                                    Loading documents...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewModalBg" class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-300">
+        <div class="bg-white dark:bg-card-dark rounded-xl shadow-3xl w-full max-w-4xl p-8 relative transition-all duration-500 transform scale-95 opacity-0" id="viewModalContent">
+            
+            <h3 id="viewModalTitle" class="text-3xl font-extrabold mb-2 text-brand-accent">View Document</h3>
+            
+            <button onclick="closeViewModal()" class="absolute top-4 right-4 p-2 rounded-full text-gray-400 hover:text-brand-accent transition">
+                <i class="fas fa-times fa-xl"></i>
+            </button>
+            
+            <div class="flex justify-between items-center relative z-10 border-b pb-4 mb-4 dark:border-border-dark">
+                <p id="vMeta" class="text-sm text-gray-600 dark:text-gray-400 mt-2"></p>
+                <div class="space-x-2">
+                    <button id="btnViewEdit" onclick="openCrudModal(docIdToHandle)" class="py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-full shadow-md transition transform hover:scale-[1.02]">
+                        <i class="fas fa-edit mr-1"></i> Edit
+                    </button>
+                    <button id="btnViewDelete" onclick="openDeleteModal()" class="py-2 px-4 bg-danger hover:bg-danger-dark text-white font-semibold rounded-full shadow-md transition transform hover:scale-[1.02]">
+                        <i class="fas fa-trash-alt mr-1"></i> Delete
+                    </button>
+                </div>
+            </div>
+            
+            <div id="vContent" class="mt-6 h-[60vh] overflow-y-auto p-4 rounded-lg bg-gray-50 dark:bg-bg-dark border border-gray-200 dark:border-border-dark text-text-light dark:text-text-dark">
+                <p class='italic text-gray-400'>Loading content...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="crudModalBg" class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-300">
+        <div class="bg-white dark:bg-card-dark rounded-xl shadow-3xl w-full max-w-3xl p-8 relative transition-all duration-500 transform scale-95 opacity-0" id="crudModalContent">
+            
+            <h3 id="crudModalTitle" class="text-3xl font-extrabold mb-4 text-brand-accent border-b pb-2 dark:border-border-dark">New Knowledge Document</h3>
+            
+            <button onclick="closeCrudModal()" class="absolute top-4 right-4 p-2 rounded-full text-gray-400 hover:text-brand-accent transition">
+                <i class="fas fa-times fa-xl"></i>
+            </button>
+            
+            <form id="kbForm" data-edit-id="">
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <label class="block">
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">Document Name <span class="text-danger">*</span></span>
+                            <input type="text" name="documentname" id="docNameInput" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">Category</span>
+                            <select name="category" id="docCategoryInput"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition">
+                                <option value="" disabled selected>Select Category</option>
+                                <option value="HR Policies">HR Policies</option>
+                                <option value="Campaign A SOP">Campaign A SOP</option>
+                                <option value="IT Procedures">IT Procedures</option>
+                                <option value="Training">Training</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <label class="block">
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">Owner / Responsible Party</span>
+                            <input type="text" name="owner" id="docOwnerInput"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">Version</span>
+                            <input type="text" name="version" id="docVersionInput" value="1.0"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition">
+                        </label>
+                    </div>
+
+                    <label class="block">
+                        <span class="text-gray-700 dark:text-gray-300 font-medium">Tags (Comma Separated)</span>
+                        <input type="text" name="tags" id="docTagsInput" placeholder="e.g., sop, hr, nte, process"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition">
+                    </label>
+
+                    <label class="block">
+                        <span class="text-gray-700 dark:text-gray-300 font-medium">Document Content (HTML/Rich Text)</span>
+                        <textarea name="contenthtml" id="docContentHtmlInput" rows="8" placeholder="Paste the HTML content or a brief summary here. For full editing, click the 'Edit in External Tool' button."
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition"></textarea>
+                    </label>
+
+                    <p id="editNotice" class="text-sm text-yellow-600 dark:text-yellow-400 hidden">
+                        *Note: Editing large content directly here is discouraged. Use the **Edit in External Tool** button for rich text formatting and large document updates.*
+                    </p>
+                </div>
+
+                <div class="mt-8 flex justify-end space-x-4">
+                    <button type="button" onclick="redirectEdit(document.getElementById('kbForm').dataset.editId)" id="btnExternalEdit"
+                        class="bg-gray-300 hover:bg-gray-400 text-text-light dark:bg-border-dark dark:text-text-dark dark:hover:bg-gray-700 px-6 py-3 rounded-full font-bold transition duration-300 transform hover:scale-[1.02]">
+                        <i class="fas fa-external-link-alt mr-2"></i> Edit in External Tool
+                    </button>
+                    <button type="submit" id="formSubmitButton"
+                        class="bg-brand-accent hover:bg-brand-dark text-bg-dark px-6 py-3 rounded-full font-bold transition duration-300 transform hover:scale-[1.02]">
+                        <i class="fas fa-save mr-2"></i> Save Document
+                    </button>
+                </div>
+            </form>
+            </div>
+    </div>
+
+
+    <div id="deleteConfirmModal" class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-300">
+        <div id="deleteModalContent"
+            class="bg-white dark:bg-card-dark rounded-xl shadow-3xl w-full max-w-sm p-6 relative transition-all duration-500 transform scale-95 opacity-0 text-center">
+            
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/50">
+                <i class="fas fa-trash-alt text-danger fa-lg"></i>
+            </div>
+            
+            <h3 class="text-xl font-bold mt-3 text-text-light dark:text-text-dark">Confirm Deletion</h3>
+            <p id="deleteMessage" class="text-sm text-gray-500 dark:text-gray-400 mt-2">Are you absolutely sure you want to delete <span id="docToDeleteName" class="font-semibold text-text-light dark:text-text-dark">this document</span>? This action cannot be undone.</p>
+            
+            <div class="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
+                <button type="button" id="confirmDeleteButton"
+                    class="inline-flex w-full justify-center rounded-full border border-transparent bg-danger hover:bg-danger-dark px-4 py-2 text-base font-semibold text-white shadow-sm transition sm:ml-3 sm:w-auto sm:text-sm transform hover:scale-[1.02]">
+                    Delete
+                </button>
+                <button type="button" onclick="closeDeleteModal()"
+                    class="mt-3 inline-flex w-full justify-center rounded-full border border-gray-300 dark:border-border-dark bg-white dark:bg-card-dark px-4 py-2 text-base font-semibold text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-bg-dark transition sm:mt-0 sm:w-auto sm:text-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-70 flex flex-col justify-center items-center z-50">
+        <div class="relative flex items-center justify-center">
+            <div class="w-16 h-16 border-4 border-gray-300 dark:border-border-dark border-t-brand-accent rounded-full animate-spin"></div>
+            <div class="absolute w-10 h-10 border-4 border-gray-200 dark:border-gray-700 border-b-brand-dark rounded-full animate-spin-slow"></div>
+        </div>
+        <p id="loadingText" class="mt-4 text-brand-accent text-lg font-semibold">Loading...</p>
+    </div>
+
+    <script>
+        feather.replace();
+
+        // ===== CONFIG =====
+        // **IMPORTANT**: Replace this with your deployed Apps Script URL
+        const SCRIPTS_URL = "https://script.google.com/macros/s/AKfycbzemNCDs-MYjK0SrT8Qz7t8TvtsVT-jFBTFMMxVqVQa-tb6phDzXAqGlF1HhgvVfvbrZQ/exec";
+        // Dummy redirect URLs for external editing/creating (e.g., a dedicated Google Doc editor)
+        const EDIT_REDIRECT_URL = "https://your-kb-editor.example.com/edit";
+        const CREATE_REDIRECT_URL = "https://your-kb-editor.example.com/create";
+        // ==================
+
+        let docs = [];
+        let currentView = 'grid'; // Default view
+        let docIdToHandle = null; // Used by both View and Delete modals
+
+        const body = document.body;
+        const toggleBtn = document.getElementById('themeToggle');
+        
+        // Modals
+        const viewModalBg = document.getElementById('viewModalBg');
+        const viewModalContent = document.getElementById('viewModalContent');
+        const crudModalBg = document.getElementById('crudModalBg');
+        const crudModalContent = document.getElementById('crudModalContent');
+        const deleteModal = document.getElementById('deleteConfirmModal');
+        const deleteModalContent = document.getElementById('deleteModalContent');
+        
+        // Elements
+        const kbForm = document.getElementById('kbForm');
+        const gridView = document.getElementById('grid-view');
+        const listTableBody = document.getElementById('listTableBody');
+
+
+        /* ------------------ THEME & LOADING (Reused from Coaching Form) ------------------ */
+        function setTheme(isDark) {
+            if (isDark) {
+                body.classList.add("dark");
+                localStorage.setItem("theme", "dark");
+                toggleBtn.innerHTML = feather.icons.sun.toSvg();
+            } else {
+                body.classList.remove("dark");
+                localStorage.setItem("theme", "light");
+                toggleBtn.innerHTML = feather.icons.moon.toSvg();
+            }
+        }
+        if (localStorage.getItem("theme") === "dark" || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            setTheme(true);
+        } else {
+            setTheme(false);
+        }
+        toggleBtn.addEventListener('click', () => {
+            setTheme(!body.classList.contains('dark'));
+        });
+        
+        function showLoading(message = "Loading...") {
+            document.getElementById('loadingText').innerText = message;
+            document.getElementById('loadingModal').classList.remove('hidden');
+        }
+        function hideLoading() {
+            document.getElementById('loadingModal').classList.add('hidden');
+        }
+
+        /* ------------------ API UTILITIES ------------------ */
+        async function apiGet(params = {}) {
+            const qs = new URLSearchParams(params).toString();
+            const res = await fetch(SCRIPTS_URL + (qs ? "?" + qs : ""));
+            const j = await res.json();
+            if (!j.success) throw new Error(j.error);
+            return j.data;
+        }
+
+        async function apiPost(body = {}) {
+            // This is a simulation, you must implement the actual POST to Apps Script
+            console.warn("API POST/PUT/DELETE actions are currently SIMULATED.");
+            // Actual Apps Script call would look like this:
+            // const res = await fetch(SCRIPTS_URL, {
+            //     method: "POST", headers: { "Content-Type": "application/json" },
+            //     body: JSON.stringify(body)
+            // });
+            // const j = await res.json();
+            // if (!j.success) throw new Error(j.error);
+            // return j.data; 
+            
+            // Simulation return:
+            return { id: body.id || `KB-${Math.floor(Math.random() * 999)}` };
+        }
+
+        /* ------------------ MODAL CONTROL FUNCTIONS ------------------ */
+
+        // --- View Modal (Read-Only) ---
+        function openViewModal(docId) {
+            docIdToHandle = docId;
+            document.getElementById('vContent').innerHTML = "<p class='italic text-gray-400'>Loading content...</p>";
+            document.getElementById('vMeta').textContent = "";
+            document.getElementById("viewModalTitle").innerText = "View Document";
+            
+            viewModalBg.classList.remove('hidden');
+            setTimeout(() => {
+                viewModalBg.classList.add('opacity-100');
+                viewModalContent.classList.remove('opacity-0', 'scale-95');
+                loadDocumentContent(docId);
+            }, 10);
+        }
+
+        function closeViewModal() {
+            viewModalBg.classList.remove('opacity-100');
+            viewModalContent.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                viewModalBg.classList.add('hidden');
+                docIdToHandle = null;
+            }, 300);
+        }
+
+        // --- CRUD Modal (Create/Edit Form) ---
+        async function openCrudModal(docId = null) {
+            closeViewModal();
+            kbForm.reset();
+            kbForm.dataset.editId = '';
+            document.getElementById('editNotice').classList.add('hidden');
+
+            if (docId) {
+                // EDIT MODE
+                showLoading("Loading document for edit...");
+                try {
+                    const doc = docs.find(d => d.id === docId);
+                    if (!doc) throw new Error("Document not found in local cache.");
+
+                    document.getElementById('crudModalTitle').textContent = `Edit Document: ${doc.documentname}`;
+                    kbForm.dataset.editId = docId;
+                    
+                    // Pre-fill form fields (simulated with local data, but should pull fresh data via API if needed)
+                    document.getElementById('docNameInput').value = doc.documentname || '';
+                    document.getElementById('docCategoryInput').value = doc.category || '';
+                    document.getElementById('docOwnerInput').value = doc.owner || '';
+                    document.getElementById('docVersionInput').value = doc.version || '1.0';
+                    document.getElementById('docTagsInput').value = doc.tags || '';
+                    // Note: contenthtml is left empty or filled with placeholder/short summary
+                    document.getElementById('docContentHtmlInput').value = 'Content edited externally or via a linked tool.';
+                    document.getElementById('editNotice').classList.remove('hidden');
+
+                    document.getElementById('formSubmitButton').innerHTML = '<i class="fas fa-save mr-2"></i> Update Document';
+                } catch (error) {
+                    console.error("Error preparing edit modal:", error);
+                    alert("Could not load document details for editing.");
+                    hideLoading();
+                    return;
+                }
+                finally {
+                    hideLoading();
+                }
+
+            } else {
+                // CREATE MODE
+                document.getElementById('crudModalTitle').textContent = "New Knowledge Document";
+                document.getElementById('formSubmitButton').innerHTML = '<i class="fas fa-save mr-2"></i> Save Document';
+                document.getElementById('btnExternalEdit').classList.add('hidden'); // External edit not needed on creation (yet)
+            }
+
+            // Show Modal
+            crudModalBg.classList.remove('hidden');
+            setTimeout(() => {
+                crudModalBg.classList.add('opacity-100');
+                crudModalContent.classList.remove('opacity-0', 'scale-95');
+            }, 10);
+        }
+
+        function closeCrudModal() {
+            crudModalBg.classList.remove('opacity-100');
+            crudModalContent.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                crudModalBg.classList.add('hidden');
+                document.getElementById('btnExternalEdit').classList.remove('hidden'); // Reset visibility
+            }, 300);
+        }
+
+        // --- Delete Modal ---
+        function openDeleteModal() {
+            if (!docIdToHandle) return;
+            closeViewModal(); // Close view modal first
+            
+            const docName = docs.find(d => d.id === docIdToHandle)?.documentname || 'this document';
+            document.getElementById('docToDeleteName').textContent = docName;
+            
+            deleteModal.classList.remove('hidden');
+            setTimeout(() => {
+                deleteModal.classList.add('opacity-100');
+                deleteModalContent.classList.remove('opacity-0', 'scale-95');
+            }, 10);
+        }
+
+        function closeDeleteModal() {
+            deleteModal.classList.remove('opacity-100');
+            deleteModalContent.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                deleteModal.classList.add('hidden');
+                docIdToHandle = null;
+            }, 300);
+        }
+
+
+        /* ------------------ DATA LOAD & RENDER ------------------ */
+        async function loadKB() {
+            showLoading("Fetching knowledge base documents...");
+            try {
+                docs = await apiGet({ action: "list" });
+                renderViews(docs);
+                renderCategories(docs);
+            } catch (error) {
+                console.error("Failed to load documents:", error);
+                const errorMessage = `<p class="p-8 text-center text-red-500 dark:text-red-400">Failed to load data. Error: ${error.message}</p>`;
+                gridView.innerHTML = errorMessage;
+                listTableBody.innerHTML = `<tr><td colspan="5">${errorMessage}</td></tr>`;
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function loadDocumentContent(id) {
+            try {
+                const doc = await apiGet({ action: "get", id });
+                document.getElementById('viewModalTitle').textContent = doc.documentname;
+                document.getElementById('vMeta').textContent = `Category: ${doc.category} | Version: ${doc.version} | Owner: ${doc.owner} | Modified: ${doc.lastmodified}`;
+                
+                document.getElementById('vContent').innerHTML = doc.documenthtml || "<p class='italic text-gray-400'>No content available</p>";
+                docIdToHandle = id;
+            } catch (error) {
+                console.error("Failed to load document content:", error);
+                document.getElementById('vContent').innerHTML = `<p class='font-bold text-danger dark:text-danger-dark'>Error loading content: ${error.message}</p>`;
+            }
+        }
+
+        // ... (renderViews, renderGrid, renderList, renderCategories functions are the same as before)
+        function changeView(viewType) {
+            currentView = viewType;
+            const activeBtn = viewType === 'grid' ? document.getElementById('btnGrid') : document.getElementById('btnList');
+            const inactiveBtn = viewType === 'grid' ? document.getElementById('btnList') : document.getElementById('btnGrid');
+
+            activeBtn.classList.remove('bg-gray-200', 'dark:bg-border-dark', 'text-text-light', 'dark:text-text-dark');
+            activeBtn.classList.add('bg-brand-accent', 'text-bg-dark');
+            inactiveBtn.classList.add('bg-gray-200', 'dark:bg-border-dark', 'text-text-light', 'dark:text-text-dark');
+            inactiveBtn.classList.remove('bg-brand-accent', 'text-bg-dark');
+
+            document.getElementById('grid-view').classList.toggle('hidden', viewType !== 'grid');
+            document.getElementById('list-view').classList.toggle('hidden', viewType !== 'list');
+        }
+
+        function renderViews(list) {
+            renderGrid(list);
+            renderList(list);
+            changeView(currentView);
+        }
+
+        function renderGrid(list) {
+            gridView.innerHTML = list.map(doc => `
+                <div class="bg-white dark:bg-card-dark p-6 rounded-2xl shadow-xl hover:shadow-2xl cursor-pointer transition duration-300 border-t-8 border-brand-accent"
+                     onclick="openViewModal('${doc.id}')">
+                    <h3 class="font-bold text-xl mb-2">${escapeHtml(doc.documentname)}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Category: ${escapeHtml(doc.category)}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-500">Owner: ${escapeHtml(doc.owner)}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-2 truncate">Tags: ${escapeHtml(doc.tags)}</p>
+                </div>
+            `).join('');
+        }
+
+        function renderList(list) {
+            listTableBody.innerHTML = list.map(doc => `
+                <tr class="text-gray-700 dark:text-gray-300 border-b dark:border-border-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 transition duration-150">
+                    <td class="px-6 py-4 font-medium">${escapeHtml(doc.documentname)}</td>
+                    <td class="px-6 py-4">${escapeHtml(doc.category)}</td>
+                    <td class="px-6 py-4">${escapeHtml(doc.owner)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${escapeHtml(doc.lastmodified)}</td>
+                    <td class="px-6 py-4 text-center space-x-2 whitespace-nowrap">
+                        <button class="text-blue-500 hover:text-brand-accent transition text-sm font-semibold" onclick="openViewModal('${doc.id}')">View</button>
+                        <button class="text-green-500 hover:text-brand-accent transition text-sm font-semibold" onclick="openCrudModal('${doc.id}')">Edit</button>
+                        <button class="text-red-500 hover:text-brand-accent transition text-sm font-semibold" onclick="docIdToHandle = '${doc.id}'; openDeleteModal();">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function renderCategories(list) {
+            const categoriesMap = list.reduce((acc, doc) => {
+                const cat = doc.category || 'Uncategorized';
+                acc[cat] = (acc[cat] || 0) + 1;
+                return acc;
+            }, {});
+            const sortedCats = Object.entries(categoriesMap).sort(([a], [b]) => a.localeCompare(b));
+
+            const ul = document.getElementById('categories');
+            ul.innerHTML = `<li><button class="cat-btn font-medium text-left w-full p-2 bg-brand-accent text-bg-dark rounded-xl transition" data-cat="all">All Documents (${list.length})</button></li>`
+                + sortedCats.map(([c, count]) => `<li><button class="cat-btn text-left w-full p-2 hover:bg-gray-100 dark:hover:bg-border-dark rounded-xl transition" data-cat="${c}">${c} (${count})</button></li>`).join('');
+
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.cat-btn').forEach(b => {
+                        b.classList.remove('bg-brand-accent', 'text-bg-dark');
+                        b.classList.add('hover:bg-gray-100', 'dark:hover:bg-border-dark');
+                    });
+                    btn.classList.add('bg-brand-accent', 'text-bg-dark');
+                    btn.classList.remove('hover:bg-gray-100', 'dark:hover:bg-border-dark');
+                    
+                    const cat = btn.dataset.cat;
+                    const filtered = cat === "all" ? docs : docs.filter(d => d.category === cat);
+                    renderViews(filtered);
+                });
+            });
+        }
+        
+        function escapeHtml(s){return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+
+
+        /* ------------------ FORM HANDLERS ------------------ */
+        kbForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const isEdit = this.dataset.editId;
+            showLoading(isEdit ? "Updating document metadata..." : "Saving new document...");
+            
+            // Get form data
+            const formData = Object.fromEntries(new FormData(this).entries());
+            const actionBody = isEdit ? { _method: "PUT", id: isEdit, ...formData } : formData;
+
+            try {
+                await apiPost(actionBody); // Replace with real fetch call to Apps Script POST endpoint
+                closeCrudModal();
+                loadKB();
+            } catch (error) {
+                console.error("Error saving document:", error);
+                hideLoading();
+                alert(`Failed to save document: ${error.message}. Check the console for details.`);
+            }
+        });
+        
+        document.getElementById('confirmDeleteButton').addEventListener('click', async () => {
+            if (docIdToHandle) {
+                showLoading("Deleting document...");
+                try {
+                    await apiPost({ _method: "DELETE", id: docIdToHandle }); // Replace with real fetch call
+                } catch (error) {
+                    console.error("Error deleting document:", error);
+                    alert("Failed to delete document. Check the console for details.");
+                }
+                closeDeleteModal();
+                loadKB();
+            }
+        });
+
+
+        /* ------------------ REDIRECTS ------------------ */
+        function redirectEdit(id) {
+            closeCrudModal();
+            window.location.href = EDIT_REDIRECT_URL + "?id=" + encodeURIComponent(id) + "&return=" + encodeURIComponent(window.location.href);
+        }
+        
+        /* ------------------ INIT ------------------ */
+        window.onload = loadKB;
+    </script>
+
+</body>
+
+</html>
