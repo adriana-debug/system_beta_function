@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Team Attendance Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 p-6">
+
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-md">
+      <h1 class="text-2xl font-bold mb-4 text-center">Team Attendance Tracker</h1>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Date</label>
+          <input type="date" id="date" class="w-full border rounded-lg px-3 py-2">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Supervisor</label>
+          <input type="text" id="supervisor" class="w-full border rounded-lg px-3 py-2" placeholder="Supervisor Name">
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <table class="w-full border-collapse border border-gray-200">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="border px-3 py-2">Agent Name</th>
+              <th class="border px-3 py-2">Status</th>
+              <th class="border px-3 py-2">Shift Start</th>
+              <th class="border px-3 py-2">Shift End</th>
+              <th class="border px-3 py-2">Notes</th>
+            </tr>
+          </thead>
+          <tbody id="attendanceTable"></tbody>
+        </table>
+      </div>
+
+      <div class="mt-6 flex justify-between">
+        <button onclick="submitAll()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+          Submit Attendance
+        </button>
+      </div>
+
+      <p id="message" class="mt-4 text-center font-medium"></p>
+    </div>
+
+    <script>
+      let agentList = [];
+
+      function loadAgents() {
+        google.script.run.withSuccessHandler(renderTable).getTeamList();
+      }
+
+      function renderTable(agents) {
+        agentList = agents;
+        const tbody = document.getElementById("attendanceTable");
+        tbody.innerHTML = "";
+
+        agents.forEach(agent => {
+          const row = `
+            <tr>
+              <td class="border px-3 py-2">${agent}</td>
+              <td class="border px-3 py-2">
+                <select id="status-${agent}" class="border rounded-lg w-full px-2 py-1">
+                  <option value="Present">Present</option>
+                  <option value="Absent">Absent</option>
+                  <option value="Late">Late</option>
+                  <option value="On Leave">On Leave</option>
+                </select>
+              </td>
+              <td class="border px-3 py-2"><input type="time" id="start-${agent}" class="w-full border rounded-lg px-2 py-1"></td>
+              <td class="border px-3 py-2"><input type="time" id="end-${agent}" class="w-full border rounded-lg px-2 py-1"></td>
+              <td class="border px-3 py-2"><input type="text" id="note-${agent}" class="w-full border rounded-lg px-2 py-1" placeholder="Add notes..."></td>
+            </tr>`;
+          tbody.insertAdjacentHTML("beforeend", row);
+        });
+      }
+
+      function submitAll() {
+        const date = document.getElementById("date").value;
+        const supervisor = document.getElementById("supervisor").value;
+
+        if (!date || !supervisor) {
+          alert("Please fill in date and supervisor name.");
+          return;
+        }
+
+        agentList.forEach(agent => {
+          const status = document.getElementById(`status-${agent}`).value;
+          const shiftStart = document.getElementById(`start-${agent}`).value;
+          const shiftEnd = document.getElementById(`end-${agent}`).value;
+          const notes = document.getElementById(`note-${agent}`).value;
+
+          const record = { date, supervisor, agentName: agent, status, shiftStart, shiftEnd, notes };
+
+          google.script.run.withSuccessHandler(res => {
+            document.getElementById("message").textContent = res.message;
+            document.getElementById("message").className = res.success ? "text-green-600" : "text-red-600";
+
+            if (!res.success && confirm("Record exists. Update instead?")) {
+              google.script.run.withSuccessHandler(updateRes => {
+                document.getElementById("message").textContent = updateRes.message;
+                document.getElementById("message").className = updateRes.success ? "text-green-600" : "text-red-600";
+              }).updateAttendance(record);
+            }
+          }).saveAttendance(record);
+        });
+      }
+
+      window.onload = loadAgents;
+    </script>
+
+  </body>
+</html>
