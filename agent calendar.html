@@ -1,0 +1,66 @@
+
+<html>
+  <head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load("current", {packages:["calendar"]});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        var dataTable = new google.visualization.DataTable();
+        dataTable.addColumn({ type: 'date', id: 'Date' });
+        dataTable.addColumn({ type: 'number', id: 'Attendance' });
+        dataTable.addColumn({ type: 'string', role: 'tooltip' });
+
+        // Sample Data: [Date, Value, Tooltip]
+        // 3 = Present, 2 = Late, 1 = Absent
+        dataTable.addRows([
+          [ new Date(2025, 9, 1), 3, 'Present' ],
+          [ new Date(2025, 9, 2), 3, 'Present' ],
+          [ new Date(2025, 9, 3), 2, 'Late' ],
+          [ new Date(2025, 9, 4), 1, 'Absent' ],
+          [ new Date(2025, 9, 5), 3, 'Present' ],
+          [ new Date(2025, 9, 6), 3, 'Present' ],
+          [ new Date(2025, 9, 7), 2, 'Late' ],
+          [ new Date(2025, 9, 8), 1, 'Absent' ],
+          [ new Date(2025, 9, 9), 3, 'Present' ],
+          [ new Date(2025, 9, 10), 2, 'Late' ],
+          [ new Date(2025, 9, 11), 3, 'Present' ],
+          [ new Date(2025, 9, 12), 3, 'Present' ],
+          [ new Date(2025, 9, 13), 1, 'Absent' ],
+          [ new Date(2025, 9, 14), 3, 'Present' ]
+        ]);
+
+        var chart = new google.visualization.Calendar(document.getElementById('calendar_basic'));
+
+        var options = {
+          title: "Agent Attendance - October 2025",
+          height: 350,
+          calendar: {
+            cellColor: {
+              stroke: '#fff',
+              strokeOpacity: 0.5,
+              strokeWidth: 1
+            },
+            focusedCellColor: {
+              stroke: '#000',
+              strokeOpacity: 0.8,
+              strokeWidth: 1
+            }
+          },
+          colorAxis: {
+            values: [1, 2, 3],
+            colors: ['#e74c3c', '#f39c12', '#27ae60'] // Red, Amber, Green
+          }
+        };
+
+        chart.draw(dataTable, options);
+      }
+    </script>
+  </head>
+  <body style="font-family: Arial, sans-serif; background: #f8f9fa; color: #333; text-align: center;">
+    <h2>Agent Attendance Tracker</h2>
+    <p>🟢 Present &nbsp;&nbsp; 🟠 Late &nbsp;&nbsp; 🔴 Absent</p>
+    <div id="calendar_basic" style="width: 1000px; height: 350px; margin: auto;"></div>
+  </body>
+</html>

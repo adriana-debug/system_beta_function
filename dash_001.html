@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KPI Dashboard</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configure Tailwind to use 'class' for dark mode and define custom colors/font
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                    },
+                    colors: {
+                        // Google-inspired colors for branding/charts
+                        'google-blue': '#4285F4',
+                        'google-green': '#34A853',
+                        'google-red': '#EA4335',
+                        'google-yellow': '#FBBC05',
+
+                        // Custom theme colors (now more descriptive)
+                        'primary-bg-light': '#F8F9FA',
+                        'secondary-bg-light': '#FFFFFF',
+                        'text-primary-light': '#202124',
+                        'text-secondary-light': '#5F6368',
+                        'border-light': '#DADCE0',
+                        
+                        'primary-bg-dark': '#1C1C1C',
+                        'secondary-bg-dark': '#292929',
+                        'text-primary-dark': '#E8EAED',
+                        'text-secondary-dark': '#BDC1C6',
+                        'border-dark': '#404040',
+                    },
+                },
+            },
+        };
+    </script>
+
+    <!-- Custom Styles (using classes for theme colors where possible) -->
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+        }
+
+        /* Variables for Light Mode (Default) */
+        :root {
+            --primary-bg: theme('colors.primary-bg-light');
+            --secondary-bg: theme('colors.secondary-bg-light');
+            --text-primary: theme('colors.text-primary-light');
+            --text-secondary: theme('colors.text-secondary-light');
+            --border-color: theme('colors.border-light');
+            --shadow-color: rgba(0, 0, 0, 0.05);
+            --shadow-hover: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Variables for Dark Mode */
+        .dark {
+            --primary-bg: theme('colors.primary-bg-dark');
+            --secondary-bg: theme('colors.secondary-bg-dark');
+            --text-primary: theme('colors.text-primary-dark');
+            --text-secondary: theme('colors.text-secondary-dark');
+            --border-color: theme('colors.border-dark');
+            --shadow-color: rgba(255, 255, 255, 0.05);
+            --shadow-hover: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Component Styles */
+        .card {
+            background-color: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px var(--shadow-color);
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 6px -1px var(--shadow-hover), 0 2px 4px -2px var(--shadow-hover);
+        }
+
+        .tab-btn {
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .tab-btn:hover {
+            border-bottom-color: theme('colors.google-blue');
+            color: var(--text-primary);
+        }
+
+        .active-tab {
+            color: theme('colors.google-blue') !important;
+            border-bottom-color: theme('colors.google-blue') !important;
+            font-weight: 500;
+        }
+
+        .tab-content {
+            display: none;
+            /* Hide all content by default */
+        }
+
+        .active-tab-content {
+            display: block;
+            /* Show only the active content */
+        }
+
+        /* Utility for Text Secondary */
+        .text-secondary {
+            color: var(--text-secondary);
+        }
+    </style>
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+
+<body class="p-4 md:p-8">
+
+    <!-- Header / Navigation Bar -->
+    <header class="mb-8 border-b pb-4 sticky top-0 z-10 bg-white dark:bg-primary-bg-dark"
+        style="border-color: var(--border-color);">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+            
+            <!-- Dynamic Logo Container (Injected by JS) -->
+            <div id="logoContainer" class="flex items-center space-x-2 cursor-pointer mb-4 sm:mb-0">
+                <!-- Content will be injected by JavaScript on theme change -->
+            </div>
+
+            <!-- Theme Toggle Button -->
+            <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-secondary-bg-dark transition-colors"
+                aria-label="Toggle theme">
+                <!-- Icon injected by JS -->
+            </button>
+        </div>
+
+        <!-- Tab Navigation -->
+        <nav class="mt-4 flex space-x-4 overflow-x-auto whitespace-nowrap">
+            <button class="tab-btn p-2 tab-button" data-target="dashboard">Dashboard</button>
+            <button class="tab-btn p-2 tab-button" data-target="performance">Performance</button>
+            <button class="tab-btn p-2 tab-button" data-target="users">Users</button>
+            <button class="tab-btn p-2 tab-button" data-target="settings">Settings</button>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto">
+
+        <!-- 1. Dashboard Tab Content -->
+        <div id="dashboard" class="tab-content active-tab-content">
+            <h2 class="text-3xl font-bold mb-6 text-primary-light dark:text-primary-dark">Executive Summary</h2>
+            
+            <!-- KPI Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Card 1: Revenue -->
+                <div class="card p-6 rounded-xl">
+                    <div class="text-secondary mb-2 flex items-center">
+                        <span class="material-symbols-outlined mr-2 text-google-green">paid</span>
+                        Total Revenue
+                    </div>
+                    <p class="text-4xl font-light mb-1">$85.2K</p>
+                    <p class="text-sm text-google-green flex items-center">
+                        <i class="fas fa-caret-up mr-1"></i>
+                        +12.5% vs last month
+                    </p>
+                </div>
+                <!-- Card 2: Users -->
+                <div class="card p-6 rounded-xl">
+                    <div class="text-secondary mb-2 flex items-center">
+                        <span class="material-symbols-outlined mr-2 text-google-blue">group</span>
+                        Active Users
+                    </div>
+                    <p class="text-4xl font-light mb-1">1,489</p>
+                    <p class="text-sm text-google-red flex items-center">
+                        <i class="fas fa-caret-down mr-1"></i>
+                        -3.1% vs last month
+                    </p>
+                </div>
+                <!-- Card 3: Conversion Rate -->
+                <div class="card p-6 rounded-xl">
+                    <div class="text-secondary mb-2 flex items-center">
+                        <span class="material-symbols-outlined mr-2 text-google-yellow">percent</span>
+                        Conversion Rate
+                    </div>
+                    <p class="text-4xl font-light mb-1">4.7%</p>
+                    <p class="text-sm text-google-green flex items-center">
+                        <i class="fas fa-caret-up mr-1"></i>
+                        +0.8% vs last month
+                    </p>
+                </div>
+                <!-- Card 4: Support Tickets -->
+                <div class="card p-6 rounded-xl">
+                    <div class="text-secondary mb-2 flex items-center">
+                        <span class="material-symbols-outlined mr-2 text-google-red">mail</span>
+                        Open Tickets
+                    </div>
+                    <p class="text-4xl font-light mb-1">32</p>
+                    <p class="text-sm text-google-red flex items-center">
+                        <i class="fas fa-caret-up mr-1"></i>
+                        +5 vs last month
+                    </p>
+                </div>
+            </div>
+
+            <!-- Charts/Reports Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Main Chart -->
+                <div class="lg:col-span-2 card p-6 rounded-xl min-h-[400px]">
+                    <h3 class="text-xl font-medium mb-4">Monthly Revenue Trend</h3>
+                    <div class="w-full h-80 flex items-center justify-center text-secondary">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        Chart Visualization Placeholder
+                    </div>
+                </div>
+
+                <!-- Secondary Report -->
+                <div class="card p-6 rounded-xl min-h-[400px]">
+                    <h3 class="text-xl font-medium mb-4">Top Referrers</h3>
+                    <ul class="space-y-3">
+                        <li class="flex justify-between items-center text-secondary">
+                            <span>Google Search</span>
+                            <span class="font-medium text-primary-light dark:text-primary-dark">45%</span>
+                        </li>
+                        <li class="flex justify-between items-center text-secondary">
+                            <span>Direct Traffic</span>
+                            <span class="font-medium text-primary-light dark:text-primary-dark">25%</span>
+                        </li>
+                        <li class="flex justify-between items-center text-secondary">
+                            <span>Social Media</span>
+                            <span class="font-medium text-primary-light dark:text-primary-dark">18%</span>
+                        </li>
+                        <li class="flex justify-between items-center text-secondary">
+                            <span>Email Campaigns</span>
+                            <span class="font-medium text-primary-light dark:text-primary-dark">12%</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Performance Tab Content -->
+        <div id="performance" class="tab-content">
+            <h2 class="text-3xl font-bold mb-6">Performance Metrics</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card p-6 rounded-xl">
+                    <h3 class="text-xl font-medium mb-4">System Uptime</h3>
+                    <p class="text-5xl text-google-green">99.98%</p>
+                    <p class="text-secondary mt-2">Annualized uptime since launch.</p>
+                </div>
+                <div class="card p-6 rounded-xl">
+                    <h3 class="text-xl font-medium mb-4">Average Load Time</h3>
+                    <p class="text-5xl text-google-blue">1.2s</p>
+                    <p class="text-secondary mt-2">Globally averaged response time.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Users Tab Content -->
+        <div id="users" class="tab-content">
+            <h2 class="text-3xl font-bold mb-6">User Management</h2>
+            <div class="card p-6 rounded-xl">
+                <h3 class="text-xl font-medium mb-4">User List</h3>
+                <p class="text-secondary">A table of all current users would be displayed here.</p>
+            </div>
+        </div>
+
+        <!-- 4. Settings Tab Content -->
+        <div id="settings" class="tab-content">
+            <h2 class="text-3xl font-bold mb-6">Application Settings</h2>
+            <div class="card p-6 rounded-xl">
+                <h3 class="text-xl font-medium mb-4">Configuration</h3>
+                <p class="text-secondary">Options to manage application preferences and integrations.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JavaScript Refactor -->
+    <script>
+        // Use window.onload to ensure all elements are ready before script execution
+        window.onload = function () {
+            
+            // 1. Initializations
+            const body = document.body;
+            const themeToggleBtn = document.getElementById('themeToggle');
+            const logoContainer = document.getElementById('logoContainer');
+            const tabButtons = document.querySelectorAll(".tab-button");
+            const tabContents = document.querySelectorAll(".tab-content");
+
+            // 2. Theme Management and Dynamic Logo
+            
+            /**
+             * Generates the SVG and text HTML for the logo based on the current theme.
+             * @param {boolean} isDark - True if dark mode is active.
+             * @returns {string} - HTML string for the logo.
+             */
+            function getLogoHtml(isDark) {
+                // Defines colors for the icon and text to ensure high contrast
+                const iconColor = isDark ? 'text-google-yellow' : 'text-google-blue';
+                const textColor = isDark ? 'text-gray-100' : 'text-gray-800';
+                
+                // Simple abstract 'G' or 'Gemini' themed icon
+                const logoIconSvg = `
+                    <svg class="h-8 w-8 ${iconColor} transition-colors duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 2a10 10 0 0 0-9 5.8 10 10 0 0 0 4.2 13.2" />
+                        <path d="M12 22a10 10 0 0 0 9-5.8 10 10 0 0 0-4.2-13.2" />
+                    </svg>
+                `;
+
+                return `
+                    ${logoIconSvg}
+                    <h1 class="text-2xl font-bold ${textColor} transition-colors duration-300">GEMINI DASHBOARD</h1>
+                `;
+            }
+
+            /**
+             * Sets the application theme and updates the UI elements (body class, toggle icon, logo).
+             * @param {boolean} isDark - The theme state to set.
+             */
+            function setTheme(isDark) {
+                if (isDark) {
+                    body.classList.add("dark");
+                    localStorage.setItem("theme", "dark");
+                    themeToggleBtn.innerHTML = feather.icons.sun.toSvg({ class: 'h-6 w-6 text-google-yellow' });
+                } else {
+                    body.classList.remove("dark");
+                    localStorage.setItem("theme", "light");
+                    themeToggleBtn.innerHTML = feather.icons.moon.toSvg({ class: 'h-6 w-6 text-google-blue' });
+                }
+                
+                // Dynamic Logo Update
+                logoContainer.innerHTML = getLogoHtml(isDark);
+            }
+
+            // Apply saved theme on load
+            const savedTheme = localStorage.getItem("theme");
+            // Check for saved theme; default to light mode if none is found
+            const isDarkInitial = savedTheme === "dark"; 
+            setTheme(isDarkInitial);
+
+            // Toggle theme on button click
+            themeToggleBtn.addEventListener("click", () => {
+                const isDark = !body.classList.contains("dark");
+                setTheme(isDark);
+            });
+
+            // 3. Tab Switching Logic
+            tabButtons.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    // 3.1. Clear Active States
+                    tabButtons.forEach(b => b.classList.remove("active-tab"));
+                    tabContents.forEach(tab => tab.classList.remove("active-tab-content"));
+
+                    // 3.2. Set New Active States
+                    btn.classList.add("active-tab");
+                    const targetContent = document.getElementById(btn.dataset.target);
+                    if (targetContent) {
+                        targetContent.classList.add("active-tab-content");
+                    }
+                });
+            });
+
+            // 4. Initial Tab Activation (Ensure the first one is active on initial render)
+            // This is primarily for when the page loads fresh, as the HTML already sets 'dashboard' as active.
+            if (tabButtons.length > 0) {
+                // If no tab is explicitly marked active, activate the first one
+                if (!document.querySelector(".active-tab")) {
+                    tabButtons[0].click(); // Simulate a click to ensure both button and content are marked
+                }
+            }
+        };
+    </script>
+</body>
+
+</html>

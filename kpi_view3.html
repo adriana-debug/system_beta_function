@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Executive KPI View</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <style>
+    /* executive styling touches */
+    .tab-active { color: #1f6feb; border-bottom: 3px solid #1f6feb; }
+    .perf-badge { font-weight:600; padding:4px 8px; border-radius:999px; font-size:12px; display:inline-block; }
+    .perf-performer { background:#e6f9ed; color:#0f8a3f; border:1px solid #cceed6; }
+    .perf-borderline { background:#fff7e6; color:#b36b00; border:1px solid #f1d9b0; }
+    .perf-risk { background:#fff0f0; color:#a61b1b; border:1px solid #f4c2c2; }
+    .card { background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(250,250,250,0.8)); border:1px solid #e6e9ee; box-shadow: 0 4px 18px rgba(15,23,42,0.04); border-radius:10px; }
+    .accordion-content { max-height:0; overflow:hidden; transition: max-height 300ms ease, padding 220ms ease; }
+    .accordion-content.open { padding: 12px 16px 18px; }
+    table th { font-weight:700; }
+    .table-fixed th, .table-fixed td { white-space: nowrap; }
+    /* small helpers */
+    .muted { color:#6b7280; }
+    .kpi-small { font-size:12px; color:#374151; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <header class="border-b py-6 bg-white sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold">Executive KPI Dashboard</h1>
+        <p class="text-sm muted mt-1">High-level campaign & cluster performance — quarterly view with headcount and thresholds.</p>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div class="text-right">
+          <div class="text-xs muted">As of</div>
+          <div id="asOf" class="font-medium">Q3 2025 (placeholders)</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <!-- Tabs -->
+    <nav class="flex gap-4 items-center mb-6">
+      <button class="tab-active px-3 py-2 rounded-md" onclick="showClusterTab('all', event)">All</button>
+      <button class="px-3 py-2 rounded-md" onclick="showClusterTab('Team Alpha', event)">Team Alpha</button>
+      <button class="px-3 py-2 rounded-md" onclick="showClusterTab('Team Bravo', event)">Team Bravo</button>
+    </nav>
+
+    <!-- Summary Cards -->
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div class="card p-4">
+        <div class="text-sm muted">Total Headcount</div>
+        <div id="card-headcount" class="text-2xl font-bold mt-1">—</div>
+        <div class="text-xs muted mt-1">Sum of headcount for visible rows</div>
+      </div>
+
+      <div class="card p-4">
+        <div class="text-sm muted">Avg CSAT %</div>
+        <div id="card-csat" class="text-2xl font-bold mt-1">—</div>
+        <div class="text-xs muted mt-1">Average of CSAT-like KPI values (from month cells)</div>
+      </div>
+
+      <div class="card p-4">
+        <div class="text-sm muted">Pass Rate (Performer %)</div>
+        <div id="card-passrate" class="text-2xl font-bold mt-1">—</div>
+        <div class="text-xs muted mt-1">Share of rows labelled "Performer"</div>
+      </div>
+
+      <div class="card p-4">
+        <div class="text-sm muted">Top Performer</div>
+        <div id="card-top" class="text-lg font-semibold mt-1">—</div>
+        <div class="text-xs muted mt-1">Campaign with highest average monthly value</div>
+      </div>
+    </section>
+
+    <!-- Body: Accordions per Quarter -->
+    <section>
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-semibold">Campaign Performance — Year (placeholders)</h2>
+        <div class="text-sm muted">Columns: Cluster · Campaign · KPI · Target · Threshold · Headcount · Month1 · Month2 · Month3 · Performance Category</div>
+      </div>
+
+      <div class="space-y-4">
+
+        <!-- Quarter template: copy for Q1..Q4 -->
+        <!-- Q1 -->
+        <div class="card p-0 overflow-hidden">
+          <button class="w-full flex items-center justify-between p-4 text-left focus:outline-none" onclick="toggleQuarter('q1')" aria-expanded="true">
+            <div>
+              <div class="text-sm font-semibold">Q1 — Jan / Feb / Mar</div>
+              <div class="text-xs muted">Strategic baseline quarter</div>
+            </div>
+            <div class="muted">
+              <svg id="icon-q1" class="h-5 w-5 transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+          </button>
+
+          <div id="q1" class="accordion-content open px-4 pb-4">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm table-fixed" data-quarter="Q1">
+                <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+                  <tr>
+                    <th class="px-3 py-3 text-left">Cluster</th>
+                    <th class="px-3 py-3 text-left">Campaign</th>
+                    <th class="px-3 py-3 text-left">KPI</th>
+                    <th class="px-3 py-3 text-right">Target</th>
+                    <th class="px-3 py-3 text-right">Threshold</th>
+                    <th class="px-3 py-3 text-right">Headcount</th>
+                    <th class="px-3 py-3 text-right">Jan</th>
+                    <th class="px-3 py-3 text-right">Feb</th>
+                    <th class="px-3 py-3 text-right">Mar</th>
+                    <th class="px-3 py-3 text-left">Perf. Category</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- placeholders -->
+                  <tr data-cluster="Team Alpha">
+                    <td class="px-3 py-2">Team Alpha</td>
+                    <td class="px-3 py-2 font-medium">Alpha Launch</td>
+                    <td class="px-3 py-2">CSAT %</td>
+                    <td class="px-3 py-2 text-right">90%</td>
+                    <td class="px-3 py-2 text-right">85%</td>
+                    <td class="px-3 py-2 text-right">28</td>
+                    <td class="px-3 py-2 text-right">88%</td>
+                    <td class="px-3 py-2 text-right">89%</td>
+                    <td class="px-3 py-2 text-right">90%</td>
+                    <td class="px-3 py-2"><span class="perf-badge perf-performer">Performer</span></td>
+                  </tr>
+
+                  <tr data-cluster="Team Bravo">
+                    <td class="px-3 py-2">Team Bravo</td>
+                    <td class="px-3 py-2 font-medium">Network Capital</td>
+                    <td class="px-3 py-2">Transfer</td>
+                    <td class="px-3 py-2 text-right">—</td>
+                    <td class="px-3 py-2 text-right">—</td>
+                    <td class="px-3 py-2 text-right">12</td>
+                    <td class="px-3 py-2 text-right">1200</td>
+                    <td class="px-3 py-2 text-right">1150</td>
+                    <td class="px-3 py-2 text-right">1185</td>
+                    <td class="px-3 py-2"><span class="perf-badge perf-borderline">Borderline</span></td>
+                  </tr>
+
+                  <tr data-cluster="Team Bravo">
+                    <td class="px-3 py-2">Team Bravo</td>
+                    <td class="px-3 py-2 font-medium">Bag Borrow or Steal</td>
+                    <td class="px-3 py-2">Accuracy Rate</td>
+                    <td class="px-3 py-2 text-right">95%</td>
+                    <td class="px-3 py-2 text-right">90%</td>
+                    <td class="px-3 py-2 text-right">19</td>
+                    <td class="px-3 py-2 text-right">94%</td>
+                    <td class="px-3 py-2 text-right">95%</td>
+                    <td class="px-3 py-2 text-right">95.5%</td>
+                    <td class="px-3 py-2"><span class="perf-badge perf-performer">Performer</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="card p-0 overflow-hidden">
+          <button class="w-full flex items-center justify-between p-4 text-left focus:outline-none" onclick="toggleQuarter('q2')" aria-expanded="false">
+            <div>
+              <div class="text-sm font-semibold">Q2 — Apr / May / Jun</div>
+              <div class="text-xs muted">Operational improvement window</div>
+            </div>
+            <div class="muted">
+              <svg id="icon-q2" class="h-5 w-5 transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+          </button>
+
+          <div id="q2" class="accordion-content px-4">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm table-fixed" data-quarter="Q2">
+                <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+                  <tr>
+                    <th class="px-3 py-3 text-left">Cluster</th>
+                    <th class="px-3 py-3 text-left">Campaign</th>
+                    <th class="px-3 py-3 text-left">KPI</th>
+                    <th class="px-3 py-3 text-right">Target</th>
+                    <th class="px-3 py-3 text-right">Threshold</th>
+                    <th class="px-3 py-3 text-right">Headcount</th>
+                    <th class="px-3 py-3 text-right">Apr</th>
+                    <th class="px-3 py-3 text-right">May</th>
+                    <th class="px-3 py-3 text-right">Jun</th>
+                    <th class="px-3 py-3 text-left">Perf. Category</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- placeholders -->
+                  <tr data-cluster="Team Alpha">
+                    <td class="px-3 py-2">Team Alpha</td>
+                    <td class="px-3 py-2 font-medium">Social Boosting</td>
+                    <td class="px-3 py-2">Conversion %</td>
+                    <td class="px-3 py-2 text-right">12%</td>
+                    <td class="px-3 py-2 text-right">10%</td>
+                    <td class="px-3 py-2 text-right">14</td>
+                    <td class="px-3 py-2 text-right">11.4%</td>
+                    <td class="px-3 py-2 text-right">12.1%</td>
+                    <td class="px-3 py-2 text-right">13.0%</td>
+                    <td class="px-3 py-2"><span class="perf-badge perf-performer">Performer</span></td>
+                  </tr>
+
+                  <tr data-cluster="Team Bravo">
+                    <td class="px-3 py-2">Team Bravo</td>
+                    <td class="px-3 py-2 font-medium">LTS Nationwide</td>
+                    <td class="px-3 py-2">FCR</td>
+                    <td class="px-3 py-2 text-right">75%</td>
+                    <td class="px-3 py-2 text-right">70%</td>
+                    <td class="px-3 py-2 text-right">22</td>
+                    <td class="px-3 py-2 text-right">72%</td>
+                    <td class="px-3 py-2 text-right">69%</td>
+                    <td class="px-3 py-2 text-right">71%</td>
+                    <td class="px-3 py-2"><span class="perf-badge perf-borderline">Borderline</span></td>
+                  </tr>
+
+                  <tr data-cluster="Team Bravo">
+                    <td class="px-3 py-2">Team Bravo</td>
+                    <td class="px-3 py-2 font-medium">Runa Night Cafe</td>
+                    <td class="px-3 py-2">SLA %</td>
+                    <td class="px-3 py-2 text-right">90%</td>
+                    <td class="px-3 py-2 text-right">88%</td>
+                    <td class="px-3 py-2 text-right">10</td>
+                    <td class="px-3 py-2 text-right">88%</td>
+                    <td class="px-3 py-2 text-right">86%</td>
+                    <td class="px-3 py-2 text-right">89%</td>
+                    <td class="px-3 py-2"><span class="perf-badge perf-performer">Performer</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="card p-0 overflow-hidden">
+          <button class="w-full flex items-center justify-between p-4 text-left focus:outline-none" onclick="toggleQuarter('q3')" aria-expanded="false">
+            <div>
+              <div class="text-sm font-semibold">Q3 — Jul / Aug / Sep</div>
+              <div class="text-xs muted">Current working quarter (sample values pulled from your sheet)</div>
+            </div>
+            <div class="muted">
+              <svg id="icon-q3" class="h-5 w-5 transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+          </button>
+
+          <div id="q3" class="accordion-content px-4">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm table-fixed" data-quarter="Q3">
+                <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+                  <tr>
+                    <th class="px-3 py-3 text-left">Cluster</th>
+                    <th class="px-3 py-3 text-left">Campaign</th>
+                    <th class="px-3 py-3 text-left">KPI</th>
+                    <th class="px-3 py-3 text-right">Target</th>
+                    <th class="px-3 py-3 text-right">Threshold</th>
+                    <th class="px-3 py-3 text-right">Headcount</th>
+                    <th class="px-3 py-3 text-right">Jul</th>
+                    <th class="px-3 py-3 text-right">Aug</th>
+                    <th class="px-3 py-3 text-right">Sep</th>
+                    <th class="px-3 py-3 text-left">Perf. Category</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- a few sample rows (inspired by your uploaded file) -->
+                  <tr data-cluster="Team Bravo">
+                    <td class="px-3 py-2">Team Bravo</td>
+                    <td class="px-3 py-2 font-medium">Network Capital</td>
+                    <td class="px-3 py-2">Transfer</td>
+                    <td class="px-3 py-2 text-right">—</td>
+                    <td class="px-3 py-2 text-right">—</td>
+                    <td class="px-3 py-2 text-right">13</td>
+                    <td class="px-3 py-2 text-right">1230</td>
+                    <td class="px-3 py-2 text-right">1080</td>
+                    <td class="px-3 py-2 text-right">1150</td>
+                    <td class="px-3 py-2"><span class="perf-badge perf-borderline">Borderline</span></td>
+                  </tr>
+
+                  <tr data-cluster="Team Bravo">
+                    <td class="px-3 py-2">Team Bravo</td>
+                    <td class="px-3 py-2 font-medium">American Range Walls</td>
+                    <td class="px-3 py-2">Customer Service QA Score</td>
+                    <td class="px-3 py-2 text-right">0.9</td>
+                    <td class="px-3 py-2 text-right">0.85</td>
+                    <td class="px-3 py-2 text-right">8</td>
+                    <td class="px-3 py-2 text-right">87</td>
+                    <td class="px-3 py-2 text-right">91</td>
+                    <td class="px-3 py-2 text-right">88</td>
+                    <td class="px-3 py-2"><span class="perf-badge perf-performer">Performer</span></td>
+                  </tr>
+
+                  <tr data-cluster="Team Bravo">
+                    <td class="px-3 py-2">Team Bravo</td>
+                    <td class="px-3 py-2 font-medium">Bag Borrow or Steal</td>
+                    <td class="px-3 py-2">Error Rate ≤ 5%</td>
+                    <td class="px-3 py-2 text-right">≤5%</td>
+                    <td class="px-3 py-2 text-right">≤7%</td>
+                    <td class="px-3 py-2 text-right">11</td>
+                    <td class="px-3 py-2 text-right">4.7</td>
+                    <td class="px-3 py-2 text-right">3.9</td>
+                    <td class="px-3 py-2 text-right">5.2</td>
+                    <td class="px-3 py-2"><span class="perf-badge perf-borderline">Borderline</span></td>
+                  </tr>
+
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="card p-0 overflow-hidden">
+          <button class="w-full flex items-center justify-between p-4 text-left focus:outline-none" onclick="toggleQuarter('q4')" aria-expanded="false">
+            <div>
+              <div class="text-sm font-semibold">Q4 — Oct / Nov / Dec</div>
+              <div class="text-xs muted">Year-end / review quarter</div>
+            </div>
+            <div class="muted">
+              <svg id="icon-q4" class="h-5 w-5 transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+          </button>
+
+          <div id="q4" class="accordion-content px-4">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm table-fixed" data-quarter="Q4">
+                <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+                  <tr>
+                    <th class="px-3 py-3 text-left">Cluster</th>
+                    <th class="px-3 py-3 text-left">Campaign</th>
+                    <th class="px-3 py-3 text-left">KPI</th>
+                    <th class="px-3 py-3 text-right">Target</th>
+                    <th class="px-3 py-3 text-right">Threshold</th>
+                    <th class="px-3 py-3 text-right">Headcount</th>
+                    <th class="px-3 py-3 text-right">Oct</th>
+                    <th class="px-3 py-3 text-right">Nov</th>
+                    <th class="px-3 py-3 text-right">Dec</th>
+                    <th class="px-3 py-3 text-left">Perf. Category</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- placeholders -->
+                  <tr data-cluster="Team Alpha">
+                    <td class="px-3 py-2">Team Alpha</td>
+                    <td class="px-3 py-2 font-medium">Alpha Retain</td>
+                    <td class="px-3 py-2">Quality</td>
+                    <td class="px-3 py-2 text-right">90%</td>
+                    <td class="px-3 py-2 text-right">85%</td>
+                    <td class="px-3 py-2 text-right">21</td>
+                    <td class="px-3 py-2 text-right">91%</td>
+                    <td class="px-3 py-2 text-right">90%</td>
+                    <td class="px-3 py-2 text-right">92%</td>
+                    <td class="px-3 py-2"><span class="perf-badge perf-performer">Performer</span></td>
+                  </tr>
+
+                  <tr data-cluster="Team Bravo">
+                    <td class="px-3 py-2">Team Bravo</td>
+                    <td class="px-3 py-2 font-medium">Tahoe Elite Service</td>
+                    <td class="px-3 py-2">Conversion %</td>
+                    <td class="px-3 py-2 text-right">12%</td>
+                    <td class="px-3 py-2 text-right">9%</td>
+                    <td class="px-3 py-2 text-right">16</td>
+                    <td class="px-3 py-2 text-right">10.2%</td>
+                    <td class="px-3 py-2 text-right">11.0%</td>
+                    <td class="px-3 py-2 text-right">11.8%</td>
+                    <td class="px-3 py-2"><span class="perf-badge perf-borderline">Borderline</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div> <!-- end quarter cards -->
+    </section>
+  </main>
+
+  <script>
+    // ---- Utilities ----
+    function numericize(text) {
+      if (text === null || text === undefined) return NaN;
+      const t = String(text).trim();
+      if (t === '' || t === '—' || t === 'N/A') return NaN;
+      // strip percent signs and commas and '≤' and spaces and trailing % etc.
+      const cleaned = t.replace(/≤/g, '').replace(/%/g, '').replace(/,/g, '').replace(/[^\d.\-]/g,'');
+      const n = parseFloat(cleaned);
+      return isFinite(n) ? n : NaN;
+    }
+
+    // compute summary values using visible rows (respect cluster tab)
+    function computeSummaries() {
+      // gather all visible rows (rows inside accordion-content that are either in open sections or all rows if we want full year).
+      // We'll consider rows in any quarter that are currently visible (i.e., in accordion-content or whose ancestor has maxHeight > 0)
+      const rows = [];
+      document.querySelectorAll('table tbody tr').forEach(tr => {
+        // row visible only if its table's ancestor accordion-content is open OR we consider all rows regardless.
+        const table = tr.closest('table');
+        const acc = table.closest('.accordion-content');
+        const accOpen = acc && acc.classList.contains('open');
+        if (!accOpen) return; // only use rows in opened quarters for the executive quick view
+
+        // cluster filter
+        const activeCluster = window.activeCluster || 'all';
+        const rowCluster = tr.getAttribute('data-cluster') || '';
+        if (activeCluster !== 'all' && rowCluster !== activeCluster) return;
+
+        rows.push(tr);
+      });
+
+      // totals
+      let totalHeadcount = 0;
+      let csatCount = 0, csatSum = 0;
+      let performerCount = 0;
+      let topCandidate = {name:'—', avg:-Infinity};
+
+      rows.forEach(tr => {
+        // Headcount column is the 6th cell (0-index 5)
+        const cells = tr.querySelectorAll('td');
+        const headcount = numericize(cells[5]?.innerText || '');
+        if (!isNaN(headcount)) totalHeadcount += headcount;
+
+        // For avg CSAT: look for any month cell with a '%' or a KPI cell that mentions CSAT
+        // We'll inspect month cells (6,7,8 indexes) and if they contain % or parse to numeric and typical range > 0 and <= 100 treat as csat
+        const monthVals = [];
+        for (let i=6;i<=8;i++) {
+          const txt = cells[i]?.innerText || '';
+          const val = numericize(txt);
+          if (!isNaN(val)) monthVals.push(val);
+        }
+        // If KPI cell (index 2) contains 'CSAT' or '%' or 'Customer Service', prefer those months for CSAT calc
+        const kpiText = (cells[2]?.innerText || '').toLowerCase();
+        const isCSATType = kpiText.includes('csat') || kpiText.includes('customer service') || kpiText.includes('satisfaction') || kpiText.includes('%');
+        if (isCSATType && monthVals.length>0) {
+          // if months look like percentages (<=200), include them
+          monthVals.forEach(v => { if (!isNaN(v)) { csatSum += v; csatCount++; } });
+        } else {
+          // still attempt to include %-looking months into CSAT avg heuristically
+          monthVals.forEach(v => { if (!isNaN(v) && v <= 200) { csatSum += v; csatCount++; } });
+        }
+
+        // performer count
+        const perfCell = (cells[cells.length-1]?.innerText || '').toLowerCase();
+        if (perfCell.includes('performer') || perfCell.includes('yes') || perfCell.includes('pass')) performerCount++;
+
+        // top performer: compute average of numeric month values (if present)
+        const numericMonths = monthVals.filter(v => !isNaN(v));
+        if (numericMonths.length > 0) {
+          const avg = numericMonths.reduce((a,b)=>a+b,0)/numericMonths.length;
+          const campaign = cells[1]?.innerText || '—';
+          if (avg > topCandidate.avg) topCandidate = {name: campaign, avg: avg.toFixed(2)};
+        }
+      });
+
+      // update DOM
+      document.getElementById('card-headcount').innerText = totalHeadcount || '0';
+      document.getElementById('card-csat').innerText = csatCount ? ( (csatSum / csatCount).toFixed(2) + '%' ) : '—';
+      document.getElementById('card-passrate').innerText = (rows.length ? Math.round((performerCount / rows.length)*100) + '%' : '—');
+      document.getElementById('card-top').innerText = topCandidate.name === '—' ? '—' : `${topCandidate.name} (${topCandidate.avg})`;
+    }
+
+    // ---- Tab logic ----
+    window.activeCluster = 'all';
+    function showClusterTab(clusterName, ev) {
+      // update tab UI
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
+      if (ev && ev.currentTarget) ev.currentTarget.classList.add('tab-active');
+      window.activeCluster = clusterName;
+      // Recompute summaries according to new cluster
+      computeSummaries();
+    }
+
+    // ---- Accordion logic ----
+    function toggleQuarter(id) {
+      const acc = document.getElementById(id);
+      if (!acc) return;
+      const isOpen = acc.classList.contains('open');
+      if (isOpen) {
+        // collapse
+        acc.style.maxHeight = '0px';
+        acc.classList.remove('open');
+        const icon = document.getElementById('icon-'+id);
+        if (icon) icon.style.transform = 'rotate(0deg)';
+      } else {
+        // expand
+        acc.classList.add('open');
+        // measure content height and set
+        const table = acc.querySelector('table') || acc;
+        const h = (table ? table.scrollHeight : acc.scrollHeight) + 24;
+        acc.style.maxHeight = h + 'px';
+        const icon = document.getElementById('icon-'+id);
+        if (icon) icon.style.transform = 'rotate(180deg)';
+      }
+      // after toggling, recompute summary cards to reflect visible rows
+      // debounce small delay for transition
+      setTimeout(computeSummaries, 320);
+    }
+
+    // initialize: open Q1 by default
+    document.addEventListener('DOMContentLoaded', function() {
+      // open q1
+      const q1 = document.getElementById('q1');
+      if (q1) { q1.classList.add('open'); q1.style.maxHeight = (q1.querySelector('table').scrollHeight + 24) + 'px'; document.getElementById('icon-q1').style.transform='rotate(180deg)'; }
+      // ensure others collapsed
+      ['q2','q3','q4'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('open'); el.style.maxHeight = '0px'; }
+      });
+
+      // compute initial summaries
+      computeSummaries();
+
+      // make tables horizontally scrollable on small screens with nice padding
+      document.querySelectorAll('table').forEach(t => t.style.minWidth = '1000px');
+    });
+  </script>
+</body>
+</html>

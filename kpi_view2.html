@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KPI Executive Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <style>
+    .tab-active {
+      color: #2563eb; /* blue-600 */
+      border-bottom: 2px solid #2563eb;
+    }
+    .change-green {
+      background-color: #e6f4ea;
+      color: #188038;
+      border-radius: 4px;
+      padding: 2px 6px;
+      display: inline-block;
+    }
+    .change-red {
+      background-color: #fce8e6;
+      color: #d93025;
+      border-radius: 4px;
+      padding: 2px 6px;
+      display: inline-block;
+    }
+
+    /* accordion animation helpers */
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 280ms ease, padding 220ms ease;
+    }
+    .accordion-content.open {
+      padding-top: 12px;
+      padding-bottom: 12px;
+    }
+    /* minor table visuals */
+    .table-fixed th, .table-fixed td { white-space: nowrap; }
+  </style>
+</head>
+<body class="bg-white text-gray-900">
+
+  <!-- Header -->
+  <header class="border-b shadow-sm">
+    <div class="max-w-6xl mx-auto p-6">
+      <h1 class="text-2xl font-bold">KPI Executive Dashboard</h1>
+
+      <!-- Breadcrumb / Tabs -->
+      <div class="mt-4 flex flex-wrap gap-6 text-sm font-medium text-gray-600">
+        <button class="tab-active flex items-center gap-1" onclick="showTab('summary', event)">
+          <span class="material-symbols-outlined text-base">dashboard</span> Overall
+        </button>
+        <button class="flex items-center gap-1" onclick="showTab('alpha', event)">
+          <span class="material-symbols-outlined text-base">groups</span> Team Alpha
+        </button>
+        <button class="flex items-center gap-1" onclick="showTab('bravo', event)">
+          <span class="material-symbols-outlined text-base">groups</span> Team Bravo
+        </button>
+        <button class="flex items-center gap-1" onclick="showTab('gainers', event)">
+          <span class="material-symbols-outlined text-base text-green-600">trending_up</span> Performers
+        </button>
+        <button class="flex items-center gap-1" onclick="showTab('losers', event)">
+          <span class="material-symbols-outlined text-base text-red-600">trending_down</span> Underperformer
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="max-w-6xl mx-auto p-6 space-y-10">
+
+    <!-- Summary Tab -->
+    <div id="summary" class="tab-content">
+      <h2 class="text-lg font-semibold mb-3">Summary</h2>
+
+      <!-- Summary Sub Tables (First two table summaries: both clusters) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Cluster 1 -->
+        <div>
+          <h3 class="text-md font-semibold mb-2">Cluster: Team Alpha</h3>
+          <div class="overflow-hidden rounded-lg border border-gray-200">
+            <table class="min-w-full text-sm table-fixed">
+              <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+                <tr>
+                  <th class="px-4 py-2 text-left">Metric</th>
+                  <th class="px-4 py-2 text-right">Value</th>
+                  <th class="px-4 py-2 text-right">Count Change</th>
+                  <th class="px-4 py-2 text-right">% Change</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y">
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-2 font-medium">Pass</td>
+                  <td class="px-4 py-2 text-right">10.00</td>
+                  <td class="px-4 py-2 text-right">0.44</td>
+                  <td class="px-4 py-2 text-right">-0.28%</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-2 font-medium">Fail</td>
+                  <td class="px-4 py-2 text-right">5.00</td>
+                  <td class="px-4 py-2 text-right">-63.54</td>
+                  <td class="px-4 py-2 text-right">-0.28%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Cluster 2 -->
+        <div>
+          <h3 class="text-md font-semibold mb-2">Cluster: Team Bravo</h3>
+          <div class="overflow-hidden rounded-lg border border-gray-200">
+            <table class="min-w-full text-sm table-fixed">
+              <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+                <tr>
+                  <th class="px-4 py-2 text-left">Metric</th>
+                  <th class="px-4 py-2 text-right">Value</th>
+                  <th class="px-4 py-2 text-right">Count Change</th>
+                  <th class="px-4 py-2 text-right">% Change</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y">
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-2 font-medium">Pass</td>
+                  <td class="px-4 py-2 text-right">10.00</td>
+                  <td class="px-4 py-2 text-right">0.44</td>
+                  <td class="px-4 py-2 text-right">-0.28%</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-2 font-medium">Fail</td>
+                  <td class="px-4 py-2 text-right">5.00</td>
+                  <td class="px-4 py-2 text-right">-63.54</td>
+                  <td class="px-4 py-2 text-right">-0.28%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Campaign Performance -->
+      <div class="mt-10">
+        <div class="flex items-center justify-between">
+          <h3 class="text-md font-semibold mb-2">Campaign Performance</h3>
+          <div class="text-sm text-gray-500">Quarterly accordion (placeholders)</div>
+        </div>
+
+        <!-- Accordion container -->
+        <div class="space-y-3">
+
+          <!-- Quarter 1 -->
+          <div class="border rounded-lg">
+            <button
+              class="w-full px-4 py-3 text-left flex items-center justify-between focus:outline-none"
+              aria-expanded="true"
+              onclick="toggleAccordion(event, 'q1')"
+            >
+              <div class="flex items-center gap-3">
+                <span class="text-sm font-medium">Q1 - Jan to Mar</span>
+                <span class="px-2 py-0.5 bg-gray-100 text-xs rounded">2025</span>
+              </div>
+              <div class="text-gray-500">
+                <svg class="h-4 w-4 transform" data-acc-icon="q1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </div>
+            </button>
+
+            <div id="q1" class="accordion-content open px-4 pb-4">
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm table-fixed">
+                  <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+                    <tr>
+                      <th class="px-4 py-2 text-left">Campaign</th>
+                      <th class="px-4 py-2 text-left">LOB</th>
+                      <th class="px-4 py-2 text-right">Headcount</th>
+                      <th class="px-4 py-2 text-right">CSAT %</th>
+                      <th class="px-4 py-2 text-right">AHT (s)</th>
+                      <th class="px-4 py-2 text-right">Conversion Rate</th>
+                      <th class="px-4 py-2 text-right">TRANSFER</th>
+                      <th class="px-4 py-2 text-right">FCR</th>
+                      <th class="px-4 py-2 text-right">SLA %</th>
+                      <th class="px-4 py-2 text-right">Quality</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y">
+                    <!-- sample rows for Q1 -->
+                    <tr class="hover:bg-gray-50"><td class="px-4 py-2 font-medium">TEAM ALPHA</td><td class="px-4 py-2">Sales</td><td class="px-4 py-2 text-right">35</td><td class="px-4 py-2 text-right">89%</td><td class="px-4 py-2 text-right">540</td><td class="px-4 py-2 text-right">15.2%</td><td class="px-4 py-2 text-right">5%</td><td class="px-4 py-2 text-right">68%</td><td class="px-4 py-2 text-right">95%</td><td class="px-4 py-2 text-right">92%</td></tr>
+                    <tr class="hover:bg-gray-50"><td class="px-4 py-2 font-medium">Social Boosting</td><td class="px-4 py-2">Marketing</td><td class="px-4 py-2 text-right">12</td><td class="px-4 py-2 text-right">82%</td><td class="px-4 py-2 text-right">420</td><td class="px-4 py-2 text-right">6.4%</td><td class="px-4 py-2 text-right">7%</td><td class="px-4 py-2 text-right">59%</td><td class="px-4 py-2 text-right">90%</td><td class="px-4 py-2 text-right">88%</td></tr>
+                    <tr class="hover:bg-gray-50"><td class="px-4 py-2 font-medium">Zapaka</td><td class="px-4 py-2">Sales</td><td class="px-4 py-2 text-right">20</td><td class="px-4 py-2 text-right">91%</td><td class="px-4 py-2 text-right">480</td><td class="px-4 py-2 text-right">18.5%</td><td class="px-4 py-2 text-right">4%</td><td class="px-4 py-2 text-right">72%</td><td class="px-4 py-2 text-right">98%</td><td class="px-4 py-2 text-right">95%</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quarter 2 -->
+          <div class="border rounded-lg">
+            <button
+              class="w-full px-4 py-3 text-left flex items-center justify-between focus:outline-none"
+              aria-expanded="false"
+              onclick="toggleAccordion(event, 'q2')"
+            >
+              <div class="flex items-center gap-3">
+                <span class="text-sm font-medium">Q2 - Apr to Jun</span>
+                <span class="px-2 py-0.5 bg-gray-100 text-xs rounded">2025</span>
+              </div>
+              <div class="text-gray-500">
+                <svg class="h-4 w-4 transform" data-acc-icon="q2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </div>
+            </button>
+
+            <div id="q2" class="accordion-content px-4">
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm table-fixed">
+                  <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+                    <tr>
+                      <th class="px-4 py-2 text-left">Campaign</th>
+                      <th class="px-4 py-2 text-left">LOB</th>
+                      <th class="px-4 py-2 text-right">Headcount</th>
+                      <th class="px-4 py-2 text-right">CSAT %</th>
+                      <th class="px-4 py-2 text-right">AHT (s)</th>
+                      <th class="px-4 py-2 text-right">Conversion Rate</th>
+                      <th class="px-4 py-2 text-right">TRANSFER</th>
+                      <th class="px-4 py-2 text-right">FCR</th>
+                      <th class="px-4 py-2 text-right">SLA %</th>
+                      <th class="px-4 py-2 text-right">Quality</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y">
+                    <!-- sample rows for Q2 -->
+                    <tr class="hover:bg-gray-50"><td class="px-4 py-2 font-medium">City Safe Partners</td><td class="px-4 py-2">Operations</td><td class="px-4 py-2 text-right">28</td><td class="px-4 py-2 text-right">87%</td><td class="px-4 py-2 text-right">560</td><td class="px-4 py-2 text-right">12.0%</td><td class="px-4 py-2 text-right">6%</td><td class="px-4 py-2 text-right">66%</td><td class="px-4 py-2 text-right">94%</td><td class="px-4 py-2 text-right">90%</td></tr>
+                    <tr class="hover:bg-gray-50"><td class="px-4 py-2 font-medium">LTS Nationwide</td><td class="px-4 py-2">Support</td><td class="px-4 py-2 text-right">22</td><td class="px-4 py-2 text-right">90%</td><td class="px-4 py-2 text-right">500</td><td class="px-4 py-2 text-right">9.1%</td><td class="px-4 py-2 text-right">3%</td><td class="px-4 py-2 text-right">70%</td><td class="px-4 py-2 text-right">96%</td><td class="px-4 py-2 text-right">93%</td></tr>
+                    <tr class="hover:bg-gray-50"><td class="px-4 py-2 font-medium">Runa Night Cafe</td><td class="px-4 py-2">Hospitality</td><td class="px-4 py-2 text-right">15</td><td class="px-4 py-2 text-right">86%</td><td class="px-4 py-2 text-right">430</td><td class="px-4 py-2 text-right">7.5%</td><td class="px-4 py-2 text-right">8%</td><td class="px-4 py-2 text-right">62%</td><td class="px-4 py-2 text-right">89%</td><td class="px-4 py-2 text-right">85%</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quarter 3 -->
+          <div class="border rounded-lg">
+            <button
+              class="w-full px-4 py-3 text-left flex items-center justify-between focus:outline-none"
+              aria-expanded="false"
+              onclick="toggleAccordion(event, 'q3')"
+            >
+              <div class="flex items-center gap-3">
+                <span class="text-sm font-medium">Q3 - Jul to Sep</span>
+                <span class="px-2 py-0.5 bg-gray-100 text-xs rounded">2025</span>
+              </div>
+              <div class="text-gray-500">
+                <svg class="h-4 w-4 transform" data-acc-icon="q3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </div>
+            </button>
+
+            <div id="q3" class="accordion-content px-4">
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm table-fixed">
+                  <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+                    <tr>
+                      <th class="px-4 py-2 text-left">Campaign</th>
+                      <th class="px-4 py-2 text-left">LOB</th>
+                      <th class="px-4 py-2 text-right">Headcount</th>
+                      <th class="px-4 py-2 text-right">CSAT %</th>
+                      <th class="px-4 py-2 text-right">AHT (s)</th>
+                      <th class="px-4 py-2 text-right">Conversion Rate</th>
+                      <th class="px-4 py-2 text-right">TRANSFER</th>
+                      <th class="px-4 py-2 text-right">FCR</th>
+                      <th class="px-4 py-2 text-right">SLA %</th>
+                      <th class="px-4 py-2 text-right">Quality</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y">
+                    <!-- sample rows for Q3 -->
+                    <tr class="hover:bg-gray-50"><td class="px-4 py-2 font-medium">Bluecheck</td><td class="px-4 py-2">Verification</td><td class="px-4 py-2 text-right">18</td><td class="px-4 py-2 text-right">88%</td><td class="px-4 py-2 text-right">470</td><td class="px-4 py-2 text-right">11.2%</td><td class="px-4 py-2 text-right">6%</td><td class="px-4 py-2 text-right">69%</td><td class="px-4 py-2 text-right">92%</td><td class="px-4 py-2 text-right">89%</td></tr>
+                    <tr class="hover:bg-gray-50"><td class="px-4 py-2 font-medium">INUI</td><td class="px-4 py-2">Retail</td><td class="px-4 py-2 text-right">14</td><td class="px-4 py-2 text-right">85%</td><td class="px-4 py-2 text-right">510</td><td class="px-4 py-2 text-right">8.9%</td><td class="px-4 py-2 text-right">9%</td><td class="px-4 py-2 text-right">58%</td><td class="px-4 py-2 text-right">87%</td><td class="px-4 py-2 text-right">84%</td></tr>
+                    <tr class="hover:bg-gray-50"><td class="px-4 py-2 font-medium">Koupon</td><td class="px-4 py-2">Promotions</td><td class="px-4 py-2 text-right">11</td><td class="px-4 py-2 text-right">93%</td><td class="px-4 py-2 text-right">430</td><td class="px-4 py-2 text-right">20.0%</td><td class="px-4 py-2 text-right">2%</td><td class="px-4 py-2 text-right">75%</td><td class="px-4 py-2 text-right">99%</td><td class="px-4 py-2 text-right">96%</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quarter 4 -->
+          <div class="border rounded-lg">
+            <button
+              class="w-full px-4 py-3 text-left flex items-center justify-between focus:outline-none"
+              aria-expanded="false"
+              onclick="toggleAccordion(event, 'q4')"
+            >
+              <div class="flex items-center gap-3">
+                <span class="text-sm font-medium">Q4 - Oct to Dec</span>
+                <span class="px-2 py-0.5 bg-gray-100 text-xs rounded">2025</span>
+              </div>
+              <div class="text-gray-500">
+                <svg class="h-4 w-4 transform" data-acc-icon="q4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </div>
+            </button>
+
+            <div id="q4" class="accordion-content px-4">
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm table-fixed">
+                  <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+                    <tr>
+                      <th class="px-4 py-2 text-left">Campaign</th>
+                      <th class="px-4 py-2 text-left">LOB</th>
+                      <th class="px-4 py-2 text-right">Headcount</th>
+                      <th class="px-4 py-2 text-right">CSAT %</th>
+                      <th class="px-4 py-2 text-right">AHT (s)</th>
+                      <th class="px-4 py-2 text-right">Conversion Rate</th>
+                      <th class="px-4 py-2 text-right">TRANSFER</th>
+                      <th class="px-4 py-2 text-right">FCR</th>
+                      <th class="px-4 py-2 text-right">SLA %</th>
+                      <th class="px-4 py-2 text-right">Quality</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y">
+                    <!-- sample rows for Q4 -->
+                    <tr class="hover:bg-gray-50"><td class="px-4 py-2 font-medium">Hytera</td><td class="px-4 py-2">Tech</td><td class="px-4 py-2 text-right">17</td><td class="px-4 py-2 text-right">90%</td><td class="px-4 py-2 text-right">490</td><td class="px-4 py-2 text-right">13.0%</td><td class="px-4 py-2 text-right">5%</td><td class="px-4 py-2 text-right">71%</td><td class="px-4 py-2 text-right">94%</td><td class="px-4 py-2 text-right">91%</td></tr>
+                    <tr class="hover:bg-gray-50"><td class="px-4 py-2 font-medium">Tahoe Elite Service</td><td class="px-4 py-2">Service</td><td class="px-4 py-2 text-right">24</td><td class="px-4 py-2 text-right">88%</td><td class="px-4 py-2 text-right">530</td><td class="px-4 py-2 text-right">10.5%</td><td class="px-4 py-2 text-right">6%</td><td class="px-4 py-2 text-right">68%</td><td class="px-4 py-2 text-right">92%</td><td class="px-4 py-2 text-right">89%</td></tr>
+                    <tr class="hover:bg-gray-50"><td class="px-4 py-2 font-medium">Bag Broker</td><td class="px-4 py-2">Retail</td><td class="px-4 py-2 text-right">13</td><td class="px-4 py-2 text-right">84%</td><td class="px-4 py-2 text-right">600</td><td class="px-4 py-2 text-right">5.8%</td><td class="px-4 py-2 text-right">9%</td><td class="px-4 py-2 text-right">55%</td><td class="px-4 py-2 text-right">86%</td><td class="px-4 py-2 text-right">82%</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div> <!-- accordion container -->
+
+      </div> <!-- Campaign Performance -->
+    </div> <!-- summary tab -->
+
+    <!-- Placeholder Tabs -->
+    <div id="alpha" class="tab-content hidden"><p>Placeholder for Team Alpha data... (tabs remain working)</p></div>
+    <div id="bravo" class="tab-content hidden"><p>Placeholder for Team Bravo data... (tabs remain working)</p></div>
+    <div id="gainers" class="tab-content hidden"><p>Placeholder for Performers data...</p></div>
+    <div id="losers" class="tab-content hidden"><p>Placeholder for Underperformer data...</p></div>
+  </main>
+
+  <script>
+    // Tab switching
+    function showTab(tabId, event) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(tabId).classList.remove('hidden');
+      document.querySelectorAll('[onclick^="showTab"]').forEach(el => el.classList.remove('tab-active'));
+      event.currentTarget.classList.add('tab-active');
+      // optional: close all accordion sections when switching tabs
+      document.querySelectorAll('.accordion-content').forEach(ac => {
+        const id = ac.id;
+        if (ac.classList.contains('open')) {
+          // keep state: leave open if already open
+        } else {
+          // no-op
+        }
+      });
+    }
+
+    // Accordion logic (single open at a time if desired)
+    function toggleAccordion(evt, id) {
+      const content = document.getElementById(id);
+      const isOpen = content.classList.contains('open');
+
+      // Option: keep multiple open — currently allow multi-open.
+      if (isOpen) {
+        collapse(content, id);
+      } else {
+        expand(content, id);
+      }
+    }
+
+    function expand(content, id) {
+      // measure scrollHeight then set max-height to allow transition
+      content.classList.add('open');
+      const inner = content.querySelector('table') || content;
+      const height = inner.scrollHeight + 24; // add some padding allowance
+      content.style.maxHeight = height + 'px';
+      // rotate chevron
+      const icon = document.querySelector(`[data-acc-icon="${id}"]`) || document.querySelector(`svg[data-acc-icon="${id}"]`);
+      if (icon) icon.style.transform = 'rotate(180deg)';
+    }
+
+    function collapse(content, id) {
+      content.style.maxHeight = '0px';
+      content.classList.remove('open');
+      // rotate chevron back
+      const icon = document.querySelector(`[data-acc-icon="${id}"]`) || document.querySelector(`svg[data-acc-icon="${id}"]`);
+      if (icon) icon.style.transform = 'rotate(0deg)';
+    }
+
+    // initialize accordion heights for presets (open q1 by default)
+    document.addEventListener('DOMContentLoaded', function() {
+      // Open q1 by default (we have .open on q1; set maxHeight)
+      const q1 = document.getElementById('q1');
+      if (q1) {
+        const inner = q1.querySelector('table') || q1;
+        q1.style.maxHeight = (inner.scrollHeight + 24) + 'px';
+        // rotate arrow
+        const icon = document.querySelector('[data-acc-icon="q1"]');
+        if (icon) icon.style.transform = 'rotate(180deg)';
+      }
+      // Make sure other sections start collapsed
+      ['q2','q3','q4'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.style.maxHeight = '0px'; el.classList.remove('open'); }
+      });
+    });
+  </script>
+</body>
+</html>
