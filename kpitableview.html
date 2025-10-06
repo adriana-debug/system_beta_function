@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Market Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+  <!-- Header -->
+  <div class="p-6 border-b bg-white shadow-sm">
+    <h1 class="text-2xl font-bold">Explore market trends</h1>
+    <div class="mt-3 flex flex-wrap gap-2">
+      <button class="px-3 py-1 rounded-full bg-blue-100 text-blue-600 text-sm">Market indexes</button>
+      <button class="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-sm">Most active</button>
+      <button class="px-3 py-1 rounded-full bg-green-100 text-green-600 text-sm">Gainers</button>
+      <button class="px-3 py-1 rounded-full bg-red-100 text-red-600 text-sm">Losers</button>
+      <button class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-600 text-sm">Climate leaders</button>
+    </div>
+  </div>
+
+  <div class="max-w-6xl mx-auto p-6 space-y-10">
+
+    <!-- Americas Section -->
+    <div>
+      <h2 class="text-lg font-semibold mb-3">Americas</h2>
+      <div class="overflow-hidden rounded-lg border border-gray-200">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+            <tr>
+              <th class="px-4 py-2 text-left">Index</th>
+              <th class="px-4 py-2 text-right">Value</th>
+              <th class="px-4 py-2 text-right">Change</th>
+              <th class="px-4 py-2 text-right">% Change</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-2 font-medium">S&amp;P 500</td>
+              <td class="px-4 py-2 text-right">6,715.79</td>
+              <td class="px-4 py-2 text-right text-green-600">+0.44</td>
+              <td class="px-4 py-2 text-right text-green-600">+0.0066%</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-2 font-medium">Dow Jones Industrial Average</td>
+              <td class="px-4 py-2 text-right">46,758.28</td>
+              <td class="px-4 py-2 text-right text-green-600">+238.56</td>
+              <td class="px-4 py-2 text-right text-green-600">+0.51%</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-2 font-medium">Nasdaq Composite</td>
+              <td class="px-4 py-2 text-right">22,780.51</td>
+              <td class="px-4 py-2 text-right text-red-600">-63.54</td>
+              <td class="px-4 py-2 text-right text-red-600">-0.28%</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-2 font-medium">Russell 2000 Index</td>
+              <td class="px-4 py-2 text-right">2,476.18</td>
+              <td class="px-4 py-2 text-right text-green-600">+17.69</td>
+              <td class="px-4 py-2 text-right text-green-600">+0.72%</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-2 font-medium">S&amp;P/TSX Composite Index</td>
+              <td class="px-4 py-2 text-right">30,471.68</td>
+              <td class="px-4 py-2 text-right text-green-600">+311.09</td>
+              <td class="px-4 py-2 text-right text-green-600">+1.03%</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-2 font-medium">IBOVESPA</td>
+              <td class="px-4 py-2 text-right">144,200.66</td>
+              <td class="px-4 py-2 text-right text-green-600">+251.02</td>
+              <td class="px-4 py-2 text-right text-green-600">+0.17%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EMEA Section -->
+    <div>
+      <h2 class="text-lg font-semibold mb-3">Europe, Middle East, and Africa</h2>
+      <div class="overflow-hidden rounded-lg border border-gray-200">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+            <tr>
+              <th class="px-4 py-2 text-left">Index</th>
+              <th class="px-4 py-2 text-right">Value</th>
+              <th class="px-4 py-2 text-right">Change</th>
+              <th class="px-4 py-2 text-right">% Change</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-2 font-medium">DAX PERFORMANCE-INDEX</td>
+              <td class="px-4 py-2 text-right">24,378.80</td>
+              <td class="px-4 py-2 text-right text-red-600">-43.76</td>
+              <td class="px-4 py-2 text-right text-red-600">-0.18%</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-2 font-medium">FTSE 100 Index</td>
+              <td class="px-4 py-2 text-right">9,491.25</td>
+              <td class="px-4 py-2 text-right text-green-600">+63.52</td>
+              <td class="px-4 py-2 text-right text-green-600">+0.67%</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-2 font-medium">CAC 40</td>
+              <td class="px-4 py-2 text-right">8,081.54</td>
+              <td class="px-4 py-2 text-right text-green-600">+24.91</td>
+              <td class="px-4 py-2 text-right text-green-600">+0.31%</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-2 font-medium">IBEX 35</td>
+              <td class="px-4 py-2 text-right">15,585.10</td>
+              <td class="px-4 py-2 text-right text-green-600">+88.90</td>
+              <td class="px-4 py-2 text-right text-green-600">+0.57%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
