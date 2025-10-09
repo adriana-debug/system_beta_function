@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Knowledge Base</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      // Dark Mode configuration applied only to elements with 'dark:' prefix
+      darkMode: 'class',
+      theme: {
+        extend: {
+          // Use Roboto as the primary font
+          fontFamily: {
+            sans: ['Roboto', 'sans-serif'],
+          },
+          colors: {
+            // Google-inspired colors
+            'google-blue': '#4285F4',
+            'google-green': '#34A853',
+            'google-red': '#EA4335',
+            'google-yellow': '#FBBC05',
+            // Coaching Log/IR NTE colors
+            'brand-accent': '#CBEB33',
+            'brand-dark': '#B5D12F',
+            // Custom dark mode palette for isolated dark elements
+            'bg-dark': '#0f172a', // Main dark background
+            'text-dark': '#f1f5f9', // Light text on dark backgrounds
+            'card-dark': '#1e293b', // Card/Header dark background
+            'border-dark': '#334155', // Dark border/secondary background
+            'danger': '#ef4444',
+            'danger-dark': '#dc2626',
+            'bg-light': '#f8fafc', // IR Log standard light background
+            'text-light': '#1e293b', // IR Log standard dark text
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom styles for Drawer and active tab indicator (KPI Dashboard) */
+    .drawer {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      transform: translateX(-100%);
+    }
+    .drawer-open {
+      transform: translateX(0);
+    }
+    .tab-active {
+      background-color: theme('colors.blue.50'); 
+      color: theme('colors.google-blue');
+      font-weight: 500;
+      border-radius: 9999px; 
+    }
+    .tab-active .material-symbols-outlined {
+      color: theme('colors.google-blue');
+    }
+    /* Hover state for nav items */
+    .nav-item:hover {
+      background-color: theme('colors.gray.100');
+      border-radius: 9999px;
+    }
+    /* Style for the main KPI cards */
+    .kpi-card {
+      transition: box-shadow 0.3s ease;
+    }
+    .kpi-card:hover {
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
+    }
+    /* Coaching Log/IR NTE loading animation */
+    .animate-spin-slow {
+        animation: spin 2.5s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Styles for Print View Modal (Coaching Log) */
+    @media print {
+        /* Hide all UI elements from the main dashboard when printing the Coaching Log modal */
+        body > *:not(#modalBg):not(#deleteConfirmModal) {
+            display: none !important;
+        }
+        /* Only show the view modal content */
+        #modalBg {
+            display: flex !important;
+            position: static !important;
+            background: none !important;
+            width: 100% !important;
+            height: auto !important;
+            overflow: visible !important;
+            padding: 0 !important;
+        }
+        #modalContent {
+            box-shadow: none !important;
+            border: none !important;
+            transform: none !important;
+            opacity: 1 !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 3rem !important; 
+            min-height: 100vh;
+        }
+        /* Hide close and print buttons in print view */
+        #modalContent button, #modalContent .modal-actions {
+            display: none !important;
+        }
+        /* Ensure the content is black on white paper */
+        #modalContent, #modalContent * {
+            color: #000 !important;
+            background-color: white !important;
+            filter: none !important;
+        }
+        .view-field {
+            border-bottom: 1px solid #ddd !important;
+            padding-bottom: 0.5rem !important;
+            margin-bottom: 1rem !important;
+        }
+        .view-title {
+            font-weight: bold !important;
+            color: #4b5563 !important;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+        .view-value {
+            font-size: 1rem !important;
+            padding-top: 0.25rem !important;
+        }
+    }
+    
+    /* IR / NTE Log specific styles */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        /* IE and Edge */
+        scrollbar-width: none;
+        /* Firefox */
+    }
+
+    /* KB Specific Style from embedded document: Fixes dark mode input visibility */
+    .dark input[type="text"], .dark textarea, .dark select {
+        color: #f1f5f9 !important; /* Explicitly light text */
+        background-color: #1e293b !important; /* Explicitly dark card background */
+        border-color: #334155 !important;
+    }
+
+    /* Style for the content in the read-only view modal */
+    #vContent {
+        line-height: 1.6;
+    }
+    
+    /* Utility to truncate text in grid cards */
+    .truncate-lines-3 {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+
+  </style>
+</head>
+<body class="min-h-screen bg-gray-100 text-gray-800 font-sans transition-colors duration-500">
+
+  <aside id="drawer" class="drawer fixed top-0 left-0 h-full w-64 bg-white shadow-2xl z-50 dark:bg-card-dark dark:text-text-dark">
+  <div class="flex items-center gap-2 p-4 pt-5 border-b sticky top-0 bg-white dark:bg-card-dark dark:border-border-dark z-10">
+    <img src="dmi_logo.jpg" alt="Digital Minds BPO Logo" class="w-8 h-8 rounded-full object-cover shadow-sm">
+    <h1 class="text-xl font-medium text-slate-900 dark:text-text-dark">Digital Minds KPI</h1>
+    <button id="closeDrawer" class="ml-auto text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-text-dark p-2 rounded-full hover:bg-gray-100 dark:hover:bg-border-dark">
+      <span class="material-symbols-outlined text-2xl">close</span>
+    </button>
+  </div>
+
+  <nav class="p-3 text-sm font-normal text-gray-700 dark:text-gray-300">
+    <ul class="space-y-1">
+      <li>
+        <button class="nav-item tab-active flex items-center gap-3 p-3 w-full text-left transition duration-150 ease-in-out dark:hover:bg-border-dark" data-tab-title="Knowledge Base" onclick="showTab('knowledge', event)">
+          <span class="material-symbols-outlined text-xl">menu_book</span>
+          <span>Knowledge Base</span>
+        </button>
+      </li>
+    </ul>
+  </nav>
+</aside>
+
+
+  <div id="overlay" class="fixed inset-0 bg-black bg-opacity-30 hidden z-40 transition-opacity duration-300"></div>
+
+  <div id="page-content">
+    <header class="flex items-center gap-4 bg-white dark:bg-card-dark p-4 shadow-md sticky top-0 z-30 transition-colors duration-500 border-b border-gray-100 dark:border-border-dark">
+      <button id="menuBtn" class="text-gray-600 dark:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-border-dark transition">
+        <span class="material-symbols-outlined text-2xl">menu</span>
+      </button>
+      <h1 id="mainTitleContainer" class="text-2xl font-extrabold text-gray-900 dark:text-text-dark">
+        </h1>
+      <button id="themeToggle"
+            class="ml-auto p-2 rounded-full text-gray-800 dark:text-text-dark bg-gray-100 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark transition-all duration-300 transform hover:scale-105"
+            aria-label="Toggle Dark Mode">
+        </button>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-6 lg:p-10 space-y-12">
+        
+      <div id="knowledge" class="tab-content">
+        
+        <div class="flex flex-col md:flex-row gap-4 justify-between items-center mb-8">
+            <div class="relative w-full md:w-1/2">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">search</span>
+                <input type="text" id="kbSearch" onkeyup="filterDocuments()" placeholder="Search documents, owners, or tags..." 
+                    class="w-full p-3 pl-10 pr-4 rounded-full border border-gray-300 shadow-sm focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-card-dark dark:border-border-dark dark:text-text-dark">
+            </div>
+
+            <div class="flex items-center space-x-4 w-full md:w-auto justify-end">
+                <div class="inline-flex rounded-full shadow-sm bg-gray-200 dark:bg-border-dark p-1">
+                    <button id="btnGrid" onclick="changeView('grid')" title="Grid View" 
+                        class="p-2 rounded-full transition duration-150 bg-brand-accent text-bg-dark">
+                        <span class="material-symbols-outlined text-xl">grid_view</span>
+                    </button>
+                    <button id="btnList" onclick="changeView('list')" title="List View" 
+                        class="p-2 rounded-full transition duration-150 bg-gray-200 dark:bg-border-dark text-text-light dark:text-text-dark">
+                        <span class="material-symbols-outlined text-xl">list</span>
+                    </button>
+                </div>
+
+                <button onclick="openCrudModal(null)" 
+                    class="bg-google-blue hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-full shadow-md transition transform hover:scale-[1.02] flex items-center">
+                    <i class="fas fa-plus mr-2"></i> New Document
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-12 gap-8">
+            
+            <div class="col-span-12 lg:col-span-3 bg-white dark:bg-card-dark rounded-xl shadow-lg p-6 h-fit sticky top-24 transition-colors duration-500">
+                <h3 class="text-lg font-bold mb-4 border-b pb-2 text-text-light dark:text-text-dark dark:border-border-dark">Categories</h3>
+                <ul id="categories" class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
+                    <li class="p-2 text-center text-gray-400 italic">Loading categories...</li>
+                </ul>
+            </div>
+
+            <div class="col-span-12 lg:col-span-9 relative">
+                
+                <div id="loadingSpinner" class="hidden absolute inset-0 bg-gray-100/70 dark:bg-card-dark/80 backdrop-blur-sm z-20 flex flex-col justify-center items-center rounded-xl transition-opacity duration-300 opacity-0">
+                    <i class="fas fa-sync-alt fa-3x text-brand-accent animate-spin-slow"></i>
+                    <p id="irNteLoadingText" class="mt-4 text-lg font-medium text-text-light dark:text-text-dark">Processing...</p>
+                </div>
+                
+                <div id="grid-view" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 transition-all duration-300">
+                    <p class="col-span-full text-center p-10 text-gray-500 dark:text-gray-400">Loading documents...</p>
+                </div>
+
+                <div id="list-view" class="hidden bg-white dark:bg-card-dark shadow-lg rounded-xl overflow-hidden transition-colors duration-500">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm text-left">
+                            <thead class="bg-gray-50 dark:bg-border-dark text-gray-600 dark:text-text-dark uppercase text-xs border-b dark:border-border-dark">
+                                <tr>
+                                    <th class="px-6 py-3 font-medium">Document Name</th>
+                                    <th class="px-6 py-3 font-medium">Category</th>
+                                    <th class="px-6 py-3 font-medium">Owner</th>
+                                    <th class="px-6 py-3 font-medium">Last Modified</th>
+                                    <th class="px-6 py-3 font-medium text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listTableBody" class="divide-y divide-gray-200 dark:divide-border-dark">
+                                <tr><td colspan="5" class="text-center py-6 text-gray-500 dark:text-gray-400">Loading documents...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+      </div>
+        
+    </main>
+    
+    <div id="viewModalBg" class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-300">
+        <div class="bg-white dark:bg-card-dark rounded-xl shadow-3xl w-full max-w-4xl p-8 relative transition-all duration-500 transform scale-95 opacity-0" id="viewModalContent">
+            
+            <h3 id="viewModalTitle" class="text-3xl font-extrabold mb-2 text-brand-accent">View Document</h3>
+            
+            <button onclick="closeViewModal()" class="absolute top-4 right-4 p-2 rounded-full text-gray-400 hover:text-brand-accent transition">
+                <i class="fas fa-times fa-xl"></i>
+            </button>
+            
+            <div class="flex justify-between items-center relative z-10 border-b pb-4 mb-4 dark:border-border-dark">
+                <p id="vMeta" class="text-sm text-gray-600 dark:text-gray-400 mt-2"></p>
+                <div class="space-x-2">
+                    <button id="btnViewEdit" onclick="openCrudModal(docIdToHandle)" class="py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-full shadow-md transition transform hover:scale-[1.02]">
+                        <i class="fas fa-edit mr-1"></i> Edit
+                    </button>
+                    <button id="btnViewDelete" onclick="openDeleteModal()" class="py-2 px-4 bg-danger hover:bg-danger-dark text-white font-semibold rounded-full shadow-md transition transform hover:scale-[1.02]">
+                        <i class="fas fa-trash-alt mr-1"></i> Delete
+                    </button>
+                </div>
+            </div>
+            
+            <div id="vContent" class="mt-6 h-[60vh] overflow-y-auto p-4 rounded-lg bg-gray-50 dark:bg-bg-dark border border-gray-200 dark:border-border-dark text-text-light dark:text-text-dark">
+                <p class='italic text-gray-400'>Loading content...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="crudModalBg" class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-300">
+        <div class="bg-white dark:bg-card-dark rounded-xl shadow-3xl w-full max-w-3xl p-8 relative transition-all duration-500 transform scale-95 opacity-0" id="crudModalContent">
+            
+            <h3 id="crudModalTitle" class="text-3xl font-extrabold mb-4 text-brand-accent border-b pb-2 dark:border-border-dark">New Knowledge Document</h3>
+            
+            <button onclick="closeCrudModal()" class="absolute top-4 right-4 p-2 rounded-full text-gray-400 hover:text-brand-accent transition">
+                <i class="fas fa-times fa-xl"></i>
+            </button>
+            
+            <form id="kbForm" data-edit-id="">
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <label class="block">
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">Document Name <span class="text-danger">*</span></span>
+                            <input type="text" name="documentname" id="docNameInput" required 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">Category</span>
+                            <select name="category" id="docCategoryInput" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition">
+                                <option value="" disabled selected>Select Category</option>
+                                <option value="HR Policies">HR Policies</option>
+                                <option value="Campaign A SOP">Campaign A SOP</option>
+                                <option value="IT Procedures">IT Procedures</option>
+                                <option value="Training">Training</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <label class="block">
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">Owner / Responsible Party</span>
+                            <input type="text" name="owner" id="docOwnerInput" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">Version</span>
+                            <input type="text" name="version" id="docVersionInput" value="1.0" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition">
+                        </label>
+                    </div>
+                    <label class="block">
+                        <span class="text-gray-700 dark:text-gray-300 font-medium">Tags (Comma Separated)</span>
+                        <input type="text" name="tags" id="docTagsInput" placeholder="e.g., sop, hr, nte, process" 
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition">
+                    </label>
+                    <label class="block">
+                        <span class="text-gray-700 dark:text-gray-300 font-medium">Document Content (HTML/Rich Text)</span>
+                        <textarea name="contenthtml" id="docContentHtmlInput" rows="8" placeholder="Paste the HTML content or a brief summary here. For full editing, click the 'Edit in External Tool' button." 
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition"></textarea>
+                    </label>
+                    <p id="editNotice" class="text-sm text-yellow-600 dark:text-yellow-400 hidden">
+                        *Note: Editing large content directly here is discouraged. Use the **Edit in External Tool** button for rich text formatting and large document updates.*
+                    </p>
+                </div>
+                <div class="mt-8 flex justify-end space-x-4">
+                    <button type="button" onclick="redirectEdit(document.getElementById('kbForm').dataset.editId)" id="btnExternalEdit" 
+                        class="bg-gray-300 hover:bg-gray-400 text-text-light dark:bg-border-dark dark:text-text-dark dark:hover:bg-gray-700 px-6 py-3 rounded-full font-bold transition duration-300 transform hover:scale-[1.02]">
+                        <i class="fas fa-external-link-alt mr-2"></i> Edit in External Tool
+                    </button>
+                    <button type="submit" id="formSubmitButton" 
+                        class="bg-brand-accent hover:bg-brand-dark text-bg-dark px-6 py-3 rounded-full font-bold transition duration-300 transform hover:scale-[1.02]">
+                        <i class="fas fa-save mr-2"></i> Save Document
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="deleteConfirmModal" class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-300">
+        <div id="deleteModalContent" class="bg-white dark:bg-card-dark rounded-xl shadow-3xl w-full max-w-sm p-6 relative transition-all duration-500 transform scale-95 opacity-0 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/50">
+                <i class="fas fa-trash-alt text-danger fa-lg"></i>
+            </div>
+            <h3 class="text-xl font-bold mt-3 text-text-light dark:text-text-dark">Confirm Deletion</h3>
+            <p id="deleteMessage" class="text-sm text-gray-500 dark:text-gray-400 mt-2">Are you absolutely sure you want to delete <span id="docToDeleteName" class="font-semibold text-text-light dark:text-text-dark">this document</span>? This action cannot be undone.</p>
+            <div class="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
+                <button type="button" id="confirmDeleteButton" class="inline-flex w-full justify-center rounded-full border border-transparent bg-danger hover:bg-danger-dark px-4 py-2 text-base font-semibold text-white shadow-sm transition sm:ml-3 sm:w-auto sm:text-sm transform hover:scale-[1.02]">
+                    Delete
+                </button>
+                <button type="button" onclick="closeDeleteModal()" class="mt-3 inline-flex w-full justify-center rounded-full border border-gray-300 bg-white dark:bg-border-dark dark:text-text-dark dark:hover:bg-gray-700 px-4 py-2 text-base font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition sm:mt-0 sm:w-auto sm:text-sm transform hover:scale-[1.02]">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+
+  <script>
+    /* ------------------ GLOBAL CONFIG & STATE ------------------ */
+    // Global API URL setup - ASSUMED to be functional
+    // const COACHING_API_URL = 'https://example.com/api/coaching';
+    // const IRNTE_API_URL = 'https://example.com/api/irnte';
+    // const KB_API_URL = 'https://example.com/api/knowledgebase'; 
+
+    let docIdToHandle = null;
+
+    /* ------------------ NAVIGATION & UI FUNCTIONS ------------------ */
+
+    function setTabTitle(title) {
+        document.getElementById('mainTitleContainer').textContent = title;
+    }
+
+    function showTab(tabId, event) {
+        // Prevent default button action if event is provided
+        if (event) {
+            event.preventDefault();
+        }
+
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.add('hidden');
+        });
+
+        // Remove active class from all nav items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('tab-active');
+            item.classList.remove('text-google-blue'); // Ensure color is removed from icon/text
+            item.querySelector('.material-symbols-outlined').classList.remove('text-google-blue');
+        });
+
+        // Show the selected tab content
+        const activeTab = document.getElementById(tabId);
+        if (activeTab) {
+            activeTab.classList.remove('hidden');
+
+            // Set the corresponding navigation item to active
+            const activeNavItem = document.querySelector(`.nav-item[onclick*="showTab('${tabId}'"]`);
+            if (activeNavItem) {
+                activeNavItem.classList.add('tab-active');
+                // The original code uses a general .tab-active style for color, so this is fine.
+                
+                // Update header title based on data-tab-title
+                setTabTitle(activeNavItem.dataset.tabTitle);
+            } else {
+                 // Fallback for pages without nav items (like the modals if they were tabs)
+                 setTabTitle(tabId.toUpperCase());
+            }
+
+            // Close the drawer on mobile view after selecting a tab
+            if (window.innerWidth < 1024) {
+                closeDrawer();
+            }
+        }
+        
+        // Specific function calls for tab initialization (if API calls are involved)
+        if (tabId === 'coaching-log') {
+            loadSessions();
+        }
+        if (tabId === 'ir-nte-log') {
+            loadIRNTESessions();
+        }
+        if (tabId === 'knowledge') {
+            // KB initialization functions
+            loadKbDocuments();
+        }
+    }
+
+    // Drawer functionality
+    const drawer = document.getElementById('drawer');
+    const overlay = document.getElementById('overlay');
+    const menuBtn = document.getElementById('menuBtn');
+    const closeDrawerBtn = document.getElementById('closeDrawer');
+
+    function openDrawer() {
+        drawer.classList.add('drawer-open');
+        overlay.classList.remove('hidden');
+    }
+
+    function closeDrawer() {
+        drawer.classList.remove('drawer-open');
+        overlay.classList.add('hidden');
+    }
+
+    menuBtn.addEventListener('click', openDrawer);
+    closeDrawerBtn.addEventListener('click', closeDrawer);
+    overlay.addEventListener('click', closeDrawer);
+
+    // Dark Mode Toggle functionality
+    const themeToggle = document.getElementById('themeToggle');
+    function updateThemeIcon(isDark) {
+        themeToggle.innerHTML = isDark 
+            ? '<span class="material-symbols-outlined text-xl">light_mode</span>' 
+            : '<span class="material-symbols-outlined text-xl">dark_mode</span>';
+    }
+
+    function toggleTheme() {
+        const isDark = document.body.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        updateThemeIcon(isDark);
+    }
+
+    themeToggle.addEventListener('click', toggleTheme);
+
+    // Initialize theme
+    const storedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialDark = storedTheme === 'dark' || (storedTheme === null && prefersDark);
+    if (initialDark) {
+        document.body.classList.add('dark');
+    }
+    updateThemeIcon(initialDark);
+
+    /* ------------------ GLOBAL UTILITIES (Loading Spinner/Modals) ------------------ */
+
+    let globalLoadingTimeout;
+
+    function showGlobalLoading(text = 'Processing...') {
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const loadingText = document.getElementById('irNteLoadingText');
+        
+        // Check for the presence of the elements before trying to use them
+        if (loadingSpinner && loadingText) {
+            loadingText.textContent = text;
+            loadingSpinner.classList.remove('hidden');
+            // Use a timeout to ensure the spinner is shown for at least a brief moment
+            globalLoadingTimeout = setTimeout(() => {
+                loadingSpinner.classList.remove('opacity-0');
+            }, 50); 
+        } else {
+            // Fallback for screens without the IR/NTE loading spinner
+            console.log(`Loading: ${text}`); 
+        }
+    }
+
+    function hideGlobalLoading() {
+        clearTimeout(globalLoadingTimeout);
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        if (loadingSpinner) {
+            loadingSpinner.classList.add('opacity-0');
+            setTimeout(() => {
+                loadingSpinner.classList.add('hidden');
+            }, 300); // Wait for transition
+        }
+    }
+
+    /* ------------------ COACHING LOG FUNCTIONS (DUMMY/PLACEHOLDER) ------------------ */
+
+    function loadSessions() {
+        // Placeholder function to simulate data loading
+        // Since 'coaching-log' tab is removed, this function is vestigial.
+        console.log('Coaching log data simulation skipped.');
+        // if (typeof COACHING_API_URL !== 'undefined') { fetch(COACHING_API_URL).then(...); }
+    }
+
+    function filterSessions() {
+        // Placeholder function to simulate client-side filtering
+    }
+    
+    function openModal(sessionId = null) {
+        // Placeholder for the Coaching Log Modal
+        alert(`Opening Coaching Log Modal for ID: ${sessionId || 'New Session'}`);
+    }
+
+
+    /* ------------------ IR / NTE LOG FUNCTIONS (DUMMY/PLACEHOLDER) ------------------ */
+
+    function loadIRNTESessions() {
+        // Placeholder function to simulate data loading
+        // Since 'ir-nte-log' tab is removed, this function is vestigial.
+        console.log('IR/NTE log data simulation skipped.');
+        // if (typeof IRNTE_API_URL !== 'undefined') { fetch(IRNTE_API_URL).then(...); }
+    }
+
+    function handleSearch() {
+        // Placeholder for IR/NTE search
+    }
+
+    function openIRModal(id = null) {
+        // Placeholder for the IR/NTE Modal
+        alert(`Opening IR/NTE Log Modal for ID: ${id || 'New IR/NTE'}`);
+    }
+    
+    /* ------------------ KNOWLEDGE BASE FUNCTIONS (CORE LOGIC) ------------------ */
+
+    // STATE
+    let kbDocuments = []; // Array to hold loaded documents
+
+    // VIEW FUNCTIONS
+    function changeView(viewType) {
+        const gridView = document.getElementById('grid-view');
+        const listView = document.getElementById('list-view');
+        const btnGrid = document.getElementById('btnGrid');
+        const btnList = document.getElementById('btnList');
+
+        if (viewType === 'grid') {
+            gridView.classList.remove('hidden');
+            listView.classList.add('hidden');
+            btnGrid.classList.add('bg-brand-accent', 'text-bg-dark');
+            btnGrid.classList.remove('bg-gray-200', 'dark:bg-border-dark', 'text-text-light', 'dark:text-text-dark');
+            btnList.classList.remove('bg-brand-accent', 'text-bg-dark');
+            btnList.classList.add('bg-gray-200', 'dark:bg-border-dark', 'text-text-light', 'dark:text-text-dark');
+        } else {
+            listView.classList.remove('hidden');
+            gridView.classList.add('hidden');
+            btnList.classList.add('bg-brand-accent', 'text-bg-dark');
+            btnList.classList.remove('bg-gray-200', 'dark:bg-border-dark', 'text-text-light', 'dark:text-text-dark');
+            btnGrid.classList.remove('bg-brand-accent', 'text-bg-dark');
+            btnGrid.classList.add('bg-gray-200', 'dark:bg-border-dark', 'text-text-light', 'dark:text-text-dark');
+        }
+    }
+
+    function renderDocuments(documents) {
+        const gridView = document.getElementById('grid-view');
+        const listTableBody = document.getElementById('listTableBody');
+        gridView.innerHTML = '';
+        listTableBody.innerHTML = '';
+
+        if (documents.length === 0) {
+            const noResults = `<div class="col-span-12 text-center p-10 text-xl text-gray-500 dark:text-gray-400">
+                                <i class="fas fa-exclamation-circle mr-2"></i> No documents match your search.
+                               </div>`;
+            gridView.innerHTML = noResults;
+            listTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-500 dark:text-gray-400">No documents match your search.</td></tr>`;
+            return;
+        }
+
+        documents.forEach(doc => {
+            // Grid View Card
+            gridView.innerHTML += `
+                <div class="bg-white dark:bg-card-dark rounded-xl shadow-lg p-6 border-t-4 border-brand-accent flex flex-col justify-between transition duration-300 transform hover:scale-[1.01] hover:shadow-xl cursor-pointer" onclick="openViewModal(${doc.id})">
+                    <div>
+                        <span class="text-xs font-semibold uppercase text-brand-accent">${doc.category}</span>
+                        <h4 class="text-xl font-bold mt-1 mb-3 text-text-light dark:text-text-dark">${doc.documentname}</h4>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 truncate-lines-3">${doc.contenthtml.substring(0, 100)}...</p>
+                    </div>
+                    <div class="mt-4 pt-4 border-t dark:border-border-dark flex justify-between items-center text-xs text-gray-400">
+                        <span>Owner: ${doc.owner}</span>
+                        <span>v${doc.version} | ${doc.lastModified}</span>
+                    </div>
+                </div>
+            `;
+
+            // List View Row
+            listTableBody.innerHTML += `
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition duration-150 ease-in-out text-gray-700 dark:text-gray-300">
+                    <td class="px-6 py-4 font-semibold text-gray-800 dark:text-text-dark hover:text-brand-accent cursor-pointer" onclick="openViewModal(${doc.id})">${doc.documentname}</td>
+                    <td class="px-6 py-4">${doc.category}</td>
+                    <td class="px-6 py-4">${doc.owner}</td>
+                    <td class="px-6 py-4">${doc.lastModified}</td>
+                    <td class="px-6 py-4 text-center space-x-2">
+                        <button onclick="event.stopPropagation(); openViewModal(${doc.id})" title="View" class="text-google-blue hover:text-blue-700 p-1"><i class="fas fa-eye"></i></button>
+                        <button onclick="event.stopPropagation(); openCrudModal(${doc.id})" title="Edit" class="text-google-green hover:text-green-700 p-1"><i class="fas fa-edit"></i></button>
+                        <button onclick="event.stopPropagation(); openDeleteModal(${doc.id}, '${doc.documentname}')" title="Delete" class="text-danger hover:text-danger-dark p-1"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function filterDocuments() {
+        const query = document.getElementById('kbSearch').value.toLowerCase();
+        // Check all category buttons for the active class to get the filter
+        let categoryFilter = '';
+        document.querySelectorAll('#categories button').forEach(btn => {
+            if(btn.classList.contains('text-brand-accent')) {
+                 categoryFilter = btn.dataset.category || '';
+            }
+        });
+
+        const filtered = kbDocuments.filter(doc => {
+            const matchesQuery = doc.documentname.toLowerCase().includes(query) ||
+                                 doc.owner.toLowerCase().includes(query) ||
+                                 doc.tags.toLowerCase().includes(query);
+            
+            const matchesCategory = categoryFilter === '' || doc.category === categoryFilter;
+
+            return matchesQuery && matchesCategory;
+        });
+        renderDocuments(filtered);
+    }
+
+    function loadKbCategories() {
+        const categoriesUl = document.getElementById('categories');
+        categoriesUl.innerHTML = '';
+        
+        const allCategories = kbDocuments.map(doc => doc.category).filter(Boolean);
+        const uniqueCategories = [...new Set(allCategories)];
+
+        // Add 'All' category button
+        const allLi = document.createElement('li');
+        // Initial active class for "All"
+        allLi.innerHTML = `<button data-category="" class="block w-full text-left p-2 rounded-lg transition hover:bg-gray-100 dark:hover:bg-border-dark text-brand-accent font-semibold" onclick="filterByCategory(this)">All (${kbDocuments.length})</button>`;
+        categoriesUl.appendChild(allLi);
+
+        uniqueCategories.forEach(category => {
+            const count = allCategories.filter(c => c === category).length;
+            const li = document.createElement('li');
+            li.innerHTML = `<button data-category="${category}" class="block w-full text-left p-2 rounded-lg transition hover:bg-gray-100 dark:hover:bg-border-dark" onclick="filterByCategory(this)">${category} (${count})</button>`;
+            categoriesUl.appendChild(li);
+        });
+    }
+
+    function filterByCategory(button) {
+        document.querySelectorAll('#categories button').forEach(btn => {
+            btn.classList.remove('text-brand-accent', 'font-semibold');
+        });
+        button.classList.add('text-brand-accent', 'font-semibold');
+        filterDocuments();
+    }
+
+    function loadKbDocuments() {
+        // Placeholder data simulating a successful API call
+        const placeholderData = [
+            { id: 1, documentname: "HR Attendance Policy", category: "HR Policies", owner: "HR Dept.", version: "3.1", tags: "hr, policy, attendance", contenthtml: "The company enforces a strict attendance policy. All agents must swipe in and out at designated times..." , lastModified: "2024-09-01" },
+            { id: 2, documentname: "Campaign A Standard Operating Procedure", category: "Campaign A SOP", owner: "Operations", version: "1.2", tags: "sop, campaign a, process", contenthtml: "This document details the step-by-step procedure for handling customer account creation and verification. Refer to section 4 for escalated cases." , lastModified: "2024-09-15" },
+            { id: 3, documentname: "IT VPN Setup Guide", category: "IT Procedures", owner: "IT Team", version: "2.0", tags: "it, vpn, guide, setup", contenthtml: "Follow these instructions to configure your Virtual Private Network (VPN) client for remote access to company resources. Contact IT support if issues persist." , lastModified: "2024-08-20" },
+            { id: 4, documentname: "NTE Code List and Definitions", category: "HR Policies", owner: "HR Dept.", version: "1.0", tags: "hr, nte, ir, codes", contenthtml: "A list of all Notice to Explain (NTE) codes, their corresponding offenses, and the appropriate disciplinary action levels..." , lastModified: "2024-09-05" },
+            // Add more placeholder documents for testing
+            { id: 5, documentname: "New Hire Training Module 1", category: "Training", owner: "Training Team", version: "1.0", tags: "training, new hire, tmo", contenthtml: "First module covering company culture, core values, and basic product knowledge..." , lastModified: "2024-09-25" },
+            { id: 6, documentname: "Server Maintenance Schedule", category: "IT Procedures", owner: "IT Team", version: "1.0", tags: "it, server, maintenance", contenthtml: "Regular server maintenance is scheduled every Sunday from 1 AM to 4 AM..." , lastModified: "2024-09-10" }
+        ];
+
+        // Simulate fetch delay
+        showGlobalLoading('Loading Knowledge Base...');
+        setTimeout(() => {
+            kbDocuments = placeholderData;
+            renderDocuments(kbDocuments);
+            loadKbCategories();
+            hideGlobalLoading();
+        }, 800);
+
+        // Actual implementation would be:
+        /*
+        showGlobalLoading('Loading Knowledge Base...');
+        fetch(KB_API_URL, { method: 'POST', body: JSON.stringify({ action: 'loadAll' }) })
+            .then(res => res.json())
+            .then(data => {
+                kbDocuments = data.documents;
+                renderDocuments(kbDocuments);
+                loadKbCategories();
+                hideGlobalLoading();
+            })
+            .catch(error => {
+                console.error("Failed to load documents:", error);
+                hideGlobalLoading();
+                // Render error message
+            });
+        */
+    }
+
+    // MODAL FUNCTIONS (KB)
+    
+    function openViewModal(docId) {
+        docIdToHandle = docId;
+        const doc = kbDocuments.find(d => d.id === docId);
+        
+        if (!doc) {
+            alert('Document not found!');
+            return;
+        }
+
+        document.getElementById('viewModalTitle').textContent = doc.documentname;
+        document.getElementById('vMeta').innerHTML = `
+            Category: <span class="font-medium">${doc.category}</span> | 
+            Owner: <span class="font-medium">${doc.owner}</span> | 
+            Version: <span class="font-medium">${doc.version}</span> |
+            Last Modified: <span class="font-medium">${doc.lastModified}</span>
+        `;
+        document.getElementById('vContent').innerHTML = doc.contenthtml;
+
+        const modalBg = document.getElementById('viewModalBg');
+        const modalContent = document.getElementById('viewModalContent');
+        modalBg.classList.remove('hidden');
+        setTimeout(() => {
+            modalContent.classList.remove('scale-95', 'opacity-0');
+            modalContent.classList.add('scale-100', 'opacity-100');
+        }, 10);
+
+        // Hide main scrollbar
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeViewModal() {
+        const modalContent = document.getElementById('viewModalContent');
+        const modalBg = document.getElementById('viewModalBg');
+        modalContent.classList.remove('scale-100', 'opacity-100');
+        modalContent.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modalBg.classList.add('hidden');
+        }, 300);
+
+        // Restore main scrollbar
+        document.body.style.overflow = '';
+    }
+
+    function openCrudModal(docId = null) {
+        closeViewModal(); // Close view modal if open
+        const form = document.getElementById('kbForm');
+        const title = document.getElementById('crudModalTitle');
+        const submitButton = document.getElementById('formSubmitButton');
+        const editNotice = document.getElementById('editNotice');
+        const btnExternalEdit = document.getElementById('btnExternalEdit');
+
+        form.reset();
+        form.dataset.editId = ''; // Clear ID
+
+        if (docId) {
+            const doc = kbDocuments.find(d => d.id === docId);
+            if (!doc) {
+                alert('Document not found!');
+                return;
+            }
+            
+            docIdToHandle = docId;
+            title.textContent = 'Edit Knowledge Document';
+            submitButton.innerHTML = '<i class="fas fa-save mr-2"></i> Update Document';
+            form.dataset.editId = docId;
+
+            // Populate form
+            document.getElementById('docNameInput').value = doc.documentname;
+            document.getElementById('docCategoryInput').value = doc.category;
+            document.getElementById('docOwnerInput').value = doc.owner;
+            document.getElementById('docVersionInput').value = doc.version;
+            document.getElementById('docTagsInput').value = doc.tags;
+            document.getElementById('docContentHtmlInput').value = doc.contenthtml;
+            
+            editNotice.classList.remove('hidden');
+            btnExternalEdit.classList.remove('hidden');
+
+        } else {
+            docIdToHandle = null;
+            title.textContent = 'New Knowledge Document';
+            submitButton.innerHTML = '<i class="fas fa-save mr-2"></i> Save Document';
+            document.getElementById('docVersionInput').value = '1.0'; // Default version
+            editNotice.classList.add('hidden');
+            btnExternalEdit.classList.add('hidden');
+        }
+
+        const modalBg = document.getElementById('crudModalBg');
+        const modalContent = document.getElementById('crudModalContent');
+        modalBg.classList.remove('hidden');
+        setTimeout(() => {
+            modalContent.classList.remove('scale-95', 'opacity-0');
+            modalContent.classList.add('scale-100', 'opacity-100');
+        }, 10);
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeCrudModal() {
+        const modalContent = document.getElementById('crudModalContent');
+        const modalBg = document.getElementById('crudModalBg');
+        modalContent.classList.remove('scale-100', 'opacity-100');
+        modalContent.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modalBg.classList.add('hidden');
+        }, 300);
+        document.body.style.overflow = '';
+    }
+
+    function openDeleteModal(docId = docIdToHandle, docName = document.getElementById('viewModalTitle').textContent) {
+        closeViewModal(); // Close view modal if open
+        if (!docId) return;
+
+        docIdToHandle = docId;
+        document.getElementById('docToDeleteName').textContent = docName;
+        document.getElementById('confirmDeleteButton').onclick = () => executeDeleteKbRecord(docIdToHandle); // Renamed function to avoid conflict
+
+        const modalBg = document.getElementById('deleteConfirmModal');
+        const modalContent = document.getElementById('deleteModalContent');
+        modalBg.classList.remove('hidden');
+        setTimeout(() => {
+            modalContent.classList.remove('scale-95', 'opacity-0');
+            modalContent.classList.add('scale-100', 'opacity-100');
+        }, 10);
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteModal() {
+        const modalContent = document.getElementById('deleteModalContent');
+        const modalBg = document.getElementById('deleteConfirmModal');
+        modalContent.classList.remove('scale-100', 'opacity-100');
+        modalContent.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modalBg.classList.add('hidden');
+        }, 300);
+        document.body.style.overflow = '';
+    }
+
+    function redirectEdit(docId) {
+        alert(`Redirecting to external editor for document ID: ${docId}. (Placeholder action)`);
+        // In a real app: window.open(`external-editor-url?docId=${docId}`, '_blank');
+    }
+
+    document.getElementById('kbForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        closeCrudModal();
+        showGlobalLoading('Saving document...');
+
+        const form = e.target;
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        const id = form.dataset.editId;
+        data.action = id ? 'updateKbDocument' : 'createKbDocument';
+        if (id) data.id = parseInt(id);
+
+        try {
+            // Placeholder: Simulate success and update state
+            const isUpdate = !!id;
+            const newDoc = {
+                id: isUpdate ? parseInt(id) : Math.floor(Math.random() * 1000) + 7,
+                documentname: data.documentname,
+                category: data.category,
+                owner: data.owner,
+                version: data.version,
+                tags: data.tags,
+                contenthtml: data.contenthtml,
+                lastModified: new Date().toISOString().slice(0, 10)
+            };
+
+            if (isUpdate) {
+                const index = kbDocuments.findIndex(d => d.id === newDoc.id);
+                if (index !== -1) {
+                    kbDocuments[index] = newDoc;
+                }
+            } else {
+                kbDocuments.push(newDoc);
+            }
+
+            hideGlobalLoading();
+            alert(`Document successfully ${isUpdate ? 'updated' : 'saved'}!`);
+            renderDocuments(kbDocuments);
+            loadKbCategories();
+
+        } catch (error) {
+            console.error("Error saving document:", error);
+            hideGlobalLoading();
+            alert(`Failed to save document: ${error.message}. Check the console for details.`);
+        }
+    });
+
+    async function executeDeleteKbRecord(id) {
+        closeDeleteModal();
+        showGlobalLoading("Deleting document...");
+
+        try {
+            // Placeholder: Simulate deletion and update state
+            const initialLength = kbDocuments.length;
+            kbDocuments = kbDocuments.filter(doc => doc.id !== id);
+            if (initialLength === kbDocuments.length) {
+                // throw new Error("Document ID not found in local storage."); // Removed for smoother placeholder
+            }
+
+            // Actual implementation would be:
+            // const res = await fetch(KB_API_URL, {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ action: 'deleteKbDocument', id: parseInt(id) })
+            // });
+            // ... check for result status ...
+
+            hideGlobalLoading();
+            alert("Document successfully deleted!");
+            renderDocuments(kbDocuments);
+            loadKbCategories();
+
+        } catch (error) {
+            console.error("Error deleting document:", error);
+            hideGlobalLoading();
+            alert(`Failed to delete document: ${error.message}. Check the console for details.`);
+        }
+    }
+
+    /* ------------------ IR / NTE LOG Placeholder Functions (Original from file) ------------------ */
+    
+    // NOTE: The original file had two functions named executeDeleteRecord. I've renamed the KB one to avoid conflict.
+    // The placeholder functions below are kept as-is, which currently do not work as the API URLs are commented out.
+
+    async function executeSaveRecord(data) {
+        // This function is for IR/NTE/Coaching Log and is kept separate.
+        showGlobalLoading("Saving record...");
+
+        try {
+            /*
+            const res = await fetch(IRNTE_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ error: 'Unknown server error' }));
+                throw new Error(errorData.error || 'Server responded with an error.');
+            }
+            
+            const result = await res.json();
+            if (result.status === 'ERROR') throw new Error(result.message);
+            */
+            
+            // Placeholder simulation
+            console.log('Simulating IR/NTE save:', data);
+            
+            hideGlobalLoading();
+            alert("Record successfully saved! (Simulation)");
+            // await loadRecords(); // Assuming this is defined elsewhere
+
+        } catch (error) {
+            console.error("Error saving record:", error);
+            hideGlobalLoading();
+            alert(`Failed to save record: ${error.message}. Check the console for details.`);
+        }
+    }
+
+    async function executeDeleteRecord(id) {
+        // This function is for IR/NTE deletion, kept separate from the new KB deletion function.
+        showGlobalLoading("Deleting record...");
+
+        try {
+            /*
+            const res = await fetch(IRNTE_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'deleteIRNTE', id: parseInt(id) })
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ error: 'Unknown server error' }));
+                throw new Error(errorData.error || 'Server responded with an error.');
+            }
+            
+            const result = await res.json();
+            if (result.status === 'ERROR') throw new Error(result.message);
+            */
+
+            // Placeholder simulation
+            console.log('Simulating IR/NTE delete for ID:', id);
+
+            hideGlobalLoading();
+            alert("Record successfully deleted! (Simulation)");
+            // await loadRecords(); // Assuming this is defined elsewhere
+
+        } catch (error) {
+            console.error("Error deleting record:", error);
+            hideGlobalLoading();
+            alert(`Failed to delete record: ${error.message}. Check the console for details.`);
+        }
+    }
+
+    /* ------------------ INIT ------------------ */
+    document.addEventListener('DOMContentLoaded', () => {
+      // Show the initial tab (Knowledge Base) and set the initial header title
+      showTab('knowledge');
+    });
+  </script>
+</body>
+</html>

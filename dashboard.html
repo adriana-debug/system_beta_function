@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>BPO Dashboard — Coaching</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Enable dark mode using the 'dark' class on the HTML tag
+            theme: {
+                extend: {
+                    colors: {
+                        // Material Design inspired palette
+                        'material-primary': '#1976D2', // Blue 700 (Used for headers, buttons)
+                        'material-secondary': '#FFC107', // Amber 500 (Used for dark mode highlights)
+                        'material-accent': '#00BCD4', // Cyan 500
+                        'brand': '#CBEB33', // Original brand color for highlights
+                        'brandlight': '#D9F25A', // Original brandlight
+                        'blackpearl': '#04101d', // Original blackpearl
+                        'primary': '#1f2937', // Original primary (Text color)
+                        'secondary': '#4b5563', // Original secondary (Secondary text)
+                        // Dark Mode specific colors
+                        'dark-bg': '#121212', // Very dark background
+                        'dark-surface': '#1e1e1e', // Darker surface for cards/sidebar
+                        'dark-text': '#E0E0E0', // Light text
+                        'dark-secondary-text': '#B0B0B0', // Lighter text
+                        'dark-border': '#333333', // Dark border
+                    },
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+
+        /* General styles for Light Mode (Material-inspired) */
+        .nav-link {
+            transition: all 0.2s ease-in-out;
+            color: theme('colors.secondary');
+        }
+        .nav-link:hover {
+            background-color: theme('colors.gray.100');
+        }
+        .nav-link.active-link {
+            background-color: theme('colors.material-primary');
+            color: white !important; 
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Dark Mode Overrides */
+        .dark .nav-link {
+            color: theme('colors.dark-secondary-text');
+        }
+        .dark .nav-link:hover {
+            background-color: theme('colors.dark-border');
+        }
+        .dark .nav-link.active-link {
+            background-color: theme('colors.material-secondary');
+            color: theme('colors.blackpearl') !important;
+        }
+
+        .dark .bg-gray-100 {
+            background-color: theme('colors.dark-bg');
+        }
+        .dark .bg-white {
+            background-color: theme('colors.dark-surface');
+        }
+        .dark .text-slate-800 {
+            color: theme('colors.dark-text');
+        }
+        .dark .text-primary {
+            color: theme('colors.dark-text');
+        }
+        .dark .text-secondary {
+            color: theme('colors.dark-secondary-text');
+        }
+        .dark .border-gray-200 {
+            border-color: theme('colors.dark-border');
+        }
+        .dark .shadow-xl {
+            box-shadow: none;
+        }
+
+        /* DRAWER FIX: Ensure drawer is hidden on mobile by default using transform */
+        #mobile-drawer {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%); /* Hidden state */
+        }
+
+        #mobile-drawer.open {
+            transform: translateX(0); /* Open state */
+        }
+        
+        /* DRAWER FIX: Only apply the desktop permanent state ABOVE the 'lg' breakpoint (1024px) */
+        @media (min-width: 1024px) {
+            #mobile-drawer {
+                position: static; /* Static positioning on desktop */
+                transform: translateX(0) !important; /* Always visible on desktop */
+            }
+        }
+        
+        /* Table Header styles */
+        .table-header {
+            background-color: #04101c; 
+            color: white;
+        }
+        .dark .table-header {
+            background-color: theme('colors.material-primary');
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-slate-800 font-sans">
+    <div class="flex min-h-screen">
+        
+        <header class="fixed top-0 left-0 right-0 z-30 bg-white shadow-md dark:bg-dark-surface lg:hidden">
+            <div class="flex justify-between items-center p-4">
+                <div class="flex items-center gap-3">
+                    <button id="drawer-toggle" class="text-primary dark:text-dark-text">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-xl font-bold text-material-primary dark:text-dark-text">Digital Minds BPO</h1>
+                </div>
+                <button id="dark-mode-toggle-mobile" class="text-primary dark:text-dark-text p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-border transition duration-150">
+                    <i class="fas fa-moon dark:hidden text-lg"></i>
+                    <i class="fas fa-sun hidden dark:inline-block text-lg"></i>
+                </button>
+            </div>
+        </header>
+
+        <aside id="mobile-drawer" class="fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-xl flex flex-col border-r border-gray-200 dark:bg-dark-surface dark:border-dark-border lg:static"> 
+            <div class="p-6 flex flex-col items-center gap-3 border-b border-gray-200 dark:border-dark-border">
+                <img src="dmi_logo.png" alt="Logo" class="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-material-primary dark:border-material-secondary">
+                <h1 class="text-xl font-extrabold text-material-primary dark:text-dark-text tracking-wide">Digital Minds BPO</h1>
+            </div>
+            <nav class="flex-1 px-4 space-y-2 py-4">
+                <a href="#" data-page="dashboard"
+                    class="nav-link flex items-center px-4 py-3 rounded-xl hover:shadow-lg transition duration-200 active-link">
+                    <i class="fas fa-chart-line w-5 h-5 mr-4"></i>
+                    Dashboard
+                </a>
+                <a href="#" data-page="coaching"
+                    class="nav-link flex items-center px-4 py-3 rounded-xl hover:shadow-lg transition duration-200">
+                    <i class="fas fa-clipboard-list w-5 h-5 mr-4"></i>
+                    Coaching Log
+                </a>
+                <a href="#" data-page="irnte"
+                    class="nav-link flex items-center px-4 py-3 rounded-xl hover:shadow-lg transition duration-200">
+                    <i class="fas fa-exclamation-triangle w-5 h-5 mr-4"></i>
+                    IR / NTE
+                </a>
+                <a href="#" data-page="sop"
+                    class="nav-link flex items-center px-4 py-3 rounded-xl hover:shadow-lg transition duration-200">
+                    <i class="fas fa-book-open w-5 h-5 mr-4"></i>
+                    SOP Documents
+                </a>
+                <a href="#" data-page="tools"
+                    class="nav-link flex items-center px-4 py-3 rounded-xl hover:shadow-lg transition duration-200">
+                    <i class="fas fa-tools w-5 h-5 mr-4"></i>
+                    Tools
+                </a>
+
+                <a href="kb.html" target="_blank"
+                    class="flex items-center px-4 py-3 rounded-xl text-secondary dark:text-dark-secondary-text hover:bg-gray-100 dark:hover:bg-dark-border transition duration-200 mt-4 border-t border-gray-200 dark:border-dark-border pt-4">
+                    <i class="fas fa-database w-5 h-5 mr-4"></i>
+                    Knowledge Base
+                </a>
+            </nav>
+            <div class="p-4 border-t border-gray-200 dark:border-dark-border flex flex-col gap-2">
+                <div class="hidden lg:flex justify-between items-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-border transition duration-150">
+                    <span class="text-sm font-medium text-secondary dark:text-dark-secondary-text">Dark Mode</span>
+                    <button id="dark-mode-toggle-desktop" class="p-2 text-material-primary dark:text-material-secondary">
+                        <i class="fas fa-toggle-off dark:hidden text-2xl"></i>
+                        <i class="fas fa-toggle-on hidden dark:inline-block text-2xl"></i>
+                    </button>
+                </div>
+                <button class="w-full py-3 bg-material-primary hover:bg-material-accent text-white font-semibold rounded-xl shadow-lg transition duration-150 hover:shadow-xl dark:bg-material-secondary dark:text-blackpearl dark:hover:bg-brand">Logout</button>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-4 lg:p-8 pt-20 lg:pt-8"> 
+            
+            <section id="dashboard" class="page-section active">
+                <h1 class="text-4xl font-extrabold mb-8 text-material-primary dark:text-dark-text border-b pb-2 border-gray-200 dark:border-dark-border">Dashboard</h1>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-between h-48 dark:bg-dark-surface dark:shadow-none border border-gray-200 dark:border-dark-border">
+                        <p class="text-sm font-medium text-secondary dark:text-dark-secondary-text">Key Performance Indicator 1</p>
+                        <div class="text-5xl font-bold text-material-primary dark:text-material-secondary">95.4%</div>
+                        <p class="text-green-500 text-sm font-medium">↑ 2.1% from last month</p>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-lg p-6 flex items-center justify-center text-secondary h-48 col-span-1 lg:col-span-2 dark:bg-dark-surface dark:shadow-none border border-gray-200 dark:border-dark-border">
+                        <i class="fas fa-chart-bar fa-2x mr-4 text-material-primary dark:text-material-secondary"></i>
+                        <span class="text-lg dark:text-dark-secondary-text">Detailed Performance Charts Here</span>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="coaching" class="page-section">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-4xl font-extrabold text-material-primary dark:text-dark-text">Coaching Log</h1>
+                    <a href="https://www.adrianavenido.com/coaching-form-log.html" target="_blank"
+                        class="inline-flex items-center bg-material-primary hover:bg-material-accent text-white dark:bg-material-secondary dark:text-blackpearl dark:hover:bg-brand px-6 py-3 rounded-full shadow-lg font-bold transition duration-200 transform hover:scale-[1.02]">
+                        <i class="fas fa-plus-circle mr-2"></i>Update Coaching Log
+                    </a>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-2xl p-6 relative dark:bg-dark-surface dark:shadow-none border border-gray-200 dark:border-dark-border">
+                    <h2 class="text-2xl font-semibold mb-6 text-primary dark:text-dark-text border-b pb-3 border-gray-200 dark:border-dark-border">Past Coaching Sessions</h2>
+
+                    <div class="mb-6 flex justify-between items-center">
+                        <input type="text" id="coachingSearch" placeholder="Search by Employee, Coach, or Employee No..." 
+                            class="p-3 border border-gray-300 rounded-xl w-full max-w-lg focus:ring-material-primary focus:border-material-primary transition duration-150 dark:bg-dark-surface dark:border-dark-border dark:text-dark-text dark:placeholder-dark-secondary-text"
+                            onkeyup="handleSearch()">
+                    </div>
+
+                    <div id="coachingLoadingSpinner"
+                        class="hidden absolute inset-0 bg-white/80 backdrop-blur-sm flex justify-center items-center z-40 rounded-2xl dark:bg-dark-surface/80">
+                        <div class="flex flex-col items-center">
+                            <svg class="animate-spin h-10 w-10 text-material-primary dark:text-material-secondary" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 
+                                    0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 
+                                    3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                            <p id="coachingLoadingText" class="mt-3 text-lg text-primary dark:text-dark-text font-medium">Loading data...</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="table-header"> <tr>
+                                    <th class="text-left px-4 py-3 rounded-tl-xl">Date</th>
+                                    <th class="text-left px-4 py-3">Coach</th>
+                                    <th class="text-left px-4 py-3">Employee</th>
+                                    <th class="text-left px-4 py-3">Employee No.</th>
+                                    <th class="text-left px-4 py-3">Performance Observed</th>
+                                    <th class="text-left px-4 py-3">Acknowledge</th>
+                                    <th class="text-center px-4 py-3 rounded-tr-xl">Signed Document</th>
+                                </tr>
+                            </thead>
+                            <tbody id="coachingSessionsTable" class="divide-y divide-gray-100 dark:divide-dark-border text-primary dark:text-dark-secondary-text">
+                                <tr>
+                                    <td colspan="7" class="text-center py-6 text-gray-500 dark:text-dark-secondary-text">Loading coaching data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="irnte" class="page-section">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-4xl font-extrabold text-material-primary dark:text-dark-text">IR / NTE Log</h1>
+                    <a href="ir.html" target="_blank"
+                        class="inline-flex items-center bg-material-primary hover:bg-material-accent text-white dark:bg-material-secondary dark:text-blackpearl dark:hover:bg-brand px-6 py-3 rounded-full shadow-lg font-bold transition duration-200 transform hover:scale-[1.02]">
+                        <i class="fas fa-file-alt mr-2"></i>File New IR / NTE
+                    </a>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-2xl p-6 relative dark:bg-dark-surface dark:shadow-none border border-gray-200 dark:border-dark-border">
+                    <h2 class="text-2xl font-semibold mb-6 text-primary dark:text-dark-text border-b pb-3 border-gray-200 dark:border-dark-border">Past IR / NTE Records</h2>
+
+                    <div class="mb-6 flex justify-between items-center">
+                        <input type="text" id="irnteSearch" placeholder="Search by Employee, Campaign, or NTE/IR Code..." 
+                            class="p-3 border border-gray-300 rounded-xl w-full max-w-lg focus:ring-material-primary focus:border-material-primary transition duration-150 dark:bg-dark-surface dark:border-dark-border dark:text-dark-text dark:placeholder-dark-secondary-text"
+                            onkeyup="handleIRNTESearch()">
+                    </div>
+
+                    <div id="irnteLoadingSpinner"
+                        class="hidden absolute inset-0 bg-white/80 backdrop-blur-sm flex justify-center items-center z-40 rounded-2xl dark:bg-dark-surface/80">
+                        <div class="flex flex-col items-center">
+                            <svg class="animate-spin h-10 w-10 text-material-primary dark:text-material-secondary" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 
+                                    0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 
+                                    3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                            <p id="irnteLoadingText" class="mt-3 text-lg text-primary dark:text-dark-text font-medium">Loading data...</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="table-header">
+                                <tr>
+                                    <th class="text-left px-4 py-3">ID</th> 
+                                    <th class="text-left px-4 py-3">Date Filed</th>
+                                    <th class="text-left px-4 py-3">Employee</th>
+                                    <th class="text-left px-4 py-3">Employee No.</th> 
+                                    <th class="text-left px-4 py-3">Campaign</th>
+                                    <th class="text-left px-4 py-3">NTE/IR Code</th>
+                                    <th class="text-left px-4 py-3">Violation Category</th>
+                                    <th class="text-left px-4 py-3">Decision (HR)</th>
+                                    <th class="text-center px-4 py-3">NTE Docs</th> 
+                                    <th class="text-center px-4 py-3 rounded-tr-xl">NOD Docs</th>
+                                </tr>
+                            </thead>
+                            <tbody id="irnteSessionsTable" class="divide-y divide-gray-100 dark:divide-dark-border text-primary dark:text-dark-secondary-text">
+                                <tr>
+                                    <td colspan="10" class="text-center py-6 text-gray-500 dark:text-dark-secondary-text">Loading IR/NTE data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="sop" class="page-section">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-4xl font-extrabold text-material-primary dark:text-dark-text">SOP Documents</h1>
+                    <a href="#" target="_blank"
+                        class="inline-flex items-center bg-material-primary hover:bg-material-accent text-white dark:bg-material-secondary dark:text-blackpearl dark:hover:bg-brand px-6 py-3 rounded-full shadow-lg font-bold transition duration-200 transform hover:scale-[1.02]">
+                        <i class="fas fa-file-alt mr-2"></i>New SOP Entry
+                    </a>
+                </div>
+                <div class="bg-white rounded-2xl shadow-2xl p-6 relative dark:bg-dark-surface dark:shadow-none border border-gray-200 dark:border-dark-border">
+                    <h2 class="text-2xl font-semibold mb-6 text-primary dark:text-dark-text border-b pb-3 border-gray-200 dark:border-dark-border">Standard Operating Procedures</h2>
+
+                    <div class="mb-6 flex justify-between items-center">
+                        <input type="text" id="sopSearch" placeholder="Search by Document Name, Campaign, or Description..." 
+                            class="p-3 border border-gray-300 rounded-xl w-full max-w-lg focus:ring-material-primary focus:border-material-primary transition duration-150 dark:bg-dark-surface dark:border-dark-border dark:text-dark-text dark:placeholder-dark-secondary-text"
+                            onkeyup="handleSOPSearch()">
+                    </div>
+
+                    <div id="sopLoadingSpinner"
+                        class="hidden absolute inset-0 bg-white/80 backdrop-blur-sm flex justify-center items-center z-40 rounded-2xl dark:bg-dark-surface/80">
+                        <div class="flex flex-col items-center">
+                            <svg class="animate-spin h-10 w-10 text-material-primary dark:text-material-secondary" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 
+                                    0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 
+                                    3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                            <p id="sopLoadingText" class="mt-3 text-lg text-primary dark:text-dark-text font-medium">Loading SOP data...</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="table-header">
+                                <tr>
+                                    <th class="text-left px-4 py-3 rounded-tl-xl">ID</th>
+                                    <th class="text-left px-4 py-3">Document Name</th>
+                                    <th class="text-left px-4 py-3">Campaign</th> <th class="text-left px-4 py-3">Description</th>
+                                    <th class="text-center px-4 py-3 rounded-tr-xl">Link</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sopTable" class="divide-y divide-gray-100 dark:divide-dark-border text-primary dark:text-dark-secondary-text">
+                                <tr>
+                                    <td colspan="5" class="text-center py-6 text-gray-500 dark:text-dark-secondary-text">Loading SOP data...</td> </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tools" class="page-section">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-4xl font-extrabold text-material-primary dark:text-dark-text">Campaigns Tools List</h1> 
+                    <a href="#" target="_blank"
+                        class="inline-flex items-center bg-material-primary hover:bg-material-accent text-white dark:bg-material-secondary dark:text-blackpearl dark:hover:bg-brand px-6 py-3 rounded-full shadow-lg font-bold transition duration-200 transform hover:scale-[1.02]">
+                        <i class="fas fa-tools mr-2"></i>New Tool Entry
+                    </a>
+                </div>
+                <div class="bg-white rounded-2xl shadow-2xl p-6 relative dark:bg-dark-surface dark:shadow-none border border-gray-200 dark:border-dark-border">
+                    <h2 class="text-2xl font-semibold mb-6 text-primary dark:text-dark-text border-b pb-3 border-gray-200 dark:border-dark-border">Applications and Resources</h2>
+
+                    <div class="mb-6 flex justify-between items-center">
+                        <input type="text" id="toolsSearch" placeholder="Search by Tool Name, Campaign, or Description..." 
+                            class="p-3 border border-gray-300 rounded-xl w-full max-w-lg focus:ring-material-primary focus:border-material-primary transition duration-150 dark:bg-dark-surface dark:border-dark-border dark:text-dark-text dark:placeholder-dark-secondary-text"
+                            onkeyup="handleToolsSearch()">
+                    </div>
+
+                    <div id="toolsLoadingSpinner"
+                        class="hidden absolute inset-0 bg-white/80 backdrop-blur-sm flex justify-center items-center z-40 rounded-2xl dark:bg-dark-surface/80">
+                        <div class="flex flex-col items-center">
+                            <svg class="animate-spin h-10 w-10 text-material-primary dark:text-material-secondary" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 
+                                    0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 
+                                    3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                            <p id="toolsLoadingText" class="mt-3 text-lg text-primary dark:text-dark-text font-medium">Loading Tools data...</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="table-header">
+                                <tr>
+                                    <th class="text-left px-4 py-3 rounded-tl-xl">ID</th>
+                                    <th class="text-left px-4 py-3">Tool Name</th>
+                                    <th class="text-left px-4 py-3">Campaign</th> <th class="text-left px-4 py-3">Description</th>
+                                    <th class="text-center px-4 py-3">URL</th>
+                                    <th class="text-center px-4 py-3 rounded-tr-xl">Work Instruction</th>
+                                </tr>
+                            </thead>
+                            <tbody id="toolsTable" class="divide-y divide-gray-100 dark:divide-dark-border text-primary dark:text-dark-secondary-text">
+                                <tr>
+                                    <td colspan="6" class="text-center py-6 text-gray-500 dark:text-dark-secondary-text">Loading Tools data...</td> </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="drawer-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden lg:hidden"></div>
+
+    <div id="loadingModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-70 flex flex-col justify-center items-center z-50">
+        <div class="w-24 h-24 border-4 border-material-primary dark:border-material-secondary border-t-transparent rounded-full animate-spin"></div>
+        <p id="loadingText" class="mt-4 text-white text-lg font-medium dark:text-dark-text">Loading...</p>
+    </div>
+
+    <script>
+        feather.replace();
+
+        // 🛑 CRITICAL: API URLs are kept untouched as requested.
+        const COACHING_API_URL = "https://script.google.com/macros/s/AKfycbzh35p0nz1Xtb1Gaksxk7KR2DxlNfjk-imi2I3KbTt-MY2raDI5QrcpjSA_5dv0TJN6/exec";
+        const IRNTE_API_URL = "https://script.google.com/macros/s/AKfycbz8wi_hsT5s0nGMXpc2sMsVG6Xue9eoadKoZUXLpIXTkY1WO0V3cg1B5ilqfVcwrruW/exec"; 
+        const SOP_TOOLS_API_URL = "https://script.google.com/macros/s/AKfycbwn0GPogd4Cy3TiEPR462FId4nP1DTy2r8Aciqxp389JS6lopKgV5j9u1My_g1YyE7t/exec"; 
+        
+        let allCoachingSessions = []; 
+        let allIRNTESessions = []; 
+        let allSOPSessions = [];
+        let allToolsSessions = [];
+
+        // Helper function to format the date (MM/DD/YYYY) - Unchanged
+        function formatDate(dateString) {
+            if (!dateString) return "N/A";
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) {
+                    return dateString;
+                }
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const year = date.getFullYear();
+
+                return `${month}/${day}/${year}`;
+            } catch (e) {
+                return dateString;
+            }
+        }
+        
+        // --- DATA RENDERING FUNCTIONS ---
+        function renderCoachingTable(sessionsToRender) {
+            const table = document.getElementById("coachingSessionsTable");
+            table.innerHTML = ""; 
+
+            if (!Array.isArray(sessionsToRender) || sessionsToRender.length === 0) {
+                table.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-gray-500 dark:text-dark-secondary-text">No sessions match your criteria.</td></tr>`;
+                return;
+            }
+
+            sessionsToRender.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            sessionsToRender.forEach(session => {
+                const formattedDate = formatDate(session.date); 
+                const fileUrl = session.signedform && session.signedform.length > 5 && session.signedform !== '#' ? session.signedform : "#"; 
+                const performanceText = session.performance || "N/A";
+                const displayPerformance = performanceText.substring(0, 50) + (performanceText.length > 50 ? "..." : "");
+
+                table.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition duration-150 dark:hover:bg-dark-border">
+                        <td class="px-4 py-3">${formattedDate}</td>
+                        <td class="px-4 py-3">${session.coach || "N/A"}</td>
+                        <td class="px-4 py-3">${session.employee || "N/A"}</td>
+                        <td class="px-4 py-3">${session.employeenumber || "N/A"}</td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-dark-secondary-text" title="${performanceText}">
+                            ${displayPerformance}
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full 
+                                ${session.acknowledge === 'Yes' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' :
+                                session.acknowledge === 'No' ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' :
+                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100'}">
+                                ${session.acknowledge || "Pending"}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <a href="${fileUrl}" target="_blank" 
+                                class="${fileUrl === '#' ? 'text-gray-400 cursor-default' : 'text-material-primary hover:text-material-accent dark:text-material-secondary dark:hover:text-brand'}" 
+                                title="${fileUrl === '#' ? 'File link not available' : 'Open Signed Document'}">
+                                <i class="fab fa-google-drive fa-lg"></i>
+                            </a>
+                        </td>
+                    </tr>`;
+            });
+        }
+        
+        function renderIRNTETable(sessionsToRender) {
+            const table = document.getElementById("irnteSessionsTable");
+            table.innerHTML = ""; 
+
+            if (!Array.isArray(sessionsToRender) || sessionsToRender.length === 0) {
+                table.innerHTML = `<tr><td colspan="10" class="text-center py-6 text-gray-500 dark:text-dark-secondary-text">No IR / NTE records match your criteria.</td></tr>`;
+                return;
+            }
+
+            sessionsToRender.sort((a, b) => new Date(b.dateFiled) - new Date(a.dateFiled));
+
+            sessionsToRender.forEach(session => {
+                const dateFiled = formatDate(session.dateFiled); 
+                const nteUrl = session.nteAttachment && session.nteAttachment.length > 5 && session.nteAttachment !== '#' ? session.nteAttachment : "#"; 
+                const nodUrl = session.nodAttachment && session.nodAttachment.length > 5 && session.nodAttachment !== '#' ? session.nodAttachment : "#"; 
+                
+                table.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition duration-150 dark:hover:bg-dark-border">
+                        <td class="px-4 py-3">${session.id || "N/A"}</td>
+                        <td class="px-4 py-3">${dateFiled}</td>
+                        <td class="px-4 py-3">${session.employeeName || "N/A"}</td>
+                        <td class="px-4 py-3">${session.employeeNumber || "N/A"}</td> 
+                        <td class="px-4 py-3">${session.campaign || "N/A"}</td>
+                        <td class="px-4 py-3">${session.codeNumber || "N/A"}</td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-dark-secondary-text">
+                            ${session.category || "N/A"}
+                        </td>
+                        <td class="px-4 py-3">${session.decisionHR || "Pending"}</td>
+                        <td class="px-4 py-3 text-center">
+                            <a href="${nteUrl}" target="_blank" 
+                                class="${nteUrl === '#' ? 'text-gray-400 cursor-default' : 'text-material-primary hover:text-material-accent dark:text-material-secondary dark:hover:text-brand'}" 
+                                title="${nteUrl === '#' ? 'NTE document not available' : 'Open NTE Document'}">
+                                <i class="fab fa-google-drive fa-lg"></i>
+                            </a>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <a href="${nodUrl}" target="_blank" 
+                                class="${nodUrl === '#' ? 'text-gray-400 cursor-default' : 'text-material-primary hover:text-material-accent dark:text-material-secondary dark:hover:text-brand'}" 
+                                title="${nodUrl === '#' ? 'NOD document not available' : 'Open NOD Document'}">
+                                <i class="fab fa-google-drive fa-lg"></i>
+                            </a>
+                        </td>
+                    </tr>`;
+            });
+        }
+        
+        function renderSOPTable(sessionsToRender) {
+            const table = document.getElementById("sopTable");
+            table.innerHTML = ""; 
+
+            if (!Array.isArray(sessionsToRender) || sessionsToRender.length === 0) {
+                table.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-500 dark:text-dark-secondary-text">No SOP documents match your criteria.</td></tr>`;
+                return;
+            }
+
+            sessionsToRender.forEach(session => {
+                const linkUrl = session.driveLink && session.driveLink.length > 5 && session.driveLink !== '#' ? session.driveLink : "#"; 
+                const descriptionText = session.description || "No description provided.";
+                
+                table.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition duration-150 dark:hover:bg-dark-border">
+                        <td class="px-4 py-3">${session.id || "N/A"}</td>
+                        <td class="px-4 py-3 font-medium text-primary dark:text-dark-text">${session.documentName || "N/A"}</td>
+                        <td class="px-4 py-3">${session.campaign || "N/A"}</td> 
+                        <td class="px-4 py-3 text-gray-600 dark:text-dark-secondary-text">${descriptionText}</td>
+                        <td class="px-4 py-3 text-center">
+                            <a href="${linkUrl}" target="_blank" 
+                                class="${linkUrl === '#' ? 'text-gray-400 cursor-default' : 'text-material-primary hover:text-material-accent dark:text-material-secondary dark:hover:text-brand'}" 
+                                title="${linkUrl === '#' ? 'Document link not available' : 'Open SOP Document'}">
+                                <i class="fab fa-google-drive fa-lg"></i>
+                            </a>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function renderToolsTable(sessionsToRender) {
+            const table = document.getElementById("toolsTable");
+            table.innerHTML = ""; 
+
+            if (!Array.isArray(sessionsToRender) || sessionsToRender.length === 0) {
+                table.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-500 dark:text-dark-secondary-text">No Tools records match your criteria.</td></tr>`;
+                return;
+            }
+
+            sessionsToRender.forEach(session => {
+                const url = session.url && session.url.length > 5 && session.url !== '#' ? session.url : "#"; 
+                const wiLink = session.wiLink && session.wiLink.length > 5 && session.wiLink !== '#' ? session.wiLink : "#"; 
+                const descriptionText = session.description || "No description provided.";
+                
+                table.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition duration-150 dark:hover:bg-dark-border">
+                        <td class="px-4 py-3">${session.id || "N/A"}</td>
+                        <td class="px-4 py-3 font-medium text-primary dark:text-dark-text">${session.toolName || "N/A"}</td>
+                        <td class="px-4 py-3">${session.campaign || "N/A"}</td> 
+                        <td class="px-4 py-3 text-gray-600 dark:text-dark-secondary-text">${descriptionText}</td>
+                        <td class="px-4 py-3 text-center">
+                            <a href="${url}" target="_blank" 
+                                class="${url === '#' ? 'text-gray-400 cursor-default' : 'text-material-primary hover:text-material-accent dark:text-material-secondary dark:hover:text-brand'}" 
+                                title="${url === '#' ? 'URL not available' : 'Open Tool Website'}">
+                                <i class="fas fa-external-link-alt fa-lg"></i>
+                            </a>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <a href="${wiLink}" target="_blank" 
+                                class="${wiLink === '#' ? 'text-gray-400 cursor-default' : 'text-material-primary hover:text-material-accent dark:text-material-secondary dark:hover:text-brand'}" 
+                                title="${wiLink === '#' ? 'Work Instruction not available' : 'Open Work Instruction'}">
+                                <i class="fab fa-google-drive fa-lg"></i>
+                            </a>
+                        </td>
+                    </tr>`;
+            });
+        }
+        
+        // --- DATA FETCHING AND FILTERING FUNCTIONS ---
+
+        // Coaching Log Functions
+        function handleSearch() {
+            const query = document.getElementById('coachingSearch').value.toLowerCase().trim();
+            if (!query) {
+                renderCoachingTable(allCoachingSessions); 
+                return;
+            }
+            const filteredSessions = allCoachingSessions.filter(session => {
+                return (session.employee && session.employee.toLowerCase().includes(query)) ||
+                       (session.coach && session.coach.toLowerCase().includes(query)) ||
+                       (session.employeenumber && String(session.employeenumber).toLowerCase().includes(query)) ||
+                       (session.performance && session.performance.toLowerCase().includes(query)) ||
+                       (session.date && formatDate(session.date).includes(query));
+            });
+            renderCoachingTable(filteredSessions);
+        }
+
+        async function loadCoachingSessions() {
+            const spinner = document.getElementById('coachingLoadingSpinner');
+            const table = document.getElementById("coachingSessionsTable");
+            table.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-gray-500 dark:text-dark-secondary-text">Loading coaching data...</td></tr>`;
+            spinner.classList.remove('hidden');
+            
+            try {
+                const res = await fetch(COACHING_API_URL);
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}.`);
+                }
+                allCoachingSessions = await res.json();
+                renderCoachingTable(allCoachingSessions);
+
+            } catch (error) {
+                console.error("Error loading coaching sessions:", error);
+                const errorMessage = `Failed to load data. Please ensure your Apps Script for Coaching is deployed with 'Anyone' access and the API_URL is correct. (Error: ${error.message})`;
+                table.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-red-500 font-semibold">${errorMessage}</td></tr>`;
+            }
+            spinner.classList.add('hidden');
+        }
+
+        // IR/NTE Log Functions
+        function handleIRNTESearch() {
+            const query = document.getElementById('irnteSearch').value.toLowerCase().trim();
+            
+            if (!query) {
+                renderIRNTETable(allIRNTESessions); 
+                return;
+            }
+
+            const filteredSessions = allIRNTESessions.filter(session => {
+                return (session.id && String(session.id).toLowerCase().includes(query)) ||
+                       (session.employeeNumber && String(session.employeeNumber).toLowerCase().includes(query)) ||
+                       (session.employeeName && session.employeeName.toLowerCase().includes(query)) ||
+                       (session.campaign && session.campaign.toLowerCase().includes(query)) ||
+                       (session.codeNumber && String(session.codeNumber).toLowerCase().includes(query)) ||
+                       (session.category && session.category.toLowerCase().includes(query)) ||
+                       (session.complaints && session.complaints.toLowerCase().includes(query)) ||
+                       (session.decisionHR && session.decisionHR.toLowerCase().includes(query)) ||
+                       (session.dateFiled && formatDate(session.dateFiled).includes(query));
+            });
+
+            renderIRNTETable(filteredSessions);
+        }
+
+        async function loadIRNTE() {
+            const spinner = document.getElementById('irnteLoadingSpinner');
+            const table = document.getElementById("irnteSessionsTable");
+
+            table.innerHTML = `<tr><td colspan="10" class="text-center py-6 text-gray-500 dark:text-dark-secondary-text">Loading IR/NTE data...</td></tr>`;
+            spinner.classList.remove('hidden');
+            
+            try {
+                const fetchUrl = IRNTE_API_URL + '?action=getIRNTE';
+                const res = await fetch(fetchUrl);
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}. Check your Apps Script deployment and URL.`);
+                }
+                
+                allIRNTESessions = await res.json();
+                
+                if (allIRNTESessions.error) {
+                    throw new Error(allIRNTESessions.error);
+                }
+
+                renderIRNTETable(allIRNTESessions);
+
+            } catch (error) {
+                console.error("Error loading IR/NTE records:", error);
+                
+                const errorMessage = `Failed to load IR/NTE data. Check Apps Script ID/Name and Deployment. (Error: ${error.message})`;
+
+                table.innerHTML = `<tr><td colspan="10" class="text-center py-6 text-red-500 font-semibold">${errorMessage}</td></tr>`;
+            }
+            spinner.classList.add('hidden');
+        }
+
+        // SOP Documents Functions
+        function handleSOPSearch() {
+            const query = document.getElementById('sopSearch').value.toLowerCase().trim();
+            
+            if (!query) {
+                renderSOPTable(allSOPSessions); 
+                return;
+            }
+
+            const filteredSessions = allSOPSessions.filter(session => {
+                return (session.documentName && session.documentName.toLowerCase().includes(query)) ||
+                       (session.description && session.description.toLowerCase().includes(query)) ||
+                       (session.campaign && session.campaign.toLowerCase().includes(query)) ||
+                       (session.id && String(session.id).toLowerCase().includes(query));
+            });
+
+            renderSOPTable(filteredSessions);
+        }
+
+        async function loadSOP() {
+            const spinner = document.getElementById('sopLoadingSpinner');
+            const table = document.getElementById("sopTable");
+
+            table.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-500 dark:text-dark-secondary-text">Loading SOP data...</td></tr>`;
+            spinner.classList.remove('hidden');
+            
+            try {
+                const fetchUrl = SOP_TOOLS_API_URL + '?action=getSOP';
+                const res = await fetch(fetchUrl);
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}. Check SOP/Tools Apps Script URL.`);
+                }
+                
+                allSOPSessions = await res.json();
+                
+                if (allSOPSessions.error) {
+                    throw new Error(allSOPSessions.error);
+                }
+
+                renderSOPTable(allSOPSessions);
+
+            } catch (error) {
+                console.error("Error loading SOP records:", error);
+                
+                const errorMessage = `Failed to load SOP data. Check the SOP_TOOLS_API_URL and Apps Script deployment. (Error: ${error.message})`;
+
+                table.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-red-500 font-semibold">${errorMessage}</td></tr>`;
+            }
+            spinner.classList.add('hidden');
+        }
+
+        // Tools List Functions
+        function handleToolsSearch() {
+            const query = document.getElementById('toolsSearch').value.toLowerCase().trim();
+            
+            if (!query) {
+                renderToolsTable(allToolsSessions); 
+                return;
+            }
+
+            const filteredSessions = allToolsSessions.filter(session => {
+                return (session.toolName && session.toolName.toLowerCase().includes(query)) ||
+                       (session.description && session.description.toLowerCase().includes(query)) ||
+                       (session.campaign && session.campaign.toLowerCase().includes(query)) ||
+                       (session.id && String(session.id).toLowerCase().includes(query));
+            });
+
+            renderToolsTable(filteredSessions);
+        }
+
+        async function loadTools() {
+            const spinner = document.getElementById('toolsLoadingSpinner');
+            const table = document.getElementById("toolsTable");
+
+            table.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-500 dark:text-dark-secondary-text">Loading Tools data...</td></tr>`;
+            spinner.classList.remove('hidden');
+            
+            try {
+                const fetchUrl = SOP_TOOLS_API_URL + '?action=getTools';
+                const res = await fetch(fetchUrl);
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}. Check SOP/Tools Apps Script URL.`);
+                }
+                
+                allToolsSessions = await res.json();
+                
+                if (allToolsSessions.error) {
+                    throw new Error(allToolsSessions.error);
+                }
+
+                renderToolsTable(allToolsSessions);
+
+            } catch (error) {
+                console.error("Error loading Tools records:", error);
+                
+                const errorMessage = `Failed to load Tools data. Check the SOP_TOOLS_API_URL and Apps Script deployment. (Error: ${error.message})`;
+
+                table.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-red-500 font-semibold">${errorMessage}</td></tr>`;
+            }
+            spinner.classList.add('hidden');
+        }
+
+
+        // --- UI FUNCTIONALITY (Drawer & Dark Mode) ---
+        
+        // Dark Mode Logic
+        const htmlElement = document.documentElement;
+        const darkModeToggleDesktop = document.getElementById('dark-mode-toggle-desktop');
+        const darkModeToggleMobile = document.getElementById('dark-mode-toggle-mobile');
+
+        function toggleDarkMode() {
+            if (htmlElement.classList.contains('dark')) {
+                htmlElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                htmlElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        
+        // Check for saved theme preference on load
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            htmlElement.classList.add('dark');
+        } else if (savedTheme === 'light') {
+            htmlElement.classList.remove('dark');
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            // Check system preference if no theme is saved
+            htmlElement.classList.add('dark');
+        }
+
+        // Add event listeners for toggles
+        if (darkModeToggleDesktop) {
+             darkModeToggleDesktop.addEventListener('click', toggleDarkMode);
+        }
+        if (darkModeToggleMobile) {
+             darkModeToggleMobile.addEventListener('click', toggleDarkMode);
+        }
+        
+        // Drawer Navigation Logic (Mobile)
+        const drawer = document.getElementById('mobile-drawer');
+        const drawerToggle = document.getElementById('drawer-toggle');
+        const drawerOverlay = document.getElementById('drawer-overlay');
+
+        function openDrawer() {
+            drawer.classList.add('open');
+            drawerOverlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeDrawer() {
+            drawer.classList.remove('open');
+            drawerOverlay.classList.add('hidden');
+            document.body.style.overflow = ''; // Restore background scrolling
+        }
+
+        if (drawerToggle) {
+            drawerToggle.addEventListener('click', openDrawer);
+        }
+        if (drawerOverlay) {
+            drawerOverlay.addEventListener('click', closeDrawer);
+        }
+
+        // Function to handle page navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active-link'));
+                this.classList.add('active-link');
+
+                document.querySelectorAll('.page-section').forEach(section => section.classList.remove('active'));
+                const pageId = this.dataset.page;
+                document.getElementById(pageId).classList.add('active');
+                
+                // Close the drawer on link click for mobile
+                if (window.innerWidth < 1024) { // 1024px is Tailwind's 'lg' breakpoint
+                    closeDrawer();
+                }
+
+                // Existing data loading logic 
+                if (pageId === 'coaching') {
+                    if (allCoachingSessions.length === 0) {
+                        loadCoachingSessions();
+                    } else {
+                        renderCoachingTable(allCoachingSessions);
+                    }
+                } else if (pageId === 'irnte') {
+                    if (allIRNTESessions.length === 0) {
+                        loadIRNTE();
+                    } else {
+                        renderIRNTETable(allIRNTESessions);
+                    }
+                } else if (pageId === 'sop') {
+                    if (allSOPSessions.length === 0) {
+                        loadSOP();
+                    } else {
+                        renderSOPTable(allSOPSessions);
+                    }
+                } else if (pageId === 'tools') {
+                    if (allToolsSessions.length === 0) {
+                        loadTools();
+                    } else {
+                        renderToolsTable(allToolsSessions);
+                    }
+                }
+            });
+        });
+
+        // Initial load check
+        document.addEventListener("DOMContentLoaded", () => {
+            const activeLink = document.querySelector('.nav-link.active-link');
+            if (activeLink) {
+                const pageId = activeLink.dataset.page;
+                if (pageId === 'coaching') {
+                     loadCoachingSessions();
+                } else if (pageId === 'irnte') {
+                     loadIRNTE();
+                } else if (pageId === 'sop') {
+                     loadSOP();
+                } else if (pageId === 'tools') {
+                     loadTools();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

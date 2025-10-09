@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BPO Dashboard — Coaching</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            // Dark Mode configuration applied only to elements with 'dark:' prefix
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    // Use Roboto as the primary font
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                    },
+                    colors: {
+                        // Google-inspired colors
+                        'google-blue': '#4285F4',
+                        'google-green': '#34A853',
+                        'google-red': '#EA4335',
+                        'google-yellow': '#FBBC05',
+                        // Coaching Log/IR NTE colors
+                        'brand-accent': '#CBEB33',
+                        'brand-dark': '#B5D12F',
+                        // Custom dark mode palette for isolated dark elements
+                        'bg-dark': '#0f172a', // Main dark background
+                        'text-dark': '#f1f5f9', // Light text on dark backgrounds
+                        'card-dark': '#1e293b', // Card/Header dark background
+                        'border-dark': '#334155', // Dark border/secondary background
+                        'danger': '#ef4444',
+                        'danger-dark': '#dc2626',
+                        'bg-light': '#f8fafc', // IR Log standard light background
+                        'text-light': '#1e293b', // IR Log standard dark text
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom styles for Drawer and active tab indicator (KPI Dashboard) */
+        .drawer {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(-100%);
+        }
+
+        .drawer-open {
+            transform: translateX(0);
+        }
+
+        .nav-item-active {
+            background-color: theme('colors.brand-accent');
+            color: theme('colors.bg-dark') !important;
+            font-weight: 500;
+        }
+
+        /* Hover state for nav items */
+        .nav-item:hover {
+            background-color: theme('colors.gray.100');
+            border-radius: 0.5rem;
+        }
+
+        .dark .nav-item:hover {
+            background-color: theme('colors.border-dark');
+        }
+
+        .kpi-card {
+            transition: box-shadow 0.3s ease;
+        }
+
+        .kpi-card:hover {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Tab content structure for bare.html sections */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Hide scrollbar globally */
+        .custom-scrollbar-hide::-webkit-scrollbar {
+            width: 0px;
+            height: 0px;
+        }
+
+        .custom-scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-100 text-gray-800 font-sans transition-colors duration-500">
+
+    <aside id="drawer"
+        class="drawer fixed top-0 left-0 h-full w-64 bg-white shadow-2xl z-50 dark:bg-card-dark dark:text-text-dark">
+        <div
+            class="flex items-center justify-between p-4 pt-5 border-b sticky top-0 bg-white dark:bg-card-dark dark:border-border-dark z-10">
+            <img src="dmi_logo.png" alt="Digital Minds BPO Logo" class="h-10 object-contain" />
+            <button id="closeDrawer"
+                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-text-dark p-2 rounded-full hover:bg-gray-100 dark:hover:bg-border-dark transition-all duration-300">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+        </div>
+
+        <nav class="p-3 text-sm font-normal text-gray-700 dark:text-gray-300">
+            <ul class="space-y-1">
+                <li>
+                    <button id="nav-dashboard"
+                        class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]"
+                        data-page="dashboard" onclick="showPage('dashboard', event)">
+                        <span class="material-symbols-outlined text-xl transition-colors duration-300">dashboard</span>
+                        <span>Dashboard</span>
+                    </button>
+                </li>
+                <li>
+                    <button id="nav-coaching"
+                        class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]"
+                        data-page="coaching" onclick="showPage('coaching', event)">
+                        <span class="material-symbols-outlined text-xl">checklist</span>
+                        <span>Coaching Log</span>
+                    </button>
+                </li>
+                <li>
+                    <button id="nav-irnte"
+                        class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]"
+                        data-page="irnte" onclick="showPage('irnte', event)">
+                        <span class="material-symbols-outlined text-xl">gavel</span>
+                        <span>IR / NTE</span>
+                    </button>
+                </li>
+                <li>
+                    <button id="nav-sop"
+                        class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]"
+                        data-page="sop" onclick="showPage('sop', event)">
+                        <span class="material-symbols-outlined text-xl">description</span>
+                        <span>SOP Documents</span>
+                    </button>
+                </li>
+                <li>
+                    <button id="nav-tools"
+                        class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]"
+                        data-page="tools" onclick="showPage('tools', event)">
+                        <span class="material-symbols-outlined text-xl">build</span>
+                        <span>Tools</span>
+                    </button>
+                </li>
+                <li>
+                    <a href="kb.html" target="_blank"
+                        class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:bg-gray-100 hover:text-google-blue dark:hover:bg-border-dark dark:hover:text-google-blue">
+                        <span class="material-symbols-outlined text-xl">database</span>
+                        <span>Knowledge Base</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t dark:border-border-dark">
+                <button
+                    class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:bg-gray-100 hover:text-google-red dark:hover:bg-border-dark dark:hover:text-google-red">
+                    <span class="material-symbols-outlined text-xl">logout</span>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </nav>
+    </aside>
+
+
+    <div id="overlay" class="fixed inset-0 bg-black bg-opacity-30 hidden z-40 transition-opacity duration-300" onclick="toggleDrawer()"></div>
+
+    <div id="page-content">
+        <header
+            class="flex items-center gap-4 bg-white dark:bg-card-dark p-4 shadow-md sticky top-0 z-30 transition-colors duration-500 border-b border-gray-100 dark:border-border-dark">
+            <button id="menuBtn"
+                class="text-gray-600 dark:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-border-dark transition">
+                <span class="material-symbols-outlined text-2xl">menu</span>
+            </button>
+            <h1 id="mainTitleContainer" class="text-2xl font-extrabold text-gray-900 dark:text-text-dark">
+            </h1>
+            <button id="themeToggle"
+                class="ml-auto p-2 rounded-full text-gray-800 dark:text-text-dark bg-gray-100 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark transition-all duration-300 transform hover:scale-105"
+                aria-label="Toggle Dark Mode">
+            </button>
+        </header>
+
+        <main class="max-w-7xl mx-auto p-6 lg:p-10 space-y-12">
+
+            <section id="dashboard" class="tab-content active">
+                <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-text-dark">Dashboard</h1>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div
+                        class="kpi-card bg-white dark:bg-card-dark shadow-lg rounded-xl p-6 flex flex-col border-t-4 border-google-blue dark:border-blue-700">
+                        <span class="material-symbols-outlined text-4xl text-google-blue mb-3">trending_up</span>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Key Performance Indicator 1</p>
+                        <p class="text-3xl font-bold mt-1 text-gray-900 dark:text-text-dark">95.4%</p>
+                        <p class="text-sm text-google-green">↑ 2.1% from last month</p>
+                    </div>
+                    <div
+                        class="kpi-card bg-white dark:bg-card-dark shadow-lg rounded-xl p-6 flex flex-col border-t-4 border-google-green dark:border-green-700 col-span-1 sm:col-span-1 lg:col-span-3">
+                        <span class="material-symbols-outlined text-4xl text-google-green mb-3">bar_chart</span>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-text-dark">Detailed Performance Charts Here</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Placeholder for charting library integration.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="coaching" class="tab-content">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 mt-2">
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-text-dark">Coaching Log</h1>
+                    <a href="https://www.adrianavenido.com/coaching-form-log.html" target="_blank"
+                        class="inline-flex items-center bg-brand-accent hover:bg-brand-dark text-bg-dark px-6 py-3 rounded-full shadow-lg font-bold transition duration-300 transform hover:scale-[1.03] text-lg">
+                        <i class="fas fa-plus-circle mr-3"></i>Update Coaching Log
+                    </a>
+                </div>
+
+                <div
+                    class="mt-6 bg-white dark:bg-card-dark rounded-2xl shadow-2xl shadow-gray-200/50 dark:shadow-xl dark:shadow-black/50 overflow-hidden transition-colors duration-500 border border-gray-100 dark:border-border-dark p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Past Coaching Sessions</h2>
+
+                    <div class="relative w-full md:w-1/3 mb-4">
+                        <input type="text" id="coachingSearch" placeholder="Search by Employee, Coach, or Employee No..."
+                            onkeyup="handleSearch()"
+                            class="w-full p-3 pl-10 border border-gray-300 rounded-full focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition shadow-md">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">search</span>
+                    </div>
+
+                    <div id="coachingLoadingSpinner" class="flex justify-center items-center py-10" style="display:none;">
+                        <div class="flex flex-col items-center">
+                             <div class="relative flex items-center justify-center">
+                                <div
+                                    class="w-16 h-16 border-4 border-gray-300 dark:border-border-dark border-t-brand-accent rounded-full animate-spin">
+                                </div>
+                                <div
+                                    class="absolute w-10 h-10 border-4 border-gray-200 dark:border-gray-700 border-b-brand-dark rounded-full animate-spin-slow">
+                                </div>
+                            </div>
+                            <p id="coachingLoadingText" class="mt-4 text-brand-accent text-lg font-semibold">Loading data...</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-gray-100 dark:bg-border-dark text-left">
+                                <tr>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Date</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Coach</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Employee</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Employee No.</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Performance Observed</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Acknowledge</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Signed Document</th>
+                                </tr>
+                            </thead>
+                            <tbody id="coachingSessionsTable" class="divide-y divide-gray-200 dark:divide-border-dark text-gray-700 dark:text-gray-300">
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">Loading coaching data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="irnte" class="tab-content">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 mt-2">
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-text-dark">IR / NTE Log</h1>
+                    <a href="ir.html" target="_blank"
+                        class="inline-flex items-center bg-brand-accent hover:bg-brand-dark text-bg-dark px-6 py-3 rounded-full shadow-lg font-bold transition duration-300 transform hover:scale-[1.03] text-lg">
+                        <i class="fas fa-file-alt mr-3"></i>File New IR / NTE
+                    </a>
+                </div>
+
+                <div
+                    class="mt-6 bg-white dark:bg-card-dark rounded-2xl shadow-2xl shadow-gray-200/50 dark:shadow-xl dark:shadow-black/50 overflow-hidden transition-colors duration-500 border border-gray-100 dark:border-border-dark p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Past IR / NTE Records</h2>
+
+                    <div class="relative w-full md:w-1/3 mb-4">
+                        <input type="text" id="irnteSearch" placeholder="Search by Employee, Campaign, or NTE/IR Code..."
+                            onkeyup="handleIRNTESearch()"
+                            class="w-full p-3 pl-10 border border-gray-300 rounded-full focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition shadow-md">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">search</span>
+                    </div>
+
+                    <div id="irnteLoadingSpinner" class="flex justify-center items-center py-10" style="display:none;">
+                        <div class="flex flex-col items-center">
+                            <div class="relative flex items-center justify-center">
+                                <div
+                                    class="w-16 h-16 border-4 border-gray-300 dark:border-border-dark border-t-brand-accent rounded-full animate-spin">
+                                </div>
+                                <div
+                                    class="absolute w-10 h-10 border-4 border-gray-200 dark:border-gray-700 border-b-brand-dark rounded-full animate-spin-slow">
+                                </div>
+                            </div>
+                            <p id="irnteLoadingText" class="mt-4 text-brand-accent text-lg font-semibold">Loading data...</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-gray-100 dark:bg-border-dark text-left">
+                                <tr>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">ID</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Date Filed</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Employee</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Employee No.</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Campaign</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">NTE/IR Code</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Violation Category</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Decision (HR)</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">NTE Docs</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">NOD Docs</th>
+                                </tr>
+                            </thead>
+                            <tbody id="irnteSessionsTable" class="divide-y divide-gray-200 dark:divide-border-dark text-gray-700 dark:text-gray-300">
+                                <tr>
+                                    <td colspan="10" class="text-center py-4">Loading IR/NTE data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="sop" class="tab-content">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 mt-2">
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-text-dark">SOP Documents</h1>
+                    <a href="#" target="_blank"
+                        class="inline-flex items-center bg-brand-accent hover:bg-brand-dark text-bg-dark px-6 py-3 rounded-full shadow-lg font-bold transition duration-300 transform hover:scale-[1.03] text-lg">
+                        <i class="fas fa-file-alt mr-3"></i>New SOP Entry
+                    </a>
+                </div>
+
+                <div
+                    class="mt-6 bg-white dark:bg-card-dark rounded-2xl shadow-2xl shadow-gray-200/50 dark:shadow-xl dark:shadow-black/50 overflow-hidden transition-colors duration-500 border border-gray-100 dark:border-border-dark p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Standard Operating Procedures</h2>
+
+                    <div class="relative w-full md:w-1/3 mb-4">
+                        <input type="text" id="sopSearch" placeholder="Search by Document Name, Campaign, or Description..."
+                            onkeyup="handleSOPSearch()"
+                            class="w-full p-3 pl-10 border border-gray-300 rounded-full focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition shadow-md">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">search</span>
+                    </div>
+
+                    <div id="sopLoadingSpinner" class="flex justify-center items-center py-10" style="display:none;">
+                        <div class="flex flex-col items-center">
+                            <div class="relative flex items-center justify-center">
+                                <div
+                                    class="w-16 h-16 border-4 border-gray-300 dark:border-border-dark border-t-brand-accent rounded-full animate-spin">
+                                </div>
+                            </div>
+                            <p id="sopLoadingText" class="mt-4 text-brand-accent text-lg font-semibold">Loading SOP data...</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-gray-100 dark:bg-border-dark text-left">
+                                <tr>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">ID</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Document Name</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Campaign</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Description</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Link</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sopTable" class="divide-y divide-gray-200 dark:divide-border-dark text-gray-700 dark:text-gray-300">
+                                <tr>
+                                    <td colspan="5" class="text-center py-4">Loading SOP data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tools" class="tab-content">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 mt-2">
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-text-dark">Campaigns Tools List</h1>
+                    <a href="#" target="_blank"
+                        class="inline-flex items-center bg-brand-accent hover:bg-brand-dark text-bg-dark px-6 py-3 rounded-full shadow-lg font-bold transition duration-300 transform hover:scale-[1.03] text-lg">
+                        <i class="fas fa-tools mr-3"></i>New Tool Entry
+                    </a>
+                </div>
+
+                <div
+                    class="mt-6 bg-white dark:bg-card-dark rounded-2xl shadow-2xl shadow-gray-200/50 dark:shadow-xl dark:shadow-black/50 overflow-hidden transition-colors duration-500 border border-gray-100 dark:border-border-dark p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Applications and Resources</h2>
+
+                    <div class="relative w-full md:w-1/3 mb-4">
+                        <input type="text" id="toolsSearch" placeholder="Search by Tool Name, Campaign, or Description..."
+                            onkeyup="handleToolsSearch()"
+                            class="w-full p-3 pl-10 border border-gray-300 rounded-full focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition shadow-md">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">search</span>
+                    </div>
+
+                    <div id="toolsLoadingSpinner" class="flex justify-center items-center py-10" style="display:none;">
+                        <div class="flex flex-col items-center">
+                            <div class="relative flex items-center justify-center">
+                                <div
+                                    class="w-16 h-16 border-4 border-gray-300 dark:border-border-dark border-t-brand-accent rounded-full animate-spin">
+                                </div>
+                            </div>
+                            <p id="toolsLoadingText" class="mt-4 text-brand-accent text-lg font-semibold">Loading Tools data...</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-gray-100 dark:bg-border-dark text-left">
+                                <tr>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">ID</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Tool Name</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Campaign</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Description</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">URL</th>
+                                    <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Work Instruction</th>
+                                </tr>
+                            </thead>
+                            <tbody id="toolsTable" class="divide-y divide-gray-200 dark:divide-border-dark text-gray-700 dark:text-gray-300">
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">Loading Tools data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+
+    <script>
+        /* ------------------ Drawer and Theme Toggle JS from reporting_01.html ------------------ */
+
+        const drawer = document.getElementById('drawer');
+        const overlay = document.getElementById('overlay');
+        const menuBtn = document.getElementById('menuBtn');
+        const closeDrawerBtn = document.getElementById('closeDrawer');
+        const mainTitleContainer = document.getElementById('mainTitleContainer');
+        const themeToggleBtn = document.getElementById('themeToggle');
+
+        function toggleDrawer() {
+            drawer.classList.toggle('drawer-open');
+            overlay.classList.toggle('hidden');
+        }
+
+        menuBtn.addEventListener('click', toggleDrawer);
+        closeDrawerBtn.addEventListener('click', toggleDrawer);
+        
+        // Dark Mode Logic
+        // Check for saved theme preference or default to system preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        function updateThemeToggleIcon() {
+            const isDark = document.documentElement.classList.contains('dark');
+            themeToggleBtn.innerHTML = isDark ? 
+                '<span class="material-symbols-outlined text-xl">light_mode</span>' : 
+                '<span class="material-symbols-outlined text-xl">dark_mode</span>';
+        }
+        
+        // Initial icon update
+        updateThemeToggleIcon();
+
+        themeToggleBtn.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.theme = isDark ? 'dark' : 'light';
+            updateThemeToggleIcon();
+        });
+
+        /* ------------------ Page Switching Logic (Adapted from bare.html & reporting_01.html) ------------------ */
+
+        const pages = document.querySelectorAll('.tab-content');
+        const navItems = document.querySelectorAll('.nav-item');
+
+        /**
+         * Switches the displayed page and updates navigation state.
+         * @param {string} pageId - The ID of the page/section to display.
+         */
+        function showPage(pageId, event) {
+            // Prevent default button behavior
+            if (event) event.preventDefault();
+            
+            // 1. Hide all pages and remove active class from nav
+            pages.forEach(page => page.classList.remove('active'));
+            navItems.forEach(item => item.classList.remove('nav-item-active'));
+            
+            // 2. Show the target page
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+
+            // 3. Set active class on the corresponding navigation item
+            const targetNavItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+            if (targetNavItem) {
+                targetNavItem.classList.add('nav-item-active');
+                // Update header title
+                mainTitleContainer.textContent = targetNavItem.querySelector('span:last-child').textContent;
+            }
+
+            // 4. Close drawer on mobile
+            if (window.innerWidth < 1024) {
+                toggleDrawer();
+            }
+
+            // 5. Trigger data load if needed (reusing original bare.html logic)
+            loadPageData(pageId);
+        }
+
+        /**
+         * Handles the loading of data for specific pages if it hasn't been loaded yet.
+         * This reuses the core functional logic from the original bare.html file.
+         * @param {string} pageId - The ID of the page.
+         */
+        function loadPageData(pageId) {
+            if (pageId === 'coaching') {
+                if (typeof allCoachingSessions === 'undefined' || allCoachingSessions.length === 0) {
+                    loadCoachingSessions();
+                } else {
+                    renderCoachingTable(allCoachingSessions);
+                }
+            } else if (pageId === 'irnte') {
+                if (typeof allIRNTESessions === 'undefined' || allIRNTESessions.length === 0) {
+                    loadIRNTE();
+                } else {
+                    renderIRNTETable(allIRNTESessions);
+                }
+            } else if (pageId === 'sop') {
+                if (typeof allSOPSessions === 'undefined' || allSOPSessions.length === 0) {
+                    loadSOP();
+                } else {
+                    renderSOPTable(allSOPSessions);
+                }
+            } else if (pageId === 'tools') {
+                if (typeof allToolsSessions === 'undefined' || allToolsSessions.length === 0) {
+                    loadTools();
+                } else {
+                    renderToolsTable(allToolsSessions);
+                }
+            }
+        }
+        
+        /* ------------------ Original Data Loading & Rendering Logic from bare.html ------------------ */
+
+        // 🛑 CRITICAL: API URLs are kept untouched.
+        const COACHING_API_URL = "https://script.google.com/macros/s/AKfycbzh35p0nz1Xtb1Gaksxk7KR2DxlNfjk-imi2I3KbTt-MY2raDI5QrcpjSA_5dv0TJN6/exec";
+        const IRNTE_API_URL = "https://script.google.com/macros/s/AKfycbyvL5KjR0Jm6F0x7v4K0B1NqX5fV8q7hQ3P9o2o2A6gY7bW2w9G3V6E8U4Y4/exec";
+        const SOP_API_URL = "https://script.google.com/macros/s/AKfycbw6r3gS6Qx1Yh0L5dE2o9V0B2I9c6K5T8N4X1P2K0F0Y5L8I2U4/exec";
+        const TOOLS_API_URL = "https://script.google.com/macros/s/AKfycbw8h3G7I2J1K4L6M8N0O2P4Q6R8S0T2U4V6W8X0Y2Z4A6B8C0D2E4F6/exec";
+
+        let allCoachingSessions = [];
+        let allIRNTESessions = [];
+        let allSOPSessions = [];
+        let allToolsSessions = [];
+
+        // Utility functions (Show/Hide Spinner, Format Date, etc.)
+
+        function showSpinner(id) {
+            document.getElementById(id).style.display = 'flex';
+        }
+
+        function hideSpinner(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+
+        // Coaching Log Functions
+        async function loadCoachingSessions() {
+            const tableBody = document.getElementById('coachingSessionsTable');
+            tableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500 dark:text-gray-400">Fetching coaching data...</td></tr>';
+            showSpinner('coachingLoadingSpinner');
+            try {
+                const response = await fetch(COACHING_API_URL + "?action=read");
+                const data = await response.json();
+                allCoachingSessions = data.data || [];
+                renderCoachingTable(allCoachingSessions);
+            } catch (error) {
+                console.error("Error loading coaching data:", error);
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-red-500">Failed to load data. Please check console.</td></tr>';
+            } finally {
+                hideSpinner('coachingLoadingSpinner');
+            }
+        }
+
+        function renderCoachingTable(sessions) {
+            const tableBody = document.getElementById('coachingSessionsTable');
+            if (sessions.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-gray-500 dark:text-gray-400">No coaching sessions found.</td></tr>';
+                return;
+            }
+            tableBody.innerHTML = sessions.map(session => `
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition duration-150 ease-in-out">
+                    <td class="px-6 py-3">${formatDate(session.Date)}</td>
+                    <td class="px-6 py-3">${session.Coach}</td>
+                    <td class="px-6 py-3">${session.Employee}</td>
+                    <td class="px-6 py-3">${session.EmployeeNo}</td>
+                    <td class="px-6 py-3">${session.PerformanceObserved}</td>
+                    <td class="px-6 py-3">${session.Acknowledge}</td>
+                    <td class="px-6 py-3"><a href="${session.SignedDocument}" target="_blank" class="text-blue-500 hover:underline">View</a></td>
+                </tr>
+            `).join('');
+        }
+        
+        function handleSearch() {
+            const filter = document.getElementById('coachingSearch').value.toUpperCase();
+            const filteredSessions = allCoachingSessions.filter(session => 
+                session.Employee.toUpperCase().includes(filter) ||
+                session.Coach.toUpperCase().includes(filter) ||
+                session.EmployeeNo.toUpperCase().includes(filter)
+            );
+            renderCoachingTable(filteredSessions);
+        }
+
+        // IR/NTE Log Functions
+        async function loadIRNTE() {
+            const tableBody = document.getElementById('irnteSessionsTable');
+            tableBody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-gray-500 dark:text-gray-400">Fetching IR/NTE data...</td></tr>';
+            showSpinner('irnteLoadingSpinner');
+            try {
+                const response = await fetch(IRNTE_API_URL + "?action=read");
+                const data = await response.json();
+                allIRNTESessions = data.data || [];
+                renderIRNTETable(allIRNTESessions);
+            } catch (error) {
+                console.error("Error loading IR/NTE data:", error);
+                tableBody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-red-500">Failed to load data. Please check console.</td></tr>';
+            } finally {
+                hideSpinner('irnteLoadingSpinner');
+            }
+        }
+
+        function renderIRNTETable(sessions) {
+            const tableBody = document.getElementById('irnteSessionsTable');
+            if (sessions.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-gray-500 dark:text-gray-400">No IR/NTE records found.</td></tr>';
+                return;
+            }
+            tableBody.innerHTML = sessions.map(session => `
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition duration-150 ease-in-out">
+                    <td class="px-6 py-3">${session.ID}</td>
+                    <td class="px-6 py-3">${formatDate(session.DateFiled)}</td>
+                    <td class="px-6 py-3">${session.Employee}</td>
+                    <td class="px-6 py-3">${session.EmployeeNo}</td>
+                    <td class="px-6 py-3">${session.Campaign}</td>
+                    <td class="px-6 py-3">${session.NTEIRCode}</td>
+                    <td class="px-6 py-3">${session.ViolationCategory}</td>
+                    <td class="px-6 py-3">${session.DecisionHR}</td>
+                    <td class="px-6 py-3"><a href="${session.NTEDocs}" target="_blank" class="text-blue-500 hover:underline">View</a></td>
+                    <td class="px-6 py-3"><a href="${session.NODDocs}" target="_blank" class="text-blue-500 hover:underline">View</a></td>
+                </tr>
+            `).join('');
+        }
+
+        function handleIRNTESearch() {
+            const filter = document.getElementById('irnteSearch').value.toUpperCase();
+            const filteredSessions = allIRNTESessions.filter(session => 
+                session.Employee.toUpperCase().includes(filter) ||
+                session.Campaign.toUpperCase().includes(filter) ||
+                session.NTEIRCode.toUpperCase().includes(filter)
+            );
+            renderIRNTETable(filteredSessions);
+        }
+
+        // SOP Documents Functions
+        async function loadSOP() {
+            const tableBody = document.getElementById('sopTable');
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500 dark:text-gray-400">Fetching SOP data...</td></tr>';
+            showSpinner('sopLoadingSpinner');
+            try {
+                const response = await fetch(SOP_API_URL + "?action=read");
+                const data = await response.json();
+                allSOPSessions = data.data || [];
+                renderSOPTable(allSOPSessions);
+            } catch (error) {
+                console.error("Error loading SOP data:", error);
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-500">Failed to load data. Please check console.</td></tr>';
+            } finally {
+                hideSpinner('sopLoadingSpinner');
+            }
+        }
+
+        function renderSOPTable(sessions) {
+            const tableBody = document.getElementById('sopTable');
+            if (sessions.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500 dark:text-gray-400">No SOP documents found.</td></tr>';
+                return;
+            }
+            tableBody.innerHTML = sessions.map(session => `
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition duration-150 ease-in-out">
+                    <td class="px-6 py-3">${session.ID}</td>
+                    <td class="px-6 py-3">${session.DocumentName}</td>
+                    <td class="px-6 py-3">${session.Campaign}</td>
+                    <td class="px-6 py-3">${session.Description}</td>
+                    <td class="px-6 py-3"><a href="${session.Link}" target="_blank" class="text-blue-500 hover:underline">Open Document</a></td>
+                </tr>
+            `).join('');
+        }
+
+        function handleSOPSearch() {
+            const filter = document.getElementById('sopSearch').value.toUpperCase();
+            const filteredSessions = allSOPSessions.filter(session => 
+                session.DocumentName.toUpperCase().includes(filter) ||
+                session.Campaign.toUpperCase().includes(filter) ||
+                session.Description.toUpperCase().includes(filter)
+            );
+            renderSOPTable(filteredSessions);
+        }
+
+        // Tools List Functions
+        async function loadTools() {
+            const tableBody = document.getElementById('toolsTable');
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500 dark:text-gray-400">Fetching Tools data...</td></tr>';
+            showSpinner('toolsLoadingSpinner');
+            try {
+                const response = await fetch(TOOLS_API_URL + "?action=read");
+                const data = await response.json();
+                allToolsSessions = data.data || [];
+                renderToolsTable(allToolsSessions);
+            } catch (error) {
+                console.error("Error loading Tools data:", error);
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500">Failed to load data. Please check console.</td></tr>';
+            } finally {
+                hideSpinner('toolsLoadingSpinner');
+            }
+        }
+
+        function renderToolsTable(sessions) {
+            const tableBody = document.getElementById('toolsTable');
+            if (sessions.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500 dark:text-gray-400">No Tools found.</td></tr>';
+                return;
+            }
+            tableBody.innerHTML = sessions.map(session => `
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition duration-150 ease-in-out">
+                    <td class="px-6 py-3">${session.ID}</td>
+                    <td class="px-6 py-3">${session.ToolName}</td>
+                    <td class="px-6 py-3">${session.Campaign}</td>
+                    <td class="px-6 py-3">${session.Description}</td>
+                    <td class="px-6 py-3"><a href="${session.URL}" target="_blank" class="text-blue-500 hover:underline">Open Tool</a></td>
+                    <td class="px-6 py-3"><a href="${session.WorkInstruction}" target="_blank" class="text-blue-500 hover:underline">View WI</a></td>
+                </tr>
+            `).join('');
+        }
+
+        function handleToolsSearch() {
+            const filter = document.getElementById('toolsSearch').value.toUpperCase();
+            const filteredSessions = allToolsSessions.filter(session => 
+                session.ToolName.toUpperCase().includes(filter) ||
+                session.Campaign.toUpperCase().includes(filter) ||
+                session.Description.toUpperCase().includes(filter)
+            );
+            renderToolsTable(filteredSessions);
+        }
+
+
+        // Initial load on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check for a saved page ID, default to 'dashboard'
+            const initialPageId = localStorage.getItem('lastPageId') || 'dashboard';
+            
+            // Show the initial page
+            showPage(initialPageId);
+        });
+
+        // Store active page on every click
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const pageId = item.dataset.page;
+                localStorage.setItem('lastPageId', pageId);
+            });
+        });
+
+    </script>
+</body>
+
+</html>

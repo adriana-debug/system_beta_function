@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Individual Attendance Calendar</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+  <script type="text/javascript">
+    // Load both Calendar and Table packages
+    google.charts.load("current", { packages: ["calendar", "table"] });
+    google.charts.setOnLoadCallback(drawCharts);
+
+    function generateAttendanceData() {
+        const data = [];
+        const endDate = new Date(2025, 9, 7); // October 7, 2025
+        const startDate = new Date(2025, 0, 1); // January 1, 2025
+        let currentDate = new Date(startDate);
+        
+        // Loop from Jan 1 up to and including Oct 7
+        while (currentDate <= endDate) {
+            // Skip weekends (Saturday: 6, Sunday: 0) for cleaner data, assuming M-F schedule
+            const dayOfWeek = currentDate.getDay();
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                // Randomly assign: 1 (Present: 80%), 0.5 (Late: 10%), 0 (Absent: 10%)
+                const rand = Math.random();
+                let status;
+                if (rand < 0.1) {
+                    status = 0; // Absent
+                } else if (rand < 0.2) {
+                    status = 0.5; // Late
+                } else {
+                    status = 1; // Present
+                }
+                data.push([new Date(currentDate), status]);
+            }
+            // Move to the next day
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        return data;
+    }
+
+    function drawCharts() {
+      // --- 1. Calendar Chart Data & Drawing ---
+      const attendanceData = generateAttendanceData();
+      
+      const dataTable = new google.visualization.DataTable();
+      dataTable.addColumn({ type: "date", id: "Date" });
+      dataTable.addColumn({ type: "number", id: "Attendance" });
+      dataTable.addRows(attendanceData);
+
+      const calendar = new google.visualization.Calendar(
+        document.getElementById("attendanceCalendar")
+      );
+
+      const calendarOptions = {
+        // Removed 'title' as requested
+        height: 350,
+        calendar: {
+          cellColor: {
+            stroke: "transparent",
+            strokeOpacity: 0.5,
+            strokeWidth: 1,
+          },
+          // Customize month and day labels for a cleaner look
+          monthLabel: { fontName: 'Arial', fontSize: 16, color: '#333' },
+          dayOfWeekLabel: { fontName: 'Arial', fontSize: 12, color: '#666' }
+        },
+        // Removed 'colorAxis' to remove the scale/watermark
+        colorAxis: {
+             colors: ["#ef4444", "#facc15", "#22c55e"], // red, yellow, green
+             minValue: 0,
+             maxValue: 1,
+             // Set these options to null/false to remove the scale (watermark)
+             legend: { position: 'none' } 
+        },
+        noDataPattern: {
+          backgroundColor: "#f3f4f6",
+          color: "#e5e7eb",
+        },
+      };
+
+      calendar.draw(dataTable, calendarOptions);
+      
+      
+      // --- 2. Summary Table Data ---
+      const total = attendanceData.length;
+      const present = attendanceData.filter(row => row[1] === 1).length;
+      const late = attendanceData.filter(row => row[1] === 0.5).length;
+      const absent = attendanceData.filter(row => row[1] === 0).length;
+      
+      const pctPresent = ((present / total) * 100).toFixed(1);
+      const pctLate = ((late / total) * 100).toFixed(1);
+      const pctAbsent = ((absent / total) * 100).toFixed(1);
+
+      const summaryData = new google.visualization.DataTable();
+      summaryData.addColumn('string', 'Metric');
+      summaryData.addColumn('string', 'Value');
+      summaryData.addRows([
+        ['Total Days Recorded (YTD)', total.toString()],
+        ['Present Days', `${present} (${pctPresent}%)`],
+        ['Late Days', `${late} (${pctLate}%)`],
+        ['Absent Days', `${absent} (${pctAbsent}%)`],
+        // Added a placeholder for calculation example
+        ['Attendance Rate', `${(parseFloat(pctPresent) + parseFloat(pctLate)).toFixed(1)}%`]
+      ]);
+
+      // --- 2. Summary Table Drawing (Modern Styled Neatly) ---
+      const summaryTable = new google.visualization.Table(document.getElementById('attendanceSummary'));
+
+      summaryTable.draw(summaryData, {
+        showRowNumber: false,
+        width: '100%',
+        sort: 'disable', // Disable sorting for summary table
+        cssClassNames: {
+          // Modern, clean table styling
+          headerRow: 'bg-gray-100 text-gray-700 text-xs font-semibold uppercase tracking-wider',
+          tableRow: 'text-gray-700',
+          oddTableRow: 'bg-white', // Consistent white background for all rows
+          hoverTableRow: 'hover:bg-indigo-50/50 transition duration-150',
+          selectedTableRow: 'bg-indigo-100/70',
+          tableCell: 'p-4 border-b border-gray-100 text-sm',
+          headerCell: 'p-4 border-b-2 border-indigo-200'
+        },
+      });
+    }
+  </script>
+
+  <style>
+    /* Custom styles for the paper look */
+    body {
+      background-color: #f3f4f6; /* Very light gray background */
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    }
+    /* Simple paper shadow */
+    .paper-shadow {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    }
+    /* Google Chart calendar container */
+    #attendanceCalendar svg {
+      border-radius: 0.5rem; /* Slightly softer corners */
+    }
+    /* Ensure the table container is styled correctly */
+    #attendanceSummary table {
+        border-collapse: collapse; /* Ensure clean borders */
+    }
+  </style>
+</head>
+
+<body class="min-h-screen text-gray-800 flex items-center justify-center p-6">
+
+  <div
+    class="w-full max-w-5xl bg-white rounded-xl paper-shadow p-8 transition-colors duration-500 border border-gray-100">
+    
+    <div class="border-b pb-4 mb-6">
+      <h1 class="text-3xl font-extrabold text-gray-900 mb-1">
+        Individual Attendance Record
+      </h1>
+      <p class="text-lg text-gray-600">Year-to-Date Overview (Jan 1 – Oct 7, 2025)</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-3 mb-8 text-sm text-gray-700">
+      <div><strong>Employee Name:</strong> John Doe</div>
+      <div><strong>Employee ID:</strong> 10245</div>
+      <div><strong>Data Range:</strong> YTD - October 7, 2025</div>
+      <div><strong>Status:</strong> Active</div>
+    </div>
+
+    <div id="attendanceCalendar" style="width: 100%; height: 350px;"></div>
+
+    <div class="flex flex-wrap justify-center gap-6 mt-6 text-sm text-gray-600 border-t pt-4">
+        <span class="flex items-center gap-2 font-medium">
+            <span class="w-3 h-3 bg-green-500 rounded-full"></span> Present
+        </span>
+        <span class="flex items-center gap-2 font-medium">
+            <span class="w-3 h-3 bg-yellow-400 rounded-full"></span> Late
+        </span>
+        <span class="flex items-center gap-2 font-medium">
+            <span class="w-3 h-3 bg-red-500 rounded-full"></span> Absent
+        </span>
+        <span class="flex items-center gap-2 font-medium text-gray-400">
+            <span class="w-3 h-3 bg-gray-200 rounded-full"></span> No Data/Weekend
+        </span>
+    </div>
+    
+    <div class="mt-10 pt-6 border-t border-gray-200">
+        <h2 class="text-xl font-bold mb-4 text-gray-800">Attendance Summary (YTD)</h2>
+        <div id="attendanceSummary" class="overflow-x-auto border border-gray-200 rounded-lg"></div>
+    </div>
+  </div>
+</body>
+</html>
