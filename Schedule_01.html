@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Agent & Supervisor Schedule</title>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <style>
+      body {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #f4f6f8;
+        margin: 0;
+        padding: 20px;
+        text-align: center;
+      }
+      .container {
+        width: 50%;
+        margin: 0 auto;
+      }
+      h2 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+      .legend {
+        margin: 0 auto 15px auto;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        font-size: 12px;
+        flex-wrap: wrap;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+      }
+      #schedule_chart {
+        width: 100%;
+        height: 500px;
+        margin-bottom: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 13px;
+        background: #fff;
+      }
+      th, td {
+        border: 1px solid #ddd;
+        padding: 6px 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f0f0f0;
+        font-weight: 600;
+      }
+      tr:nth-child(even) {
+        background-color: #fafafa;
+      }
+    </style>
+    <script>
+      google.charts.load("current", { packages: ["gantt"] });
+      google.charts.setOnLoadCallback(drawChart);
+
+      function shift(startHour, startMin) {
+        const start = new Date(2025, 9, 10, startHour, startMin);
+        const end = new Date(start.getTime() + 9 * 60 * 60 * 1000);
+        return [start, end];
+      }
+
+      function drawChart() {
+        var data = new google.visualization.DataTable();
+        data.addColumn("string", "Task ID");
+        data.addColumn("string", "Name");
+        data.addColumn("string", "Role/Campaign");
+        data.addColumn("date", "Start");
+        data.addColumn("date", "End");
+        data.addColumn("number", "Duration");
+        data.addColumn("number", "Percent Complete");
+        data.addColumn("string", "Dependencies");
+
+        const rows = [
+          ["a1", "Aileene Eboña", "Bag Borrow or Steal", ...shift(0,30)],
+          ["a3", "Jummy B. Atole", "National Site Materials", ...shift(20,0)],
+          ["a4", "Erjohn Reñon", "National Site Materials", ...shift(20,0)],
+          ["a5", "Abegail Macalla", "Diamond Asset", ...shift(20,30)],
+          ["a6", "Charles William De Guzman", "Diamond Asset", ...shift(20,30)],
+          ["a7", "Jemelyn Villablanca", "Bag Borrow or Steal", ...shift(20,30)],
+          ["a8", "Bernadette Rivera", "Make A Fort", ...shift(20,0)],
+          ["a9", "Justfer Fernandez", "Make A Fort", ...shift(21,0)],
+          ["a10", "Mary Joy Florendo", "American Range Walls", ...shift(21,0)],
+          ["a11", "Ronron Redulla", "Make A Fort", ...shift(22,0)],
+          ["a12", "Analiza", "Network Capital", ...shift(23,0)],
+          ["a13", "Marvin", "Network Capital", ...shift(23,0)],
+          ["a14", "Karla Mae Sta. Rosa", "Nimble", ...shift(23,0)],
+          ["s1", "Nika", "Immediate Supervisor", ...shift(20,0)],
+          ["s2", "Adrian", "Immediate Supervisor", ...shift(23,0)],
+        ];
+
+        rows.forEach(r => data.addRow([r[0], r[1], r[2], r[3], r[4], null, 100, null]));
+
+        var options = {
+          height: 500,
+          gantt: {
+            trackHeight: 24,
+            barCornerRadius: 2,
+            barHeight: 16,
+            labelStyle: { fontSize: 11, color: "#444" },
+            palette: [
+              "#4CAF50", "#2196F3", "#FF9800", "#9C27B0",
+              "#F44336", "#795548", "#009688",
+              "#3F51B5", "#FF5722"
+            ]
+          }
+        };
+
+        var chart = new google.visualization.Gantt(document.getElementById("schedule_chart"));
+        chart.draw(data, options);
+      }
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Agent & Supervisor Schedule (24‑Hour View)</h2>
+
+      <div class="legend">
+        <div class="legend-item"><div class="legend-color" style="background:#4CAF50"></div>Bag Borrow</div>
+        <div class="legend-item"><div class="legend-color" style="background:#2196F3"></div>National Site</div>
+        <div class="legend-item"><div class="legend-color" style="background:#FF9800"></div>Diamond Asset</div>
+        <div class="legend-item"><div class="legend-color" style="background:#9C27B0"></div>Make A Fort</div>
+        <div class="legend-item"><div class="legend-color" style="background:#F44336"></div>American Range</div>
+        <div class="legend-item"><div class="legend-color" style="background:#795548"></div>Network Capital</div>
+        <div class="legend-item"><div class="legend-color" style="background:#009688"></div>Nimble</div>
+        <div class="legend-item"><div class="legend-color" style="background:#3F51B5"></div>Supervisor (Nika)</div>
+        <div class="legend-item"><div class="legend-color" style="background:#FF5722"></div>Supervisor (Adrian)</div>
+      </div>
+
+      <div id="schedule_chart"></div>
+
+      <!-- Added Table Schedule -->
+      <table>
+        <thead>
+          <tr>
+            <th>Start Time</th>
+            <th>Agent</th>
+            <th>Campaign</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>12:30 AM</td><td>Aileene Eboña</td><td>Bag Borrow or Steal</td></tr>
+          <tr><td>8:00 PM</td><td>Jummy B. Atole</td><td>National Site Materials</td></tr>
+          <tr><td>8:00 PM</td><td>Erjohn Reñon</td><td>National Site Materials</td></tr>
+          <tr><td>8:30 PM</td><td>Abegail Macalla</td><td>Diamond Asset</td></tr>
+          <tr><td>8:30 PM</td><td>Charles William De Guzman</td><td>Diamond Asset</td></tr>
+          <tr><td>8:30 PM</td><td>Jemelyn Villablanca</td><td>Bag Borrow or Steal</td></tr>
+          <tr><td>8:00 PM</td><td>Bernadette Rivera</td><td>Make A Fort</td></tr>
+          <tr><td>9:00 PM</td><td>Justfer Fernandez</td><td>Make A Fort</td></tr>
+          <tr><td>9:00 PM</td><td>Mary Joy "MJ" Florendo</td><td>American Range Walls</td></tr>
+          <tr><td>10:00 PM</td><td>Ronron Redulla</td><td>Make A Fort</td></tr>
+          <tr><td>11:00 PM</td><td>Analiza</td><td>Network Capital</td></tr>
+          <tr><td>11:00 PM</td><td>Marvin</td><td>Network Capital</td></tr>
+          <tr><td>11:00 PM</td><td>Karla Mae Sta. Rosa</td><td>Nimble</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Attendance Dashboard</title>
+
+  <!-- Fonts / Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <script src="https://unpkg.com/feather-icons"></script>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Roboto', 'sans-serif'] },
+          colors: {
+            'google-blue': '#4285F4',
+            'google-green': '#34A853',
+            'google-red': '#EA4335',
+            'google-yellow': '#FBBC05',
+            'brand-accent': '#CBEB33',
+            'brand-dark': '#B5D12F',
+            'bg-dark': '#0f172a',
+            'text-dark': '#f1f5f9',
+            'card-dark': '#1e293b',
+            'border-dark': '#334155',
+            'danger': '#ef4444',
+            'bg-light': '#f8fafc',
+            'text-light': '#1e293b'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .kpi-card { transition: box-shadow 0.25s ease, transform 0.18s ease; }
+    .kpi-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(16,24,40,0.08); }
+    .table-head { background-color: rgba(247,250,252,1); }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48; }
+    @media (min-width: 1280px) { .max-w-9xl { max-width: 1440px; } }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gray-100 text-gray-800 font-sans transition-colors duration-300">
+
+  <!-- Header -->
+  <header class="flex items-center gap-4 bg-white dark:bg-card-dark p-4 shadow sticky top-0 z-30 border-b border-gray-100 dark:border-border-dark">
+    <div class="flex items-center gap-3">
+      <img src="dmi_logo.jpg" alt="Logo" class="w-8 h-8 rounded-full object-cover shadow-sm">
+      <h1 id="pageTitle" class="text-xl font-extrabold text-gray-900 dark:text-text-dark">Attendance Dashboard</h1>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex-1 flex items-center justify-center md:justify-start px-4">
+      <div class="w-full max-w-3xl flex gap-3 items-center">
+        <div class="relative flex-1">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">calendar_month</span>
+          <select id="monthSelector" class="w-full pl-11 pr-4 py-2 rounded-full border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-accent bg-white dark:bg-card-dark dark:border-border-dark dark:text-text-dark">
+            <option value="" disabled>Select Month</option>
+            <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+            <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+            <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+            <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+          </select>
+        </div>
+
+        <div class="relative w-64">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">groups</span>
+          <select id="rosterSelector" class="w-full pl-11 pr-4 py-2 rounded-full border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-accent bg-white dark:bg-card-dark dark:border-border-dark dark:text-text-dark">
+            <option value="">All Teams</option>
+          </select>
+        </div>
+
+        <button id="refreshBtn" title="Reload" class="ml-2 p-2 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-border-dark dark:hover:bg-gray-700 transition">
+          <i class="material-symbols-outlined">refresh</i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Dark Mode Toggle -->
+    <div class="ml-auto">
+      <button id="themeToggle" aria-label="Toggle dark mode" class="p-2 rounded-full bg-gray-100 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark transition-all duration-200">
+        <span id="themeIcon" class="material-symbols-outlined text-xl">dark_mode</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-9xl mx-auto px-6 -mt-6 relative z-10">
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+      <div class="bg-white dark:bg-card-dark rounded-2xl p-6 kpi-card border border-gray-100 dark:border-border-dark">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-medium text-gray-600 dark:text-gray-300">Present</h2>
+          <i data-feather="user-check" class="text-green-500"></i>
+        </div>
+        <p id="kpi-present" class="text-3xl font-extrabold mt-4 text-green-600 dark:text-green-400">0</p>
+      </div>
+
+      <div class="bg-white dark:bg-card-dark rounded-2xl p-6 kpi-card border border-gray-100 dark:border-border-dark">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-medium text-gray-600 dark:text-gray-300">Absent</h2>
+          <i data-feather="user-x" class="text-red-500"></i>
+        </div>
+        <p id="kpi-absent" class="text-3xl font-extrabold mt-4 text-red-600 dark:text-red-400">0</p>
+      </div>
+
+      <div class="bg-white dark:bg-card-dark rounded-2xl p-6 kpi-card border border-gray-100 dark:border-border-dark">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-medium text-gray-600 dark:text-gray-300">Tardiness</h2>
+          <i data-feather="clock" class="text-yellow-500"></i>
+        </div>
+        <p id="kpi-tardy" class="text-3xl font-extrabold mt-4 text-yellow-600 dark:text-yellow-400">0</p>
+      </div>
+
+      <div class="bg-white dark:bg-card-dark rounded-2xl p-6 kpi-card border border-gray-100 dark:border-border-dark">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-medium text-gray-600 dark:text-gray-300">Planned Leave</h2>
+          <i data-feather="activity" class="text-blue-500"></i>
+        </div>
+        <p id="kpi-leave" class="text-3xl font-extrabold mt-4 text-blue-600 dark:text-blue-400">0</p>
+      </div>
+
+      <div class="bg-white dark:bg-card-dark rounded-2xl p-6 kpi-card border border-gray-100 dark:border-border-dark">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-medium text-gray-600 dark:text-gray-300">Attendance Score</h2>
+          <i data-feather="pie-chart" class="text-purple-500"></i>
+        </div>
+        <p id="kpi-score" class="text-3xl font-extrabold mt-4 text-purple-600 dark:text-purple-400">0%</p>
+      </div>
+    </div>
+
+    <!-- Spinner -->
+    <div id="loading-spinner" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-black/30">
+      <div class="bg-white dark:bg-card-dark rounded-xl p-6 flex items-center gap-4 shadow-lg">
+        <svg class="animate-spin h-8 w-8 text-google-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+        </svg>
+        <div class="text-sm text-gray-700 dark:text-text-dark">Loading attendance data…</div>
+      </div>
+    </div>
+
+    <!-- Campaign Summary -->
+    <div class="grid grid-cols-1 lg:grid-cols-6 gap-6 mb-8">
+      <section class="lg:col-span-4 bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-border-dark shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-text-dark">Campaign Summary</h3>
+          <div class="text-sm text-gray-500 dark:text-gray-400">Updated live</div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="table-head dark:bg-border-dark">
+              <tr class="text-xs text-gray-600 dark:text-gray-300 uppercase">
+                <th class="px-4 py-2 text-left">Campaign</th>
+                <th class="px-4 py-2 text-center">Present</th>
+                <th class="px-4 py-2 text-center">Late</th>
+                <th class="px-4 py-2 text-center">Half Day</th>
+                <th class="px-4 py-2 text-center">Absent</th>
+                <th class="px-4 py-2 text-center">Score</th>
+              </tr>
+            </thead>
+            <tbody id="campaign-summary-body" class="divide-y divide-gray-100 dark:divide-border-dark"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="lg:col-span-2 bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-border-dark shadow-sm">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-text-dark mb-4">Legend</h3>
+        <div class="grid grid-cols-1 gap-3 text-sm text-gray-700 dark:text-gray-300">
+          <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#38761D]"></span><span>P – Present</span></div>
+          <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#EF4444]"></span><span>A – Absent</span></div>
+          <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#9CA3AF]"></span><span>Off – Day Off</span></div>
+          <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#F59E0B]"></span><span>L – Late</span></div>
+          <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#0000FF]"></span><span>VL – Vacation Leave</span></div>
+          <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#8E7CC3]"></span><span>T – Training</span></div>
+          <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#00FFFF]"></span><span>SUS – Suspended</span></div>
+          <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#00FF00]"></span><span>HD – Half Day</span></div>
+          <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#FACC15]"></span><span>L15 – Late 15m</span></div>
+          <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#FB923C]"></span><span>L30 – Late 30m</span></div>
+          <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#F97316]"></span><span>L45 – Late 45m</span></div>
+          <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#EA580C]"></span><span>L60 – Late 60m</span></div>
+          <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#6FA8DC]"></span><span>SL – Sick Leave</span></div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Campaign Feed -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-text-dark">Campaign Feed</h2>
+      <div id="campaign-feed" class="space-y-6"></div>
+    </section>
+
+    <footer class="py-6 text-center text-sm text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-border-dark">
+      &copy; 2025 Digital Minds BPO. All rights reserved.
+    </footer>
+  </main>
+
+  <!-- Scripts -->
+  <script>
+    feather.replace();
+
+    const BASE_URL = "https://script.google.com/macros/s/AKfycbxrwq6w72om22yz5zkHyDO-fhPxqlPBzlUsIjExrI3ZOB1J__Um1NlRJbih-_wFwihAhg/exec";
+
+    const statusColors = {
+      P: "bg-[#38761D]", A: "bg-[#EF4444]", Off: "bg-[#9CA3AF]",
+      L: "bg-[#F59E0B]", VL: "bg-[#0000FF]", T: "bg-[#8E7CC3]",
+      SUS: "bg-[#00FFFF]", HD: "bg-[#00FF00]", L15: "bg-[#FACC15]",
+      L30: "bg-[#FB923C]", L45: "bg-[#F97316]", L60: "bg-[#EA580C]",
+      SL: "bg-[#6FA8DC]", NA: ""
+    };
+
+    async function loadClusters() {
+      try {
+        const res = await fetch(BASE_URL + "?api=clusters");
+        const clusters = await res.json();
+        const select = document.getElementById("rosterSelector");
+        select.innerHTML = `<option value="">All Teams</option>`;
+        clusters.forEach(c => {
+          const opt = document.createElement("option");
+          opt.value = c;
+          opt.textContent = c;
+          select.appendChild(opt);
+        });
+      } catch (err) { console.error("Failed to load clusters:", err); }
+    }
+
+    async function loadAll() {
+      const spinner = document.getElementById("loading-spinner");
+      spinner.classList.remove("hidden");
+
+      const monthVal = document.getElementById("monthSelector").value;
+      const clusterVal = document.getElementById("rosterSelector").value;
+
+      try {
+        const params = new URLSearchParams({ api:"summary", month:monthVal, cluster:clusterVal });
+        const summary = await (await fetch(BASE_URL + "?" + params.toString())).json();
+        renderKPIs(summary);
+        renderCampaignSummary(summary);
+
+        const calParams = new URLSearchParams({ api:"calendars", month:monthVal, cluster:clusterVal });
+        const calData = await (await fetch(BASE_URL + "?" + calParams.toString())).json();
+        renderCalendars(calData);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        spinner.classList.add("hidden");
+      }
+    }
+
+    function renderKPIs(summary) {
+      const present = summary.overall.P || 0;
+      const absent = summary.overall.A || 0;
+      const halfDay = summary.overall.HD || 0;
+      const late = (summary.overall.L || 0) + (summary.overall.L15 || 0) + (summary.overall.L30 || 0) + (summary.overall.L45 || 0) + (summary.overall.L60 || 0);
+      const vacation = summary.overall.VL || 0;
+      const total = present + absent + halfDay + late + vacation;
+      document.getElementById("kpi-present").textContent = present;
+      document.getElementById("kpi-absent").textContent = absent;
+      document.getElementById("kpi-tardy").textContent = late;
+      document.getElementById("kpi-leave").textContent = vacation;
+      document.getElementById("kpi-score").textContent =
+        (total > 0 ? ((present / total) * 100).toFixed(1) : 0) + "%";
+    }
+
+    function renderCampaignSummary(summary) {
+      const tbody = document.getElementById("campaign-summary-body");
+      tbody.innerHTML = "";
+      const campaigns = summary.campaigns || {};
+
+      Object.entries(campaigns).forEach(([campaign, stats]) => {
+        const total =
+          (stats.P || 0) +
+          (stats.A || 0) +
+          (stats.HD || 0) +
+          (stats.L || 0) +
+          (stats.L15 || 0) +
+          (stats.L30 || 0) +
+          (stats.L45 || 0) +
+          (stats.L60 || 0);
+        const score = total > 0 ? ((stats.P / total) * 100).toFixed(1) + "%" : "0%";
+
+        const row = `
+          <tr>
+            <td class="px-4 py-2 font-medium text-gray-800 dark:text-text-dark">${campaign}</td>
+            <td class="px-4 py-2 text-center text-green-600 dark:text-green-400">${stats.P || 0}</td>
+            <td class="px-4 py-2 text-center text-yellow-600 dark:text-yellow-400">${(stats.L || 0) + (stats.L15 || 0) + (stats.L30 || 0) + (stats.L45 || 0) + (stats.L60 || 0)}</td>
+            <td class="px-4 py-2 text-center text-blue-600 dark:text-blue-400">${stats.HD || 0}</td>
+            <td class="px-4 py-2 text-center text-red-600 dark:text-red-400">${stats.A || 0}</td>
+            <td class="px-4 py-2 text-center font-bold">${score}</td>
+          </tr>`;
+        tbody.insertAdjacentHTML("beforeend", row);
+      });
+    }
+
+    function renderCalendars(data) {
+      const feed = document.getElementById("campaign-feed");
+      feed.innerHTML = "";
+
+      Object.entries(data).forEach(([campaign, employees]) => {
+        let table = `
+          <div class="bg-white dark:bg-card-dark border border-gray-100 dark:border-border-dark rounded-2xl shadow-sm overflow-x-auto">
+            <div class="p-4 border-b border-gray-100 dark:border-border-dark flex justify-between items-center">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-text-dark">${campaign}</h3>
+            </div>
+            <table class="min-w-full text-xs">
+              <thead class="table-head dark:bg-border-dark">
+                <tr class="text-gray-600 dark:text-gray-300">
+                  <th class="px-3 py-2 text-left">Employee</th>`;
+        for (let d = 1; d <= 31; d++) table += `<th class="px-1 py-1 text-center">${d}</th>`;
+        table += `</tr></thead><tbody>`;
+
+        Object.entries(employees).forEach(([name, statuses]) => {
+          table += `<tr class="border-t border-gray-100 dark:border-border-dark">
+            <td class="px-3 py-2 text-left font-medium text-gray-700 dark:text-text-dark">${name}</td>`;
+          statuses.forEach((s) => {
+            const c = statusColors[s] || "";
+            table += `<td class="px-1 py-1 text-center"><div class="h-3 w-3 rounded-full mx-auto ${c}"></div></td>`;
+          });
+          table += `</tr>`;
+        });
+        table += `</tbody></table></div>`;
+        feed.insertAdjacentHTML("beforeend", table);
+      });
+    }
+
+    // === Default filter (current month + Admin) ===
+    function setDefaultFilters() {
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const monthSelector = document.getElementById("monthSelector");
+      monthSelector.value = month;
+
+      const rosterSelector = document.getElementById("rosterSelector");
+      rosterSelector.value = "Admin";
+    }
+
+    // === Dark Mode Toggle ===
+    const toggle = document.getElementById("themeToggle");
+    toggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+      const icon = document.getElementById("themeIcon");
+      icon.textContent = document.body.classList.contains("dark") ? "light_mode" : "dark_mode";
+    });
+
+    // === Event Listeners ===
+    document.getElementById("refreshBtn").addEventListener("click", loadAll);
+    document.getElementById("monthSelector").addEventListener("change", loadAll);
+    document.getElementById("rosterSelector").addEventListener("change", loadAll);
+
+    // === Initialize ===
+    window.addEventListener("DOMContentLoaded", async () => {
+      await loadClusters();
+      setDefaultFilters();
+      loadAll();
+    });
+  </script>
+</body>
+</html>
+

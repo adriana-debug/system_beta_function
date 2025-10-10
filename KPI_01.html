@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>KPI Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }
+    th { background: #f4f4f4; }
+    select { margin: 0 10px 20px 0; padding: 5px; }
+    tr:hover { background: #f9f9f9; cursor: pointer; }
+    #chart-container { margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <h2>KPI Dashboard</h2>
+
+  <!-- Filters -->
+  <label for="campaign-filter">Campaign:</label>
+  <select id="campaign-filter"><option value="">All</option></select>
+
+  <label for="kpi-filter">KPI:</label>
+  <select id="kpi-filter"><option value="">All</option></select>
+
+  <!-- Table -->
+  <table id="kpi-table">
+    <thead>
+      <tr>
+        <th>Campaign</th><th>KPI</th><th>Target</th><th>Threshold</th>
+        <th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th>
+        <th>May</th><th>Jun</th><th>Jul</th><th>Aug</th>
+        <th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- Chart -->
+  <div id="chart-container">
+    <canvas id="kpiChart" width="800" height="400"></canvas>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzfwllapfajhXwJZ8gIYzlKq6mA6MRfBrm1LiiuY42QpTVAc0IL1vJ39Z59zP5Iy4Zx/exec"; // Replace with your Apps Script Web App URL
+    let rawData = {};
+    let chart;
+
+    function renderTable(data) {
+      const tbody = document.querySelector("#kpi-table tbody");
+      tbody.innerHTML = "";
+
+      Object.entries(data).forEach(([campaign, kpis]) => {
+        kpis.forEach(kpi => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${campaign}</td>
+            <td>${kpi.name}</td>
+            <td>${kpi.target ?? '-'}</td>
+            <td>${kpi.threshold ?? '-'}</td>
+            ${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+              .map(m => `<td>${kpi.monthly[m] ?? ''}</td>`).join('')}
+          `;
+          row.addEventListener("click", () => drawChart(kpi));
+          tbody.appendChild(row);
+        });
+      });
+    }
+
+    function applyFilters() {
+      const campaign = document.getElementById("campaign-filter").value;
+      const kpi = document.getElementById("kpi-filter").value;
+
+      const filtered = {};
+      Object.entries(rawData).forEach(([camp, kpis]) => {
+        if (campaign && camp !== campaign) return;
+        const filteredKpis = kpis.filter(k => !kpi || k.name === kpi);
+        if (filteredKpis.length) filtered[camp] = filteredKpis;
+      });
+
+      renderTable(filtered);
+    }
+
+    function drawChart(kpi) {
+      const ctx = document.getElementById('kpiChart').getContext('2d');
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: Object.keys(kpi.monthly),
+          datasets: [{
+            label: kpi.name,
+            data: Object.values(kpi.monthly),
+            borderColor: 'blue',
+            backgroundColor: 'rgba(0,0,255,0.1)',
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: true } }
+        }
+      });
+    }
+
+    // Fetch data from Apps Script backend
+    fetch(API_URL)
+      .then(res => res.json())
+      .then(data => {
+        rawData = data;
+        renderTable(data);
+
+        // Populate filters
+        const campaignSet = new Set();
+        const kpiSet = new Set();
+        Object.entries(data).forEach(([camp, kpis]) => {
+          campaignSet.add(camp);
+          kpis.forEach(k => kpiSet.add(k.name));
+        });
+
+        campaignSet.forEach(c => {
+          document.getElementById("campaign-filter").innerHTML += `<option value="${c}">${c}</option>`;
+        });
+        kpiSet.forEach(k => {
+          document.getElementById("kpi-filter").innerHTML += `<option value="${k}">${k}</option>`;
+        });
+
+        document.getElementById("campaign-filter").addEventListener("change", applyFilters);
+        document.getElementById("kpi-filter").addEventListener("change", applyFilters);
+      });
+  </script>
+</body>
+</html>
