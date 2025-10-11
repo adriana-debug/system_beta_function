@@ -620,80 +620,179 @@
 })();
 </script>
 
+<script>
+    // Billing placeholder chart + table initialization
+    (function(){
+        let billingChart = null;
+        function initBillingChart(){
+            const ctx = document.getElementById('billingChart');
+            if (!ctx) return;
+            if (billingChart) billingChart.destroy();
+            billingChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Apr','May','Jun','Jul','Aug','Sep'],
+                    datasets: [
+                        { label: 'Billed', data: [12000, 13500, 14000, 16000, 18500, 45200], borderColor: '#4285F4', backgroundColor: 'rgba(66,133,244,0.08)', tension: 0.3 },
+                        { label: 'Payments', data: [10000, 12000, 11000, 15000, 17000, 38900], borderColor: '#34A853', backgroundColor: 'rgba(52,168,83,0.06)', tension: 0.3 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
 
+        // when billing tab is shown, (re)init chart
+        (function attachShowTabWrapper(){
+            function wrap() {
+                if (typeof window.showTab === 'function' && !window.__showTabWrapped) {
+                    const orig = window.showTab;
+                    window.showTab = function(tabId, event){
+                        try { orig(tabId, event); } catch(e) { console.warn(e); }
+                        if (tabId === 'billing') {
+                            setTimeout(initBillingChart, 180);
+                        }
+                    };
+                    window.__showTabWrapped = true;
+                } else if (!window.__showTabWrapped) {
+                    setTimeout(wrap, 120);
+                }
+            }
+            wrap();
+        })();
+
+        // quick init if billing is defaulted
+        document.addEventListener('DOMContentLoaded', function(){
+            if (!document.getElementById('billing')) return;
+            // if billing visible, init quickly
+            if (!document.getElementById('billing').classList.contains('hidden')) initBillingChart();
+        });
+    })();
+</script>
 
   <!-- Navigation -->
   <nav class="p-3 text-sm font-normal text-gray-700 dark:text-gray-300">
     <ul class="space-y-1">
-      <!-- MAIN SECTIONS -->
+      <!-- Reusable nav item -->
       <li>
-        <button class="nav-item group flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]" data-tab-title="Summary" onclick="showTab('summary', event)">
+        <button
+          class="nav-item group flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                 hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]"
+          data-tab-title="Summary" onclick="showTab('summary', event)">
           <span class="material-symbols-outlined text-xl transition-colors duration-300 icon-blue">dashboard</span>
           <span class="transition-colors duration-300">Dashboard</span>
         </button>
       </li>
+
       <li>
-        <button class="nav-item group flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]" data-tab-title="KPI Dashboard" onclick="showTab('kpi-dashboard', event)">
+        <button
+          class="nav-item group flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                 hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]"
+          data-tab-title="KPI Dashboard" onclick="showTab('kpi-dashboard', event)">
           <span class="material-symbols-outlined text-xl icon-purple">insights</span>
           <span>KPI</span>
         </button>
       </li>
-      <li>
-        <button class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:text-google-blue dark:hover:bg-border-dark" data-tab-title="Attendance" onclick="showTab('attendance', event)">
-          <span class="material-symbols-outlined text-xl text-google-blue icon-blue">calendar_month</span>
-          <span>Attendance</span>
-        </button>
-      </li>
 
-      <!-- RESOURCES -->
-      <li>
-        <button class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:text-google-green dark:hover:bg-border-dark" data-tab-title="SOP Documents" onclick="showTab('sop', event)">
-          <span class="material-symbols-outlined text-xl text-google-green icon-green">description</span>
-          <span>SOP Documents</span>
-        </button>
-      </li>
-      <li>
-        <button class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:text-google-green dark:hover:bg-border-dark" data-tab-title="Campaign Tools" onclick="showTab('tools', event)">
-          <span class="material-symbols-outlined text-xl text-google-green icon-green">build</span>
-          <span>Campaign Tools</span>
-        </button>
-      </li>
-      <li>
-        <button class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:text-google-blue dark:hover:bg-border-dark" data-tab-title="Quick Links" onclick="showTab('quicklinks', event)">
-          <span class="material-symbols-outlined text-xl text-google-blue icon-blue">link</span>
-          <span>Quick Links</span>
-        </button>
-      </li>
 
-      <!-- HR MANAGEMENT -->
+  <!-- SOP Navigation -->
+  <li>
+    <button
+      class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+             hover:text-google-green dark:hover:bg-border-dark"
+      data-tab-title="SOP Documents" onclick="showTab('sop', event)">
+    <span class="material-symbols-outlined text-xl text-google-green icon-green">description</span>
+      <span>SOP Documents</span>
+    </button>
+  </li>
+
+  <!-- Tools Navigation -->
+  <li>
+    <button
+      class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+             hover:text-google-green dark:hover:bg-border-dark"
+      data-tab-title="Campaign Tools" onclick="showTab('tools', event)">
+    <span class="material-symbols-outlined text-xl text-google-green icon-green">build</span>
+      <span>Campaign Tools</span>
+    </button>
+  </li>
+
+    <!-- Attendance Navigation -->
+    <li>
+        <button
+            class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                         hover:text-google-blue dark:hover:bg-border-dark"
+            data-tab-title="Attendance" onclick="showTab('attendance', event)">
+            <span class="material-symbols-outlined text-xl text-google-blue icon-blue">calendar_month</span>
+            <span>Attendance</span>
+        </button>
+    </li>
+
+
+
       <li>
-        <button class="nav-item group flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]" data-tab-title="Coaching Sessions" onclick="showTab('coaching-log', event)">
+        <button
+          class="nav-item group flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                 hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]"
+          data-tab-title="Coaching Sessions" onclick="showTab('coaching-log', event)">
           <span class="material-symbols-outlined text-xl icon-teal">person_pin_circle</span>
           <span>Coaching Log</span>
         </button>
       </li>
+
       <li>
-        <button class="nav-item group flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]" data-tab-title="IR / NTE Log" onclick="showTab('ir-nte-log', event)">
+        <button
+          class="nav-item group flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                 hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]"
+          data-tab-title="IR / NTE Log" onclick="showTab('ir-nte-log', event)">
           <span class="material-symbols-outlined text-xl icon-yellow">gavel</span>
           <span>IR / NTE Log</span>
         </button>
       </li>
 
-      <!-- REPORTS -->
       <li>
-        <button class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:text-google-green dark:hover:bg-border-dark" data-tab-title="Top Gainers Report" onclick="showTab('gainers', event)">
+        <button
+          class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                 hover:text-google-green dark:hover:bg-border-dark"
+          data-tab-title="Top Gainers Report" onclick="showTab('gainers', event)">
           <span class="material-symbols-outlined text-xl text-google-green icon-green">trending_up</span>
           <span>Performers</span>
         </button>
       </li>
+
       <li>
-        <button class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:text-google-red dark:hover:bg-border-dark" data-tab-title="Underperformers Report" onclick="showTab('losers', event)">
+        <button
+          class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                 hover:text-google-red dark:hover:bg-border-dark"
+          data-tab-title="Underperformers Report" onclick="showTab('losers', event)">
           <span class="material-symbols-outlined text-xl text-google-red icon-red">trending_down</span>
           <span>Underperformers</span>
         </button>
       </li>
 
+      <li>
+  <button
+    class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+           hover:text-google-blue dark:hover:bg-border-dark"
+    data-tab-title="Quick Links" onclick="showTab('quicklinks', event)">
+    <span class="material-symbols-outlined text-xl text-google-blue icon-blue">link</span>
+    <span>Quick Links</span>
+  </button>
+</li>
 
+            <li>
+                <button
+                    class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                                 hover:text-google-blue dark:hover:bg-border-dark"
+                    data-tab-title="Billing" onclick="showTab('billing', event)">
+                    <span class="material-symbols-outlined text-xl icon-yellow">receipt_long</span>
+                    <span>Billing</span>
+                </button>
+            </li>
 
 
 
@@ -867,7 +966,75 @@
             </div>
         </div>
 
+
+<!-- Billing Page -->
+<div id="billing" class="tab-content hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div class="bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-border-dark">
+            <h4 class="text-sm text-gray-500 dark:text-gray-400">Total Billed</h4>
+            <div class="text-2xl font-bold text-google-blue mt-2">$45,200</div>
+            <div class="text-xs text-gray-500 mt-1">Period: Sep 2025</div>
         </div>
+        <div class="bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-border-dark">
+            <h4 class="text-sm text-gray-500 dark:text-gray-400">Outstanding</h4>
+            <div class="text-2xl font-bold text-google-red mt-2">$6,300</div>
+            <div class="text-xs text-gray-500 mt-1">Due: 15 Oct 2025</div>
+        </div>
+        <div class="bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-border-dark">
+            <h4 class="text-sm text-gray-500 dark:text-gray-400">Payments Received</h4>
+            <div class="text-2xl font-bold text-google-green mt-2">$38,900</div>
+            <div class="text-xs text-gray-500 mt-1">Updated: Today</div>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-card-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-border-dark mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-text-dark">Billing Trends (Last 6 months)</h3>
+            <div class="text-sm text-gray-500">Amount billed & payments</div>
+        </div>
+        <canvas id="billingChart" height="120"></canvas>
+    </div>
+
+    <div class="bg-white dark:bg-card-dark rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-border-dark">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-text-dark mb-4">Invoices</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-100 dark:bg-border-dark text-left">
+                    <tr>
+                        <th class="px-4 py-3 text-xs font-semibold text-gray-700 dark:text-gray-100">Invoice #</th>
+                        <th class="px-4 py-3 text-xs font-semibold text-gray-700 dark:text-gray-100">Client</th>
+                        <th class="px-4 py-3 text-xs font-semibold text-gray-700 dark:text-gray-100">Amount</th>
+                        <th class="px-4 py-3 text-xs font-semibold text-gray-700 dark:text-gray-100">Status</th>
+                        <th class="px-4 py-3 text-xs font-semibold text-gray-700 dark:text-gray-100">Due Date</th>
+                    </tr>
+                </thead>
+                <tbody id="billingTable" class="divide-y divide-gray-200 dark:divide-border-dark text-gray-900 dark:text-gray-200">
+                    <tr>
+                        <td class="px-4 py-3">INV-2025-1001</td>
+                        <td class="px-4 py-3">Network Capital</td>
+                        <td class="px-4 py-3">$12,000</td>
+                        <td class="px-4 py-3"><span class="text-green-600 dark:text-green-300">Paid</span></td>
+                        <td class="px-4 py-3">2025-09-30</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-3">INV-2025-1002</td>
+                        <td class="px-4 py-3">Acme Corp</td>
+                        <td class="px-4 py-3">$8,500</td>
+                        <td class="px-4 py-3"><span class="text-yellow-600 dark:text-yellow-300">Pending</span></td>
+                        <td class="px-4 py-3">2025-10-15</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-3">INV-2025-1003</td>
+                        <td class="px-4 py-3">Beta LLP</td>
+                        <td class="px-4 py-3">$6,300</td>
+                        <td class="px-4 py-3"><span class="text-red-600 dark:text-red-300">Overdue</span></td>
+                        <td class="px-4 py-3">2025-09-01</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
         <!-- KPI cards + layout: campaign summary + legend sidebar -->
         <div class="grid grid-cols-1 lg:grid-cols-6 gap-6">
@@ -1178,7 +1345,7 @@
 
 
 <!-- KPI Dashboard -->
-<div id="kpi-dashboard" class="tab-content hidden">
+<div id="kpi-dashboard" class="tab-content">
 
   <!-- Tabs -->
   <div class="flex items-center justify-start space-x-3 mb-4 border-b dark:border-border-dark">
@@ -1816,62 +1983,6 @@
                 <p class="text-xl font-medium">Underperforming Campaigns: Data coming soon...</p>
             </div>
 
-            <!-- Quick Links Page -->
-            <div id="quicklinks" class="tab-content hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-border-dark">
-                        <h3 class="text-lg font-semibold text-gray-800 dark:text-text-dark mb-4">External Tools</h3>
-                        <div class="space-y-3">
-                            <a href="https://gmail.com" target="_blank" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-border-dark transition">
-                                <i class="fab fa-google text-google-red"></i>
-                                <span>Gmail</span>
-                            </a>
-                            <a href="https://drive.google.com" target="_blank" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-border-dark transition">
-                                <i class="fab fa-google-drive text-google-blue"></i>
-                                <span>Google Drive</span>
-                            </a>
-                            <a href="https://calendar.google.com" target="_blank" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-border-dark transition">
-                                <i class="fas fa-calendar text-google-green"></i>
-                                <span>Google Calendar</span>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-border-dark">
-                        <h3 class="text-lg font-semibold text-gray-800 dark:text-text-dark mb-4">Internal Systems</h3>
-                        <div class="space-y-3">
-                            <button onclick="showTab('kpi-dashboard')" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-border-dark transition w-full text-left">
-                                <i class="fas fa-chart-line text-google-blue"></i>
-                                <span>KPI Dashboard</span>
-                            </button>
-                            <button onclick="showTab('attendance')" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-border-dark transition w-full text-left">
-                                <i class="fas fa-calendar-check text-google-green"></i>
-                                <span>Attendance</span>
-                            </button>
-
-                        </div>
-                    </div>
-                    <div class="bg-white dark:bg-card-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-border-dark">
-                        <h3 class="text-lg font-semibold text-gray-800 dark:text-text-dark mb-4">Resources</h3>
-                        <div class="space-y-3">
-                            <button onclick="showTab('sop')" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-border-dark transition w-full text-left">
-                                <i class="fas fa-file-alt text-google-green"></i>
-                                <span>SOP Documents</span>
-                            </button>
-                            <button onclick="showTab('tools')" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-border-dark transition w-full text-left">
-                                <i class="fas fa-tools text-google-blue"></i>
-                                <span>Campaign Tools</span>
-                            </button>
-                            <button onclick="showTab('coaching-log')" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-border-dark transition w-full text-left">
-                                <i class="fas fa-user-graduate text-google-red"></i>
-                                <span>Coaching Log</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-
 
 
     </div>
@@ -1880,8 +1991,6 @@
 
 
             
-
-
         </main>
     </div>
 
@@ -3270,7 +3379,8 @@ let allToolsSessions = [];
             // show KPI dashboard tab
             try { showTab('kpi-dashboard'); } catch(e) { console.warn('runAll: showTab kpi-dashboard failed', e); }
 
-
+            // ensure billing chart (if present) is initialized
+            try { if (typeof initBillingChart === 'function') initBillingChart(); } catch(e) { console.warn('runAll: initBillingChart failed', e); }
 
             // attempt to load key datasets if functions exist
             try { if (typeof loadAll === 'function') loadAll(); } catch(e) {}

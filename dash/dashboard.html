@@ -219,6 +219,141 @@
         }
     </style>
 
+    <!-- Loading spinner styles for tables (brand palette) -->
+    <style>
+        .table-spinner {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.85);
+            z-index: 40;
+            border-radius: 0.75rem; /* match container rounded */
+        }
+
+        .table-spinner.hidden { display: none; }
+
+        .spinner-ring {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 6px solid rgba(0,0,0,0.08);
+            border-top-color: #CBEB33; /* brand-accent */
+            border-right-color: #B5D12F; /* brand-dark-ish */
+            animation: spin 1s linear infinite;
+            box-shadow: 0 4px 12px rgba(20,20,20,0.06);
+        }
+
+        .table-spinner .spinner-text {
+            margin-top: 0.5rem;
+            font-weight: 600;
+            color: #374151; /* slate-700 */
+        }
+
+        .dark .table-spinner { background: rgba(15,23,42,0.85); }
+        .dark .table-spinner .spinner-text { color: var(--tw-text-opacity, 1); }
+    </style>
+
+    <!-- Google-like compact table styling for SOP and Tools (invisible scrollbar) -->
+    <style>
+        /* Scroll container: vertical scrolling while allowing horizontal overflow */
+        #sop .overflow-x-auto, #tools .overflow-x-auto {
+            max-height: 52vh; /* dashboard-appropriate height */
+            overflow-y: auto;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Invisible scrollbar: still scrollable but no visible track */
+        #sop .overflow-x-auto::-webkit-scrollbar, #tools .overflow-x-auto::-webkit-scrollbar {
+            width: 0px;
+            height: 0px;
+        }
+        #sop .overflow-x-auto, #tools .overflow-x-auto {
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge legacy */
+        }
+
+        /* Google DataTable-like visual: compact, clear typography */
+        #sop table, #tools table {
+            font-family: Roboto, system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial;
+            font-size: 0.9rem;
+            width: 100%;
+            border-collapse: collapse;
+            background: transparent;
+        }
+
+        /* Header */
+        #sop thead th, #tools thead th {
+            padding: 10px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #374151; /* slate-700 */
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            text-align: left;
+            background: linear-gradient(180deg,#ffffff,#f8fafc);
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            border-bottom: 1px solid rgba(16,24,40,0.06);
+        }
+
+        /* Body rows: allow wrapping and proper alignment */
+        #sop tbody td, #tools tbody td {
+            padding: 8px 12px;
+            vertical-align: top; /* align multiline content at top for readability */
+            color: #111827; /* slate-900 */
+            white-space: normal; /* allow wrapping */
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
+        /* Preserve no-wrap for narrow columns (ID and link columns) */
+        #sop tbody td:nth-child(1), #sop tbody td:nth-child(5),
+        #tools tbody td:nth-child(1), #tools tbody td:nth-child(5), #tools tbody td:nth-child(6) {
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        /* Alternating row subtle lines to match Google Table */
+        #sop tbody tr:nth-child(even), #tools tbody tr:nth-child(even) {
+            background: rgba(15,23,42,0.02);
+        }
+
+        #sop tbody tr:hover, #tools tbody tr:hover {
+            background: rgba(16,185,129,0.06); /* subtle green-ish hover for focus */
+        }
+
+        /* Let rows size naturally when content wraps */
+        #sop tbody tr, #tools tbody tr { height: auto; }
+
+        /* Dark mode: invert colors and keep visibility */
+        .dark #sop thead th, .dark #tools thead th {
+            background: linear-gradient(180deg,#0b1220,#0f172a);
+            color: #cbd5e1;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .dark #sop tbody td, .dark #tools tbody td {
+            color: #cbd5e1;
+        }
+        .dark #sop tbody tr:nth-child(even), .dark #tools tbody tr:nth-child(even) {
+            background: rgba(255,255,255,0.01);
+        }
+        .dark #sop tbody tr:hover, .dark #tools tbody tr:hover {
+            background: rgba(203,235,51,0.06);
+        }
+
+        /* Gentle card look around the table area */
+        #sop .overflow-x-auto, #tools .overflow-x-auto {
+            border-radius: 0 0 12px 12px;
+        }
+
+        /* Make spinner overlay not block scroll gestures but still visually on top */
+        .table-spinner { pointer-events: none; }
+    </style>
+
 
 </head>
 
@@ -238,6 +373,109 @@
     <span class="material-symbols-outlined text-2xl">close</span>
   </button>
 </div>
+<script type="text/javascript">
+// Load Google Charts Calendar package dynamically if not already loaded
+(function() {
+    function loadGoogleCharts(cb) {
+        if (window.google && google.charts && google.visualization) return cb();
+        var s = document.createElement('script');
+        s.src = 'https://www.gstatic.com/charts/loader.js';
+        s.onload = function() {
+            google.charts.load('current', {packages:['calendar']});
+            google.charts.setOnLoadCallback(cb);
+        };
+        document.head.appendChild(s);
+    }
+
+    // drawAttendance exposed globally so showTab can call it
+    window.drawAttendance = function drawAttendance() {
+        loadGoogleCharts(function() {
+            try {
+                const container = document.getElementById('attendanceCalendar');
+                if (!container) return;
+
+                // Build mock data for demo (replace with real fetch when available)
+                const dataTable = new google.visualization.DataTable();
+                dataTable.addColumn({ type: 'date', id: 'Date' });
+                dataTable.addColumn({ type: 'number', id: 'Status' });
+
+                const start = new Date();
+                start.setMonth(start.getMonth() - 3);
+                dataTable.removeRows(0, dataTable.getNumberOfRows());
+                for (let d = new Date(start); d <= new Date(); d.setDate(d.getDate() + 1)) {
+                    let status = 1;
+                    const r = Math.random();
+                    if (r < 0.03) status = 9;
+                    else if (r < 0.06) status = 4;
+                    else if (r < 0.08) status = 6;
+                    dataTable.addRow([new Date(d), status]);
+                }
+
+                // Determine sizing from the container so the chart fills the card
+                const rect = container.getBoundingClientRect();
+                const width = Math.max(rect.width || container.clientWidth, 320);
+                // Use the inline style height if set, otherwise derive from viewport
+                let height = 0;
+                if (container.style && container.style.height && container.style.height.includes('px')) {
+                    height = parseInt(container.style.height, 10) || Math.floor(window.innerHeight * 0.6);
+                } else {
+                    height = Math.max(320, Math.min(Math.floor(window.innerHeight * 0.76), 900));
+                }
+
+                const chart = new google.visualization.Calendar(container);
+                const options = {
+                    title: "Attendance",
+                    height: height,
+                    width: width,
+                    calendar: { cellSize: 14 },
+                    colorAxis: { values: [1,4,6,9], colors: ['#38761D','#F59E0B','#6FA8DC','#EF4444'] },
+                    noDataPattern: { backgroundColor: 'transparent', color: 'transparent' }
+                };
+                chart.draw(dataTable, options);
+
+                // Make sure employee meta doesn't overflow
+                const nameEl = document.getElementById('attName');
+                const noEl = document.getElementById('attNo');
+                if (nameEl) nameEl.style.whiteSpace = 'normal';
+                if (noEl) noEl.style.whiteSpace = 'normal';
+
+            } catch (err) {
+                console.error('Error drawing attendance chart', err);
+            }
+        });
+    };
+
+    // redraw on selector change + update employee info
+    function attachAttendanceHandlers() {
+        const camp = document.getElementById('attCampaign');
+        const emp = document.getElementById('attEmployee');
+        if (camp) camp.addEventListener('change', function(){
+            // placeholder for future campaign-specific behavior
+            drawAttendance();
+        });
+        if (emp) emp.addEventListener('change', function(){
+            const selectedName = emp.options[emp.selectedIndex] ? emp.options[emp.selectedIndex].text : '';
+            document.getElementById('attName').textContent = selectedName || '—';
+            document.getElementById('attNo').textContent = 'EMP' + (emp.selectedIndex + 1).toString().padStart(3, '0');
+            drawAttendance();
+        });
+
+        // debounce resize
+        let resizeTimer = null;
+        window.addEventListener('resize', function(){
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function(){ if (typeof drawAttendance === 'function') drawAttendance(); }, 150);
+        });
+    }
+
+    // attach handlers after DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', attachAttendanceHandlers);
+    } else {
+        attachAttendanceHandlers();
+    }
+})();
+</script>
 
 
   <!-- Navigation -->
@@ -264,6 +502,42 @@
         </button>
       </li>
 
+
+  <!-- SOP Navigation -->
+  <li>
+    <button
+      class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+             hover:text-google-green dark:hover:bg-border-dark"
+      data-tab-title="SOP Documents" onclick="showTab('sop', event)">
+      <span class="material-symbols-outlined text-xl text-google-green">description</span>
+      <span>SOP Documents</span>
+    </button>
+  </li>
+
+  <!-- Tools Navigation -->
+  <li>
+    <button
+      class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+             hover:text-google-green dark:hover:bg-border-dark"
+      data-tab-title="Campaign Tools" onclick="showTab('tools', event)">
+      <span class="material-symbols-outlined text-xl text-google-green">build</span>
+      <span>Campaign Tools</span>
+    </button>
+  </li>
+
+    <!-- Attendance Navigation -->
+    <li>
+        <button
+            class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                         hover:text-google-blue dark:hover:bg-border-dark"
+            data-tab-title="Attendance" onclick="showTab('attendance', event)">
+            <span class="material-symbols-outlined text-xl text-google-blue">calendar_month</span>
+            <span>Attendance</span>
+        </button>
+    </li>
+
+
+
       <li>
         <button
           class="nav-item group flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
@@ -284,55 +558,19 @@
         </button>
       </li>
 
-      <li>
-        <button
-          class="nav-item group flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
-                 hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]"
-          data-tab-title="Team Alpha Dashboard" onclick="showTab('alpha', event)">
-          <span class="material-symbols-outlined text-xl">group</span>
-          <span>Team Alpha</span>
-        </button>
-      </li>
 
-      <li>
-        <button
-          class="nav-item group flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
-                 hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]"
-          data-tab-title="Team Bravo Dashboard" onclick="showTab('bravo', event)">
-          <span class="material-symbols-outlined text-xl">group</span>
-          <span>Team Bravo</span>
-        </button>
-      </li>
+
+
 
       <li>
         <button
           class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
-                 hover:text-google-green dark:hover:bg-border-dark"
-          data-tab-title="Top Gainers Report" onclick="showTab('gainers', event)">
-          <span class="material-symbols-outlined text-xl text-google-green">trending_up</span>
-          <span>Performers</span>
+                 hover:text-google-blue dark:hover:bg-border-dark"
+          data-tab-title="Knowledge Base" onclick="showTab('knowledge', event)">
+          <span class="material-symbols-outlined text-xl text-google-blue">library_books</span>
+          <span>Knowledge Base</span>
         </button>
       </li>
-
-      <li>
-        <button
-          class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
-                 hover:text-google-red dark:hover:bg-border-dark"
-          data-tab-title="Underperformers Report" onclick="showTab('losers', event)">
-          <span class="material-symbols-outlined text-xl text-google-red">trending_down</span>
-          <span>Underperformers</span>
-        </button>
-      </li>
-
-      <li>
-  <button
-    class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
-           hover:text-google-blue dark:hover:bg-border-dark"
-    data-tab-title="Quick Links" onclick="showTab('quicklinks', event)">
-    <span class="material-symbols-outlined text-xl text-google-blue">link</span>
-    <span>Quick Links</span>
-  </button>
-</li>
 
 
 
@@ -360,6 +598,213 @@
 
         <main class="max-w-7xl mx-auto p-6 lg:p-10 space-y-12">
 
+<!-- SOP Page -->
+<div id="sop" class="tab-content hidden">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 mt-2">
+        <!-- Search -->
+        <div class="relative w-full md:w-1/3">
+            <input type="text" id="sopSearch" onkeyup="handleSOPSearch()"
+                placeholder="Search by Document Name, Campaign, or Description..."
+                class="w-full p-3 pl-10 border border-gray-300 rounded-full focus:ring-2 focus:ring-brand-accent 
+                       focus:border-brand-accent dark:bg-card-dark dark:border-border-dark dark:text-text-dark 
+                       transition shadow-md">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 
+                       text-gray-400 text-xl">search</span>
+        </div>
+
+        <!-- Action -->
+        <a href="#" target="_blank"
+            class="inline-flex items-center bg-brand-accent hover:bg-brand-dark text-bg-dark px-6 py-3 
+                   rounded-full shadow-lg font-bold transition duration-300 transform hover:scale-[1.03] text-lg">
+            <i class="fas fa-file-alt mr-3"></i>New SOP Entry
+        </a>
+    </div>
+
+    <!-- Table -->
+    <div class="mt-6 bg-white dark:bg-card-dark rounded-2xl shadow-2xl shadow-gray-200/50 
+                dark:shadow-xl dark:shadow-black/50 overflow-hidden transition-colors duration-500 
+                border border-gray-100 dark:border-border-dark">
+        <div class="relative overflow-x-auto">
+            <div id="sopLoadingSpinner" class="table-spinner hidden">
+                <div class="flex flex-col items-center">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-text">Loading SOP documents...</div>
+                </div>
+            </div>
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-100 dark:bg-border-dark text-left">
+                    <tr>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">ID</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Document Name</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Campaign</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Description</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Link</th>
+                    </tr>
+                </thead>
+                <tbody id="sopTable" class="divide-y divide-gray-200 dark:divide-border-dark">
+                    <tr class="text-center">
+                        <td colspan="5" class="p-8 text-gray-500 dark:text-gray-400">Loading SOP data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Tools Page -->
+<div id="tools" class="tab-content hidden">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 mt-2">
+        <!-- Search -->
+        <div class="relative w-full md:w-1/3">
+            <input type="text" id="toolsSearch" onkeyup="handleToolsSearch()"
+                placeholder="Search by Tool Name, Campaign, or Description..."
+                class="w-full p-3 pl-10 border border-gray-300 rounded-full focus:ring-2 focus:ring-brand-accent 
+                       focus:border-brand-accent dark:bg-card-dark dark:border-border-dark dark:text-text-dark 
+                       transition shadow-md">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 
+                       text-gray-400 text-xl">search</span>
+        </div>
+
+        <!-- Action -->
+        <a href="#" target="_blank"
+            class="inline-flex items-center bg-brand-accent hover:bg-brand-dark text-bg-dark px-6 py-3 
+                   rounded-full shadow-lg font-bold transition duration-300 transform hover:scale-[1.03] text-lg">
+            <i class="fas fa-tools mr-3"></i>New Tool Entry
+        </a>
+    </div>
+
+    <!-- Table -->
+    <div class="mt-6 bg-white dark:bg-card-dark rounded-2xl shadow-2xl shadow-gray-200/50 
+                dark:shadow-xl dark:shadow-black/50 overflow-hidden transition-colors duration-500 
+                border border-gray-100 dark:border-border-dark">
+        <div class="relative overflow-x-auto">
+            <div id="toolsLoadingSpinner" class="table-spinner hidden">
+                <div class="flex flex-col items-center">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-text">Loading Tools data...</div>
+                </div>
+            </div>
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-100 dark:bg-border-dark text-left">
+                    <tr>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">ID</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Tool Name</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Campaign</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Description</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">URL</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Work Instruction</th>
+                    </tr>
+                </thead>
+                <tbody id="toolsTable" class="divide-y divide-gray-200 dark:divide-border-dark">
+                    <tr class="text-center">
+                        <td colspan="6" class="p-8 text-gray-500 dark:text-gray-400">Loading Tools data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+        </div>
+
+
+<div id="attendance" class="tab-content hidden">
+    <div class="mt-6 grid grid-cols-1 gap-6">
+        <!-- Filters and header spacing (filters sit below main app header) -->
+        <div class="bg-white dark:bg-card-dark rounded-2xl p-4 shadow-sm">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-text-dark mb-1">Attendance Overview</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Choose month and team to view campaign attendance heatmaps.</p>
+                </div>
+            </div>
+
+            <div class="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                <div class="w-full sm:w-64">
+                    <label class="block text-xs text-gray-500 dark:text-gray-400">Month</label>
+                    <select id="monthSelector" class="w-full p-2 rounded-lg border border-gray-200 dark:border-border-dark bg-white dark:bg-bg-dark dark:text-text-dark">
+                        <option value="" disabled>Select Month</option>
+                        <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+                        <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+                        <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+                        <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                    </select>
+                </div>
+
+                <div class="w-full sm:w-64">
+                    <label class="block text-xs text-gray-500 dark:text-gray-400">Team</label>
+                    <select id="rosterSelector" class="w-full p-2 rounded-lg border border-gray-200 dark:border-border-dark bg-white dark:bg-bg-dark dark:text-text-dark">
+                        <option value="">All Teams</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-3 ml-auto">
+                    <button id="refreshBtn" title="Reload" class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-border-dark dark:hover:bg-gray-700 transition">
+                        <span class="material-symbols-outlined">refresh</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI cards + layout: campaign summary + legend sidebar -->
+        <div class="grid grid-cols-1 lg:grid-cols-6 gap-6">
+            <section class="lg:col-span-4 bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-border-dark shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-text-dark">Campaign Summary</h3>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Updated live</div>
+                </div>
+                <div class="relative overflow-x-auto">
+                    <div id="attendanceLoadingSpinner" class="table-spinner hidden">
+                        <div class="flex flex-col items-center">
+                            <div class="spinner-ring"></div>
+                            <div class="spinner-text">Loading attendance summary...</div>
+                        </div>
+                    </div>
+                    <table class="min-w-full text-sm">
+                        <thead class="table-head dark:bg-border-dark">
+                            <tr class="text-xs text-gray-600 dark:text-gray-300 uppercase">
+                                <th class="px-4 py-2 text-left">Campaign</th>
+                                <th class="px-4 py-2 text-center">Present</th>
+                                <th class="px-4 py-2 text-center">Late</th>
+                                <th class="px-4 py-2 text-center">Half Day</th>
+                                <th class="px-4 py-2 text-center">Absent</th>
+                                <th class="px-4 py-2 text-center">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="campaign-summary-body" class="divide-y divide-gray-100 dark:divide-border-dark"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <aside class="lg:col-span-2 bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-border-dark shadow-sm">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-text-dark mb-4">Legend</h3>
+                <div class="grid grid-cols-1 gap-3 text-sm text-gray-700 dark:text-gray-300">
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#38761D]"></span><span>P – Present</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#EF4444]"></span><span>A – Absent</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#9CA3AF]"></span><span>Off – Day Off</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#F59E0B]"></span><span>L – Late</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#0000FF]"></span><span>VL – Vacation Leave</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#8E7CC3]"></span><span>T – Training</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#00FFFF]"></span><span>SUS – Suspended</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#00FF00]"></span><span>HD – Half Day</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#FACC15]"></span><span>L15 – Late 15m</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#FB923C]"></span><span>L30 – Late 30m</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#F97316]"></span><span>L45 – Late 45m</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#EA580C]"></span><span>L60 – Late 60m</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#6FA8DC]"></span><span>SL – Sick Leave</span></div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Campaign Feed (heatmap tables) -->
+        <section>
+            <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-text-dark">Campaign Feed</h2>
+            <div id="campaign-feed" class="space-y-6"></div>
+        </section>
+
+        <footer class="py-6 text-center text-sm text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-border-dark">
+            &copy; 2025 Digital Minds BPO. All rights reserved.
+        </footer>
+    </div>
+</div>
 
             <div id="coaching-log" class="tab-content hidden">
                 <div
@@ -1220,140 +1665,79 @@
 
 
 
-            <div id="gainers"
-                class="tab-content hidden bg-white dark:bg-card-dark shadow-lg rounded-xl p-10 text-center text-gray-500 dark:text-gray-400 transition-colors duration-500">
-                <span class="material-symbols-outlined text-6xl text-google-green mb-4">trending_up</span>
-                <p class="text-xl font-medium">Top Performing Campaigns: Data coming soon...</p>
+
+
+
+
+
+
+            <!-- Knowledge Base Tab -->
+            <div id="knowledge" class="tab-content hidden">
+                <div class="flex flex-col md:flex-row gap-4 justify-between items-center mb-8">
+                    <div class="relative w-full md:w-1/2">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">search</span>
+                        <input type="text" id="kbSearch" onkeyup="filterDocuments()" placeholder="Search documents, owners, or tags..." 
+                            class="w-full p-3 pl-10 pr-4 rounded-full border border-gray-300 shadow-sm focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-card-dark dark:border-border-dark dark:text-text-dark">
+                    </div>
+
+                    <div class="flex items-center space-x-4 w-full md:w-auto justify-end">
+                        <div class="inline-flex rounded-full shadow-sm bg-gray-200 dark:bg-border-dark p-1">
+                            <button id="btnGrid" onclick="changeView('grid')" title="Grid View" 
+                                class="p-2 rounded-full transition duration-150 bg-brand-accent text-bg-dark">
+                                <span class="material-symbols-outlined text-xl">grid_view</span>
+                            </button>
+                            <button id="btnList" onclick="changeView('list')" title="List View" 
+                                class="p-2 rounded-full transition duration-150 bg-gray-200 dark:bg-border-dark text-text-light dark:text-text-dark">
+                                <span class="material-symbols-outlined text-xl">list</span>
+                            </button>
+                        </div>
+
+                        <button onclick="openCrudModal(null)" 
+                            class="bg-google-blue hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-full shadow-md transition transform hover:scale-[1.02] flex items-center">
+                            <i class="fas fa-plus mr-2"></i> New Document
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-8">
+                    <div class="col-span-12 lg:col-span-3 bg-white dark:bg-card-dark rounded-xl shadow-lg p-6 h-fit sticky top-24 transition-colors duration-500">
+                        <h3 class="text-lg font-bold mb-4 border-b pb-2 text-text-light dark:text-text-dark dark:border-border-dark">Categories</h3>
+                        <ul id="categories" class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
+                            <li class="p-2 text-center text-gray-400 italic">Loading categories...</li>
+                        </ul>
+                    </div>
+
+                    <div class="col-span-12 lg:col-span-9 relative">
+                        <div id="loadingSpinner" class="hidden absolute inset-0 bg-gray-100/70 dark:bg-card-dark/80 backdrop-blur-sm z-20 flex flex-col justify-center items-center rounded-xl transition-opacity duration-300 opacity-0">
+                            <i class="fas fa-sync-alt fa-3x text-brand-accent animate-spin-slow"></i>
+                            <p id="irNteLoadingText" class="mt-4 text-lg font-medium text-text-light dark:text-text-dark">Processing...</p>
+                        </div>
+                        
+                        <div id="grid-view" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 transition-all duration-300">
+                            <p class="col-span-full text-center p-10 text-gray-500 dark:text-gray-400">Loading documents...</p>
+                        </div>
+
+                        <div id="list-view" class="hidden bg-white dark:bg-card-dark shadow-lg rounded-xl overflow-hidden transition-colors duration-500">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm text-left">
+                                    <thead class="bg-gray-50 dark:bg-border-dark text-gray-600 dark:text-text-dark uppercase text-xs border-b dark:border-border-dark">
+                                        <tr>
+                                            <th class="px-6 py-3 font-medium">Document Name</th>
+                                            <th class="px-6 py-3 font-medium">Category</th>
+                                            <th class="px-6 py-3 font-medium">Owner</th>
+                                            <th class="px-6 py-3 font-medium">Last Modified</th>
+                                            <th class="px-6 py-3 font-medium text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="listTableBody" class="divide-y divide-gray-200 dark:divide-border-dark">
+                                        <tr><td colspan="5" class="text-center py-6 text-gray-500 dark:text-gray-400">Loading documents...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <div id="losers"
-                class="tab-content hidden bg-white dark:bg-card-dark shadow-lg rounded-xl p-10 text-center text-gray-500 dark:text-gray-400 transition-colors duration-500">
-                <span class="material-symbols-outlined text-6xl text-google-red mb-4">trending_down</span>
-                <p class="text-xl font-medium">Underperforming Campaigns: Data coming soon...</p>
-            </div>
-
-
-
-
-
-
-
-<!-- === QUICK LINKS SECTION === -->
-<div id="quicklinks" class="tab-content hidden">
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-4xl font-extrabold text-text-light dark:text-text-dark">Quick Links</h1>
-  </div>
-
-  <div
-    class="bg-white dark:bg-card-dark rounded-2xl shadow-2xl shadow-gray-200/50 dark:shadow-xl dark:shadow-black/50 p-6 border border-gray-100 dark:border-border-dark transition-colors duration-500">
-    
-    <h2 class="text-2xl font-semibold mb-6 text-text-light dark:text-text-dark border-b pb-3 border-gray-200 dark:border-border-dark">
-      Frequently Used Resources
-    </h2>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-<!-- SOP Documents -->
-<a href="sop-tools.html" target="_blank"
-   class="group flex items-center gap-4 p-5 rounded-xl border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark dark:hover:bg-brand-accent dark:hover:text-bg-dark shadow-md transition-all duration-300">
-  <span class="material-symbols-outlined text-4xl text-google-blue group-hover:text-bg-dark transition">menu_book</span>
-  <div>
-    <h3 class="font-bold text-lg text-gray-800 dark:text-text-dark group-hover:text-bg-dark">SOP Documents</h3>
-    <p class="text-sm text-gray-500 dark:text-gray-400">View and manage Standard Operating Procedures</p>
-  </div>
-</a>
-
-<!-- Tools List -->
-<a href="sop-tools.html" target="_blank"
-   class="group flex items-center gap-4 p-5 rounded-xl border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark dark:hover:bg-brand-accent dark:hover:text-bg-dark shadow-md transition-all duration-300">
-  <span class="material-symbols-outlined text-4xl text-google-green group-hover:text-bg-dark transition">build</span>
-  <div>
-    <h3 class="font-bold text-lg text-gray-800 dark:text-text-dark group-hover:text-bg-dark">Tools List</h3>
-    <p class="text-sm text-gray-500 dark:text-gray-400">Access tools, apps, and resources by campaign</p>
-  </div>
-</a>
-
-      <!-- Knowledge Base -->
-      <a href="newkb.html" target="_blank"
-         class="group flex items-center gap-4 p-5 rounded-xl border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark dark:hover:bg-brand-accent dark:hover:text-bg-dark shadow-md transition-all duration-300">
-        <span class="material-symbols-outlined text-4xl text-google-yellow group-hover:text-bg-dark transition">lightbulb</span>
-        <div>
-          <h3 class="font-bold text-lg text-gray-800 dark:text-text-dark group-hover:text-bg-dark">Knowledge Base</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Find process guides and FAQs</p>
-        </div>
-      </a>
-
-      <!-- Company Portal -->
-      <a href="#" target="_blank"
-         class="group flex items-center gap-4 p-5 rounded-xl border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark dark:hover:bg-brand-accent dark:hover:text-bg-dark shadow-md transition-all duration-300">
-        <span class="material-symbols-outlined text-4xl text-google-red group-hover:text-bg-dark transition">apartment</span>
-        <div>
-          <h3 class="font-bold text-lg text-gray-800 dark:text-text-dark group-hover:text-bg-dark">Company Portal</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">HR and employee service links</p>
-        </div>
-      </a>
-
-      <!-- Dashboard Reports -->
-      <a href="#" target="_blank"
-         class="group flex items-center gap-4 p-5 rounded-xl border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark dark:hover:bg-brand-accent dark:hover:text-bg-dark shadow-md transition-all duration-300">
-        <span class="material-symbols-outlined text-4xl text-google-blue group-hover:text-bg-dark transition">dashboard</span>
-        <div>
-          <h3 class="font-bold text-lg text-gray-800 dark:text-text-dark group-hover:text-bg-dark">KPI Dashboard</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Access live performance dashboards</p>
-        </div>
-      </a>
-
-      <!-- Custom Link Example -->
-      <a href="#" target="_blank"
-         class="group flex items-center gap-4 p-5 rounded-xl border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark dark:hover:bg-brand-accent dark:hover:text-bg-dark shadow-md transition-all duration-300">
-        <span class="material-symbols-outlined text-4xl text-google-green group-hover:text-bg-dark transition">support_agent</span>
-        <div>
-          <h3 class="font-bold text-lg text-gray-800 dark:text-text-dark group-hover:text-bg-dark">Support Desk</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Submit tickets or contact IT Helpdesk</p>
-        </div>
-      </a>
-<!-- Campaign Attendance -->
-<a href="dashboard-calendar.html" target="_blank"
-   class="group flex items-center gap-4 p-5 rounded-xl border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark dark:hover:bg-brand-accent dark:hover:text-bg-dark shadow-md transition-all duration-300">
-  <span class="material-symbols-outlined text-4xl text-google-blue group-hover:text-bg-dark transition">event_available</span>
-  <div>
-    <h3 class="font-bold text-lg text-gray-800 dark:text-text-dark group-hover:text-bg-dark">Campaign Attendance</h3>
-    <p class="text-sm text-gray-500 dark:text-gray-400">View overall campaign attendance report</p>
-  </div>
-</a>
-
-<!-- Individual Attendance -->
-<a href="calendar-individual.html" target="_blank"
-   class="group flex items-center gap-4 p-5 rounded-xl border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark dark:hover:bg-brand-accent dark:hover:text-bg-dark shadow-md transition-all duration-300">
-  <span class="material-symbols-outlined text-4xl text-google-red group-hover:text-bg-dark transition">person</span>
-  <div>
-    <h3 class="font-bold text-lg text-gray-800 dark:text-text-dark group-hover:text-bg-dark">Individual Attendance</h3>
-    <p class="text-sm text-gray-500 dark:text-gray-400">Check detailed attendance logs for Agent and admins</p>
-  </div>
-</a>
-
-
-
-<!-- Quality Management Portal -->
-<a href="#" target="_blank"
-   class="group flex items-center gap-4 p-5 rounded-xl border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-border-dark hover:bg-green-500 hover:text-bg-dark dark:hover:bg-green-500 dark:hover:text-bg-dark shadow-md transition-all duration-300">
-  <span class="material-symbols-outlined text-4xl text-green-600 group-hover:text-bg-dark transition">verified</span>
-  <div>
-    <h3 class="font-bold text-lg text-gray-800 dark:text-text-dark group-hover:text-bg-dark">Quality Management Portal</h3>
-    <p class="text-sm text-gray-500 dark:text-gray-400">Access QMS reports, audits, calibration results, and quality analytics</p>
-  </div>
-</a>
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1361,9 +1745,176 @@
   </div>
 </div>
 
+            <!-- Knowledge Base Tab -->
+            <div id="knowledge" class="tab-content hidden">
+                <div class="flex flex-col md:flex-row gap-4 justify-between items-center mb-8">
+                    <div class="relative w-full md:w-1/2">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">search</span>
+                        <input type="text" id="kbSearch" onkeyup="filterDocuments()" placeholder="Search documents, owners, or tags..." 
+                            class="w-full p-3 pl-10 pr-4 rounded-full border border-gray-300 shadow-sm focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-card-dark dark:border-border-dark dark:text-text-dark">
+                    </div>
 
-            
+                    <div class="flex items-center space-x-4 w-full md:w-auto justify-end">
+                        <div class="inline-flex rounded-full shadow-sm bg-gray-200 dark:bg-border-dark p-1">
+                            <button id="btnGrid" onclick="changeView('grid')" title="Grid View" 
+                                class="p-2 rounded-full transition duration-150 bg-brand-accent text-bg-dark">
+                                <span class="material-symbols-outlined text-xl">grid_view</span>
+                            </button>
+                            <button id="btnList" onclick="changeView('list')" title="List View" 
+                                class="p-2 rounded-full transition duration-150 bg-gray-200 dark:bg-border-dark text-text-light dark:text-text-dark">
+                                <span class="material-symbols-outlined text-xl">list</span>
+                            </button>
+                        </div>
+
+                        <button onclick="openCrudModal(null)" 
+                            class="bg-google-blue hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-full shadow-md transition transform hover:scale-[1.02] flex items-center">
+                            <i class="fas fa-plus mr-2"></i> New Document
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-8">
+                    <div class="col-span-12 lg:col-span-3 bg-white dark:bg-card-dark rounded-xl shadow-lg p-6 h-fit sticky top-24 transition-colors duration-500">
+                        <h3 class="text-lg font-bold mb-4 border-b pb-2 text-text-light dark:text-text-dark dark:border-border-dark">Categories</h3>
+                        <ul id="categories" class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
+                            <li class="p-2 text-center text-gray-400 italic">Loading categories...</li>
+                        </ul>
+                    </div>
+
+                    <div class="col-span-12 lg:col-span-9 relative">
+                        <div id="loadingSpinner" class="hidden absolute inset-0 bg-gray-100/70 dark:bg-card-dark/80 backdrop-blur-sm z-20 flex flex-col justify-center items-center rounded-xl transition-opacity duration-300 opacity-0">
+                            <i class="fas fa-sync-alt fa-3x text-brand-accent animate-spin-slow"></i>
+                            <p id="irNteLoadingText" class="mt-4 text-lg font-medium text-text-light dark:text-text-dark">Processing...</p>
+                        </div>
+                        
+                        <div id="grid-view" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 transition-all duration-300">
+                            <p class="col-span-full text-center p-10 text-gray-500 dark:text-gray-400">Loading documents...</p>
+                        </div>
+
+                        <div id="list-view" class="hidden bg-white dark:bg-card-dark shadow-lg rounded-xl overflow-hidden transition-colors duration-500">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-sm text-left">
+                                    <thead class="bg-gray-50 dark:bg-border-dark text-gray-600 dark:text-text-dark uppercase text-xs border-b dark:border-border-dark">
+                                        <tr>
+                                            <th class="px-6 py-3 font-medium">Document Name</th>
+                                            <th class="px-6 py-3 font-medium">Category</th>
+                                            <th class="px-6 py-3 font-medium">Owner</th>
+                                            <th class="px-6 py-3 font-medium">Last Modified</th>
+                                            <th class="px-6 py-3 font-medium text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="listTableBody" class="divide-y divide-gray-200 dark:divide-border-dark">
+                                        <tr><td colspan="5" class="text-center py-6 text-gray-500 dark:text-gray-400">Loading documents...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </main>
+    </div>
+
+    <!-- Knowledge Base Modals -->
+    <div id="viewModalBg" class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-300">
+        <div class="bg-white dark:bg-card-dark rounded-xl shadow-3xl w-full max-w-4xl p-8 relative transition-all duration-500 transform scale-95 opacity-0" id="viewModalContent">
+            <h3 id="viewModalTitle" class="text-3xl font-extrabold mb-2 text-brand-accent">View Document</h3>
+            <button onclick="closeViewModal()" class="absolute top-4 right-4 p-2 rounded-full text-gray-400 hover:text-brand-accent transition">
+                <i class="fas fa-times fa-xl"></i>
+            </button>
+            <div class="flex justify-between items-center relative z-10 border-b pb-4 mb-4 dark:border-border-dark">
+                <p id="vMeta" class="text-sm text-gray-600 dark:text-gray-400 mt-2"></p>
+                <div class="space-x-2">
+                    <button id="btnViewEdit" onclick="openCrudModal(docIdToHandle)" class="py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-full shadow-md transition transform hover:scale-[1.02]">
+                        <i class="fas fa-edit mr-1"></i> Edit
+                    </button>
+                    <button id="btnViewDelete" onclick="openKbDeleteModal()" class="py-2 px-4 bg-danger hover:bg-danger-dark text-white font-semibold rounded-full shadow-md transition transform hover:scale-[1.02]">
+                        <i class="fas fa-trash-alt mr-1"></i> Delete
+                    </button>
+                </div>
+            </div>
+            <div id="vContent" class="mt-6 h-[60vh] overflow-y-auto p-4 rounded-lg bg-gray-50 dark:bg-bg-dark border border-gray-200 dark:border-border-dark text-text-light dark:text-text-dark">
+                <p class='italic text-gray-400'>Loading content...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="crudModalBg" class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-300">
+        <div class="bg-white dark:bg-card-dark rounded-xl shadow-3xl w-full max-w-3xl p-8 relative transition-all duration-500 transform scale-95 opacity-0" id="crudModalContent">
+            <h3 id="crudModalTitle" class="text-3xl font-extrabold mb-4 text-brand-accent border-b pb-2 dark:border-border-dark">New Knowledge Document</h3>
+            <button onclick="closeCrudModal()" class="absolute top-4 right-4 p-2 rounded-full text-gray-400 hover:text-brand-accent transition">
+                <i class="fas fa-times fa-xl"></i>
+            </button>
+            <form id="kbForm" data-edit-id="">
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <label class="block">
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">Document Name <span class="text-danger">*</span></span>
+                            <input type="text" name="documentname" id="docNameInput" required 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">Category</span>
+                            <select name="category" id="docCategoryInput" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition">
+                                <option value="" disabled selected>Select Category</option>
+                                <option value="HR Policies">HR Policies</option>
+                                <option value="Campaign A SOP">Campaign A SOP</option>
+                                <option value="IT Procedures">IT Procedures</option>
+                                <option value="Training">Training</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <label class="block">
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">Owner / Responsible Party</span>
+                            <input type="text" name="owner" id="docOwnerInput" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700 dark:text-gray-300 font-medium">Version</span>
+                            <input type="text" name="version" id="docVersionInput" value="1.0" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition">
+                        </label>
+                    </div>
+                    <label class="block">
+                        <span class="text-gray-700 dark:text-gray-300 font-medium">Tags (Comma Separated)</span>
+                        <input type="text" name="tags" id="docTagsInput" placeholder="e.g., sop, hr, nte, process" 
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition">
+                    </label>
+                    <label class="block">
+                        <span class="text-gray-700 dark:text-gray-300 font-medium">Document Content (HTML/Rich Text)</span>
+                        <textarea name="contenthtml" id="docContentHtmlInput" rows="8" placeholder="Paste the HTML content or a brief summary here." 
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-accent focus:ring focus:ring-brand-accent/50 p-3 dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition"></textarea>
+                    </label>
+                </div>
+                <div class="mt-8 flex justify-end space-x-4">
+                    <button type="submit" id="formSubmitButton" 
+                        class="bg-brand-accent hover:bg-brand-dark text-bg-dark px-6 py-3 rounded-full font-bold transition duration-300 transform hover:scale-[1.02]">
+                        <i class="fas fa-save mr-2"></i> Save Document
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="kbDeleteConfirmModal" class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-300">
+        <div id="kbDeleteModalContent" class="bg-white dark:bg-card-dark rounded-xl shadow-3xl w-full max-w-sm p-6 relative transition-all duration-500 transform scale-95 opacity-0 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/50">
+                <i class="fas fa-trash-alt text-danger fa-lg"></i>
+            </div>
+            <h3 class="text-xl font-bold mt-3 text-text-light dark:text-text-dark">Confirm Deletion</h3>
+            <p id="kbDeleteMessage" class="text-sm text-gray-500 dark:text-gray-400 mt-2">Are you absolutely sure you want to delete <span id="docToDeleteName" class="font-semibold text-text-light dark:text-text-dark">this document</span>? This action cannot be undone.</p>
+            <div class="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
+                <button type="button" id="kbConfirmDeleteButton" class="inline-flex w-full justify-center rounded-full border border-transparent bg-danger hover:bg-danger-dark px-4 py-2 text-base font-semibold text-white shadow-sm transition sm:ml-3 sm:w-auto sm:text-sm transform hover:scale-[1.02]">
+                    Delete
+                </button>
+                <button type="button" onclick="closeKbDeleteModal()" class="mt-3 inline-flex w-full justify-center rounded-full border border-gray-300 bg-white dark:bg-border-dark dark:text-text-dark dark:hover:bg-gray-700 px-4 py-2 text-base font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition sm:mt-0 sm:w-auto sm:text-sm transform hover:scale-[1.02]">
+                    Cancel
+                </button>
+            </div>
+        </div>
     </div>
 
     <div id="modalBg"
@@ -1750,9 +2301,7 @@
                 </button>
             </div>
         </div>
-    </div>
 
-    <script>
         feather.replace(); // Initialize feather icons for dark mode toggle
 
         const drawer = document.getElementById('drawer');
@@ -1766,6 +2315,28 @@
         const mainTitleContainer = document.getElementById('mainTitleContainer');
         const loadingModal = document.getElementById('loadingModal');
         const loadingText = document.getElementById('loadingText');
+
+
+
+        /* ------------------ SOP & TOOLS ELEMENTS & API ------------------ */
+const SOP_TOOLS_API_URL = "https://script.google.com/macros/s/AKfycbwn0GPogd4Cy3TiEPR462FId4nP1DTy2r8Aciqxp389JS6lopKgV5j9u1My_g1YyE7t/exec";
+
+// SOP Elements
+const sopSearchInput = document.getElementById("sopSearch"); // SOP search input
+const sopTableBody = document.getElementById("sopTable");
+let sopData = [];
+
+// Tools Elements
+const toolsSearchInput = document.getElementById("toolsSearch"); // Tools search input
+const toolsTableBody = document.getElementById("toolsTable");
+let toolsData = [];
+
+// IMPORTANT: these globals are used across the SOP/Tools render & filter functions.
+// They were referenced as `allSOPSessions` / `allToolsSessions` elsewhere in this file
+// but not declared, which caused reference errors when searching or rendering.
+let allSOPSessions = [];
+let allToolsSessions = [];
+
 
         /* ------------------ COACHING LOG ELEMENTS & API ------------------ */
         const COACHING_API_URL = "https://script.google.com/macros/s/AKfycbyn9CG1Lk3S5bXtfEEbvH5H-8GfBBOvY4OGSJPyIM5RZSDBCOf4fwkXVvnKjzZGvqUL/exec";
@@ -1798,6 +2369,10 @@
 
         let allIRNTESessions = [];
         let irNteIdToDelete = null;
+
+        /* ------------------ KNOWLEDGE BASE VARIABLES & STATE ------------------ */
+        let kbDocuments = []; // Array to hold loaded documents
+        let docIdToHandle = null; // Current document being handled in modals
 
         /* ------------------ GLOBAL UTILITY FUNCTIONS ------------------ */
 
@@ -1896,6 +2471,29 @@
             } else if (tabId === 'ir-nte-log') {
                 loadRecords();
                 irnteSearchInput.value = ""; // Reset search input
+            } else if (tabId === 'sop') {
+                // Load SOP documents when SOP tab is opened
+                loadSOP();
+                if (sopSearchInput) sopSearchInput.value = "";
+            } else if (tabId === 'tools') {
+                // Load Tools list when Tools tab is opened
+                loadTools();
+                if (toolsSearchInput) toolsSearchInput.value = "";
+            } else if (tabId === 'attendance') {
+                // Load attendance data when attendance tab is opened (SPA behavior)
+                try {
+                    if (typeof loadAll === 'function') {
+                        loadAll();
+                    } else if (typeof drawAttendance === 'function') {
+                        drawAttendance();
+                    }
+                } catch (e) {
+                    console.debug('attendance loader not ready', e);
+                }
+            } else if (tabId === 'knowledge') {
+                // Load Knowledge Base documents when KB tab is opened
+                loadKbDocuments();
+                if (document.getElementById('kbSearch')) document.getElementById('kbSearch').value = "";
             }
         }
 
@@ -2492,11 +3090,961 @@
 
 
 
+
+
+
+        
+        // RENDER FUNCTION: SOP
+        function renderSOPTable(sessionsToRender) {
+            const table = document.getElementById("sopTable");
+            table.innerHTML = ""; 
+
+            if (!Array.isArray(sessionsToRender) || sessionsToRender.length === 0) {
+                table.innerHTML = `<tr><td colspan="5">No SOP documents match your criteria.</td></tr>`;
+                return;
+            }
+
+            sessionsToRender.forEach(session => {
+                const linkUrl = session.driveLink && session.driveLink.length > 5 && session.driveLink !== '#' ? session.driveLink : "#"; 
+                const descriptionText = session.description || "No description provided.";
+                
+                table.innerHTML += `
+                    <tr>
+                        <td>${session.id || "N/A"}</td>
+                        <td>${session.documentName || "N/A"}</td>
+                        <td>${session.campaign || "N/A"}</td> 
+                        <td>${descriptionText}</td>
+                        <td>
+                            <a href="${linkUrl}" target="_blank" 
+                                title="${linkUrl === '#' ? 'Document link not available' : 'Open SOP Document'}">
+                                <i class="fab fa-google-drive"></i>
+                            </a>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+
+        
+        // RENDER FUNCTION: Tools
+        function renderToolsTable(sessionsToRender) {
+            const table = document.getElementById("toolsTable");
+            table.innerHTML = ""; 
+
+            if (!Array.isArray(sessionsToRender) || sessionsToRender.length === 0) {
+                table.innerHTML = `<tr><td colspan="6">No Tools records match your criteria.</td></tr>`;
+                return;
+            }
+
+            sessionsToRender.forEach(session => {
+                const url = session.url && session.url.length > 5 && session.url !== '#' ? session.url : "#"; 
+                const wiLink = session.wiLink && session.wiLink.length > 5 && session.wiLink !== '#' ? session.wiLink : "#"; 
+                const descriptionText = session.description || "No description provided.";
+                
+                table.innerHTML += `
+                    <tr>
+                        <td>${session.id || "N/A"}</td>
+                        <td>${session.toolName || "N/A"}</td>
+                        <td>${session.campaign || "N/A"}</td> 
+                        <td>${descriptionText}</td>
+                        <td>
+                            <a href="${url}" target="_blank" 
+                                title="${url === '#' ? 'URL not available' : 'Open Tool Website'}">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="${wiLink}" target="_blank" 
+                                title="${wiLink === '#' ? 'Work Instruction not available' : 'Open Work Instruction'}">
+                                <i class="fab fa-google-drive"></i>
+                            </a>
+                        </td>
+                    </tr>`;
+            });
+        }
+        
+
+        
+
+
+                // SOP Documents Functions (Filter)
+        function handleSOPSearch() {
+            const query = document.getElementById('sopSearch').value.toLowerCase().trim();
+            
+            if (!query) {
+                renderSOPTable(allSOPSessions); 
+                return;
+            }
+
+            const filteredSessions = allSOPSessions.filter(session => {
+                return (session.documentName && session.documentName.toLowerCase().includes(query)) ||
+                       (session.description && session.description.toLowerCase().includes(query)) ||
+                       (session.campaign && session.campaign.toLowerCase().includes(query)) ||
+                       (session.id && String(session.id).toLowerCase().includes(query));
+            });
+
+            renderSOPTable(filteredSessions);
+        }
+
+        // SOP Documents Functions (Read)
+        async function loadSOP() {
+            const spinner = document.getElementById('sopLoadingSpinner');
+            const table = document.getElementById("sopTable");
+
+            table.innerHTML = `<tr><td colspan="5">Loading SOP data...</td></tr>`;
+            if (spinner) spinner.classList.remove('hidden');
+            
+            try {
+                const fetchUrl = SOP_TOOLS_API_URL + '?action=getSOP';
+                const res = await fetch(fetchUrl);
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}. Check SOP/Tools Apps Script URL.`);
+                }
+                
+                allSOPSessions = await res.json();
+                
+                if (allSOPSessions.error) {
+                    throw new Error(allSOPSessions.error);
+                }
+
+                renderSOPTable(allSOPSessions);
+
+            } catch (error) {
+                console.error("Error loading SOP records:", error);
+                
+                const errorMessage = `Failed to load SOP data. Check the SOP_TOOLS_API_URL and Apps Script deployment. (Error: ${error.message})`;
+
+                table.innerHTML = `<tr><td colspan="5">${errorMessage}</td></tr>`;
+            }
+            finally {
+                if (spinner) spinner.classList.add('hidden');
+            }
+        }
+
+        // Tools List Functions (Filter)
+        function handleToolsSearch() {
+            const query = document.getElementById('toolsSearch').value.toLowerCase().trim();
+            
+            if (!query) {
+                renderToolsTable(allToolsSessions); 
+                return;
+            }
+
+            const filteredSessions = allToolsSessions.filter(session => {
+                return (session.toolName && session.toolName.toLowerCase().includes(query)) ||
+                       (session.description && session.description.toLowerCase().includes(query)) ||
+                       (session.campaign && session.campaign.toLowerCase().includes(query)) ||
+                       (session.id && String(session.id).toLowerCase().includes(query));
+            });
+
+            renderToolsTable(filteredSessions);
+        }
+
+        // Tools List Functions (Read)
+        async function loadTools() {
+            const spinner = document.getElementById('toolsLoadingSpinner');
+            const table = document.getElementById("toolsTable");
+
+            table.innerHTML = `<tr><td colspan="6">Loading Tools data...</td></tr>`;
+            if (spinner) spinner.classList.remove('hidden');
+            
+            try {
+                const fetchUrl = SOP_TOOLS_API_URL + '?action=getTools';
+                const res = await fetch(fetchUrl);
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}. Check SOP/Tools Apps Script URL.`);
+                }
+                
+                allToolsSessions = await res.json();
+                
+                if (allToolsSessions.error) {
+                    throw new Error(allToolsSessions.error);
+                }
+
+                renderToolsTable(allToolsSessions);
+
+            } catch (error) {
+                console.error("Error loading Tools records:", error);
+                const errorMessage = `Failed to load Tools data. Check the SOP_TOOLS_API_URL and Apps Script deployment. (Error: ${error.message})`;
+
+                table.innerHTML = `<tr><td colspan="6">${errorMessage}</td></tr>`;
+            } finally {
+                if (spinner) spinner.classList.add('hidden');
+            }
+        }
+
+
+
+
+
+        /* ------------------ KNOWLEDGE BASE FUNCTIONS ------------------ */
+
+        function changeView(viewType) {
+            const gridView = document.getElementById('grid-view');
+            const listView = document.getElementById('list-view');
+            const btnGrid = document.getElementById('btnGrid');
+            const btnList = document.getElementById('btnList');
+
+            if (viewType === 'grid') {
+                gridView.classList.remove('hidden');
+                listView.classList.add('hidden');
+                btnGrid.classList.add('bg-brand-accent', 'text-bg-dark');
+                btnGrid.classList.remove('bg-gray-200', 'dark:bg-border-dark', 'text-text-light', 'dark:text-text-dark');
+                btnList.classList.remove('bg-brand-accent', 'text-bg-dark');
+                btnList.classList.add('bg-gray-200', 'dark:bg-border-dark', 'text-text-light', 'dark:text-text-dark');
+            } else {
+                listView.classList.remove('hidden');
+                gridView.classList.add('hidden');
+                btnList.classList.add('bg-brand-accent', 'text-bg-dark');
+                btnList.classList.remove('bg-gray-200', 'dark:bg-border-dark', 'text-text-light', 'dark:text-text-dark');
+                btnGrid.classList.remove('bg-brand-accent', 'text-bg-dark');
+                btnGrid.classList.add('bg-gray-200', 'dark:bg-border-dark', 'text-text-light', 'dark:text-text-dark');
+            }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return dateStr;
+            return `${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}/${d.getFullYear()}`;
+        }
+
+        function renderDocuments(documents) {
+            const gridView = document.getElementById('grid-view');
+            const listTableBody = document.getElementById('listTableBody');
+            gridView.innerHTML = '';
+            listTableBody.innerHTML = '';
+
+            if (documents.length === 0) {
+                const noResults = `<div class="col-span-12 text-center p-10 text-xl text-gray-500 dark:text-gray-400">
+                                    <i class="fas fa-exclamation-circle mr-2"></i> No documents match your search.
+                                   </div>`;
+                gridView.innerHTML = noResults;
+                listTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-500 dark:text-gray-400">No documents match your search.</td></tr>`;
+                return;
+            }
+
+            documents.forEach(doc => {
+                const formattedDate = formatDate(doc.lastModified || doc.Last_Updated);
+                
+                // Grid View Card
+                gridView.innerHTML += `
+                    <div data-docid="${doc.id}" class="bg-white dark:bg-card-dark rounded-xl shadow-lg p-6 border-t-4 border-brand-accent transition duration-300 transform hover:scale-[1.01] hover:shadow-xl cursor-pointer min-h-[16rem] flex flex-col" onclick="openViewModal(${doc.id})">
+                        <div class="flex-grow">
+                            <span class="text-xs font-semibold uppercase text-brand-accent">${doc.category}</span>
+                            <h4 class="text-xl font-bold mt-1 mb-3 text-text-light dark:text-text-dark">${doc.documentname}</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 truncate-lines-3">${(doc.contenthtml || '').replace(/<[^>]*>/g, '').substring(0, 100)}...</p>
+                        </div>
+                        <div class="mt-auto pt-4 border-t dark:border-border-dark flex justify-between items-center text-xs text-gray-400">
+                            <span>Owner: ${doc.owner}</span>
+                            <span>v${doc.version} | ${formattedDate}</span>
+                        </div>
+                    </div>
+                `;
+
+                // List View Row
+                listTableBody.innerHTML += `
+                    <tr data-docid="${doc.id}" class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition duration-150 ease-in-out text-gray-700 dark:text-gray-300 cursor-pointer" onclick="openViewModal(${doc.id})">
+                        <td class="px-6 py-4 font-semibold text-gray-800 dark:text-text-dark hover:text-brand-accent">${doc.documentname}</td>
+                        <td class="px-6 py-4">${doc.category}</td>
+                        <td class="px-6 py-4">${doc.owner}</td>
+                        <td class="px-6 py-4">${formattedDate}</td>
+                        <td class="px-6 py-4 text-center space-x-2">
+                            <button onclick="event.stopPropagation(); openViewModal(${doc.id})" title="View" class="text-google-blue hover:text-blue-700 p-1"><i class="fas fa-eye"></i></button>
+                            <button onclick="event.stopPropagation(); openCrudModal(${doc.id})" title="Edit" class="text-google-green hover:text-green-700 p-1"><i class="fas fa-edit"></i></button>
+                            <button onclick="event.stopPropagation(); openKbDeleteModal(${doc.id}, '${doc.documentname}')" title="Delete" class="text-danger hover:text-danger-dark p-1"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return dateStr;
+            return `${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}/${d.getFullYear()}`;
+        }
+
+        function renderDocuments(documents) {
+            const gridView = document.getElementById('grid-view');
+            const listTableBody = document.getElementById('listTableBody');
+            gridView.innerHTML = '';
+            listTableBody.innerHTML = '';
+
+            if (documents.length === 0) {
+                const noResults = `<div class="col-span-12 text-center p-10 text-xl text-gray-500 dark:text-gray-400">
+                                    <i class="fas fa-exclamation-circle mr-2"></i> No documents match your search.
+                                   </div>`;
+                gridView.innerHTML = noResults;
+                listTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-500 dark:text-gray-400">No documents match your search.</td></tr>`;
+                return;
+            }
+
+            documents.forEach(doc => {
+                const formattedDate = formatDate(doc.lastModified || doc.Last_Updated);
+                
+                // Grid View Card
+                gridView.innerHTML += `
+                    <div data-docid="${doc.id}" class="bg-white dark:bg-card-dark rounded-xl shadow-lg p-6 border-t-4 border-brand-accent transition duration-300 transform hover:scale-[1.01] hover:shadow-xl cursor-pointer min-h-[16rem] flex flex-col" onclick="openViewModal(${doc.id})">
+                        <div class="flex-grow">
+                            <span class="text-xs font-semibold uppercase text-brand-accent">${doc.category}</span>
+                            <h4 class="text-xl font-bold mt-1 mb-3 text-text-light dark:text-text-dark">${doc.documentname}</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 truncate-lines-3">${(doc.contenthtml || '').replace(/<[^>]*>/g, '').substring(0, 100)}...</p>
+                        </div>
+                        <div class="mt-auto pt-4 border-t dark:border-border-dark flex justify-between items-center text-xs text-gray-400">
+                            <span>Owner: ${doc.owner}</span>
+                            <span>v${doc.version} | ${formattedDate}</span>
+                        </div>
+                    </div>
+                `;
+
+                // List View Row
+                listTableBody.innerHTML += `
+                    <tr data-docid="${doc.id}" class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition duration-150 ease-in-out text-gray-700 dark:text-gray-300 cursor-pointer" onclick="openViewModal(${doc.id})">
+                        <td class="px-6 py-4 font-semibold text-gray-800 dark:text-text-dark hover:text-brand-accent">${doc.documentname}</td>
+                        <td class="px-6 py-4">${doc.category}</td>
+                        <td class="px-6 py-4">${doc.owner}</td>
+                        <td class="px-6 py-4">${formattedDate}</td>
+                        <td class="px-6 py-4 text-center space-x-2">
+                            <button onclick="event.stopPropagation(); openViewModal(${doc.id})" title="View" class="text-google-blue hover:text-blue-700 p-1"><i class="fas fa-eye"></i></button>
+                            <button onclick="event.stopPropagation(); openCrudModal(${doc.id})" title="Edit" class="text-google-green hover:text-green-700 p-1"><i class="fas fa-edit"></i></button>
+                            <button onclick="event.stopPropagation(); openKbDeleteModal(${doc.id}, '${doc.documentname}')" title="Delete" class="text-danger hover:text-danger-dark p-1"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filterDocuments() {
+            const query = document.getElementById('kbSearch').value.toLowerCase();
+            let categoryFilter = '';
+            document.querySelectorAll('#categories button').forEach(btn => {
+                if(btn.classList.contains('text-brand-accent')) {
+                     categoryFilter = btn.dataset.category || '';
+                }
+            });
+
+            const filtered = kbDocuments.filter(doc => {
+                const matchesQuery = doc.documentname.toLowerCase().includes(query) ||
+                                     doc.owner.toLowerCase().includes(query) ||
+                                     doc.tags.toLowerCase().includes(query);
+                
+                const matchesCategory = categoryFilter === '' || doc.category === categoryFilter;
+
+                return matchesQuery && matchesCategory;
+            });
+            renderDocuments(filtered);
+        }
+
+        function loadKbCategories() {
+            const categoriesUl = document.getElementById('categories');
+            categoriesUl.innerHTML = '';
+            
+            const allCategories = kbDocuments.map(doc => doc.category).filter(Boolean);
+            const uniqueCategories = [...new Set(allCategories)];
+
+            // Add 'All' category button
+            const allLi = document.createElement('li');
+            allLi.innerHTML = `<button data-category="" class="block w-full text-left p-2 rounded-lg transition hover:bg-gray-100 dark:hover:bg-border-dark text-brand-accent font-semibold" onclick="filterByCategory(this)">All (${kbDocuments.length})</button>`;
+            categoriesUl.appendChild(allLi);
+
+            uniqueCategories.forEach(category => {
+                const count = allCategories.filter(c => c === category).length;
+                const li = document.createElement('li');
+                li.innerHTML = `<button data-category="${category}" class="block w-full text-left p-2 rounded-lg transition hover:bg-gray-100 dark:hover:bg-border-dark" onclick="filterByCategory(this)">${category} (${count})</button>`;
+                categoriesUl.appendChild(li);
+            });
+        }
+
+        function filterByCategory(button) {
+            document.querySelectorAll('#categories button').forEach(btn => {
+                btn.classList.remove('text-brand-accent', 'font-semibold');
+            });
+            button.classList.add('text-brand-accent', 'font-semibold');
+            filterDocuments();
+        }
+
+        function loadKbCategories() {
+            const categoriesUl = document.getElementById('categories');
+            categoriesUl.innerHTML = '';
+            
+            const allCategories = kbDocuments.map(doc => doc.category).filter(Boolean);
+            const uniqueCategories = [...new Set(allCategories)];
+
+            // Add 'All' category button
+            const allLi = document.createElement('li');
+            allLi.innerHTML = `<button data-category="" class="block w-full text-left p-2 rounded-lg transition hover:bg-gray-100 dark:hover:bg-border-dark text-brand-accent font-semibold" onclick="filterByCategory(this)">All (${kbDocuments.length})</button>`;
+            categoriesUl.appendChild(allLi);
+
+            uniqueCategories.forEach(category => {
+                const count = allCategories.filter(c => c === category).length;
+                const li = document.createElement('li');
+                li.innerHTML = `<button data-category="${category}" class="block w-full text-left p-2 rounded-lg transition hover:bg-gray-100 dark:hover:bg-border-dark" onclick="filterByCategory(this)">${category} (${count})</button>`;
+                categoriesUl.appendChild(li);
+            });
+        }
+
+        function filterByCategory(button) {
+            document.querySelectorAll('#categories button').forEach(btn => {
+                btn.classList.remove('text-brand-accent', 'font-semibold');
+            });
+            button.classList.add('text-brand-accent', 'font-semibold');
+            filterDocuments();
+        }
+
+        function loadKbDocuments() {
+            // Placeholder data for Knowledge Base
+            const placeholderData = [
+                { id: 1, documentname: "HR Attendance Policy", category: "HR Policies", owner: "HR Dept.", version: "3.1", tags: "hr, policy, attendance", contenthtml: "<div class='doc-body'><h2>HR Attendance Policy</h2><p>This document outlines the company's attendance policy and procedures for tracking employee attendance.</p><h3>Key Points:</h3><ul><li>Regular attendance is expected</li><li>Notify supervisor of absences</li><li>Follow proper leave procedures</li></ul></div>", lastModified: "2024-09-01" },
+                { id: 2, documentname: "Campaign A Standard Operating Procedure", category: "Campaign A SOP", owner: "Operations", version: "1.2", tags: "sop, campaign a, process", contenthtml: "<div class='doc-body'><h2>Campaign A SOP</h2><p>Standard operating procedures for Campaign A operations and quality assurance.</p><h3>Process Steps:</h3><ol><li>Initial setup</li><li>Quality checks</li><li>Final review</li></ol></div>", lastModified: "2024-09-15" },
+                { id: 3, documentname: "IT VPN Setup Guide", category: "IT Procedures", owner: "IT Team", version: "2.0", tags: "it, vpn, guide, setup", contenthtml: "<div class='doc-body'><h2>VPN Setup Guide</h2><p>Step-by-step instructions for setting up VPN access for remote work.</p><h3>Requirements:</h3><ul><li>Company laptop</li><li>VPN credentials</li><li>Stable internet connection</li></ul></div>", lastModified: "2024-08-20" },
+                { id: 4, documentname: "NTE Code List and Definitions", category: "HR Policies", owner: "HR Dept.", version: "1.0", tags: "hr, nte, ir, codes", contenthtml: "<div class='doc-body'><h2>NTE Code Definitions</h2><p>Complete list of Notice to Explain codes and their definitions for disciplinary actions.</p><h3>Common Codes:</h3><ul><li>NTE-001: Tardiness</li><li>NTE-002: Absenteeism</li><li>NTE-003: Policy violation</li></ul></div>", lastModified: "2024-09-05" },
+                { id: 5, documentname: "New Hire Training Module 1", category: "Training", owner: "Training Team", version: "1.0", tags: "training, new hire, tmo", contenthtml: "<div class='doc-body'><h2>New Hire Training - Module 1</h2><p>Introduction to company culture, policies, and basic procedures for new employees.</p><h3>Topics Covered:</h3><ul><li>Company history</li><li>Core values</li><li>Basic policies</li></ul></div>", lastModified: "2024-09-25" }
+            ];
+
+            showGlobalLoading('Loading Knowledge Base...');
+            
+            // Simulate loading delay
+            setTimeout(() => {
+                kbDocuments = placeholderData;
+                renderDocuments(kbDocuments);
+                loadKbCategories();
+                hideGlobalLoading();
+            }, 500);
+        }
+
+        // Modal Functions
+        function openViewModal(docId) {
+            docIdToHandle = docId;
+            const doc = kbDocuments.find(d => d.id === docId);
+            
+            if (!doc) {
+                alert('Document not found!');
+                return;
+            }
+
+            document.getElementById('viewModalTitle').textContent = doc.documentname;
+            document.getElementById('vMeta').innerHTML = `
+                Category: <span class="font-medium">${doc.category}</span> | 
+                Owner: <span class="font-medium">${doc.owner}</span> | 
+                Version: <span class="font-medium">${doc.version}</span> |
+                Last Modified: <span class="font-medium">${doc.lastModified}</span>
+            `;
+            document.getElementById('vContent').innerHTML = doc.contenthtml;
+
+            const modalBg = document.getElementById('viewModalBg');
+            const modalContent = document.getElementById('viewModalContent');
+            modalBg.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeViewModal() {
+            const modalContent = document.getElementById('viewModalContent');
+            const modalBg = document.getElementById('viewModalBg');
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modalBg.classList.add('hidden');
+            }, 300);
+            document.body.style.overflow = '';
+        }
+
+        function closeViewModal() {
+            const modalContent = document.getElementById('viewModalContent');
+            const modalBg = document.getElementById('viewModalBg');
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modalBg.classList.add('hidden');
+            }, 300);
+            document.body.style.overflow = '';
+        }
+
+        function openCrudModal(docId = null) {
+            closeViewModal();
+            const form = document.getElementById('kbForm');
+            const title = document.getElementById('crudModalTitle');
+            const submitButton = document.getElementById('formSubmitButton');
+
+            form.reset();
+            form.dataset.editId = '';
+
+            if (docId) {
+                const doc = kbDocuments.find(d => d.id === docId);
+                if (!doc) {
+                    alert('Document not found!');
+                    return;
+                }
+                
+                docIdToHandle = docId;
+                title.textContent = 'Edit Knowledge Document';
+                submitButton.innerHTML = '<i class="fas fa-save mr-2"></i> Update Document';
+                form.dataset.editId = docId;
+
+                document.getElementById('docNameInput').value = doc.documentname;
+                document.getElementById('docCategoryInput').value = doc.category;
+                document.getElementById('docOwnerInput').value = doc.owner;
+                document.getElementById('docVersionInput').value = doc.version;
+                document.getElementById('docTagsInput').value = doc.tags;
+                document.getElementById('docContentHtmlInput').value = doc.contenthtml;
+            } else {
+                docIdToHandle = null;
+                title.textContent = 'New Knowledge Document';
+                submitButton.innerHTML = '<i class="fas fa-save mr-2"></i> Save Document';
+                document.getElementById('docVersionInput').value = '1.0';
+            }
+
+            const modalBg = document.getElementById('crudModalBg');
+            const modalContent = document.getElementById('crudModalContent');
+            modalBg.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCrudModal() {
+            const modalContent = document.getElementById('crudModalContent');
+            const modalBg = document.getElementById('crudModalBg');
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modalBg.classList.add('hidden');
+            }, 300);
+            document.body.style.overflow = '';
+        }
+
+        function closeCrudModal() {
+            const modalContent = document.getElementById('crudModalContent');
+            const modalBg = document.getElementById('crudModalBg');
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modalBg.classList.add('hidden');
+            }, 300);
+            document.body.style.overflow = '';
+        }
+
+        function openKbDeleteModal(docId = docIdToHandle, docName = '') {
+            closeViewModal();
+            if (!docId) return;
+
+            docIdToHandle = docId;
+            const doc = kbDocuments.find(d => d.id === docId);
+            const displayName = docName || (doc ? doc.documentname : 'this document');
+            
+            document.getElementById('docToDeleteName').textContent = displayName;
+
+            const modalBg = document.getElementById('kbDeleteConfirmModal');
+            const modalContent = document.getElementById('kbDeleteModalContent');
+            modalBg.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeKbDeleteModal() {
+            const modalContent = document.getElementById('kbDeleteModalContent');
+            const modalBg = document.getElementById('kbDeleteConfirmModal');
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modalBg.classList.add('hidden');
+            }, 300);
+            document.body.style.overflow = '';
+        }
+
+        function closeKbDeleteModal() {
+            const modalContent = document.getElementById('kbDeleteModalContent');
+            const modalBg = document.getElementById('kbDeleteConfirmModal');
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modalBg.classList.add('hidden');
+            }, 300);
+            document.body.style.overflow = '';
+        }
+
+        // Form submission handler
+        document.addEventListener('DOMContentLoaded', () => {
+            const kbForm = document.getElementById('kbForm');
+            if (kbForm) {
+                kbForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    closeCrudModal();
+                    showGlobalLoading('Saving document...');
+
+                    const form = e.target;
+                    const formData = new FormData(form);
+                    const data = Object.fromEntries(formData.entries());
+                    const id = form.dataset.editId;
+
+                    try {
+                        const isUpdate = !!id;
+                        const newDoc = {
+                            id: isUpdate ? parseInt(id) : Math.floor(Math.random() * 1000) + 10,
+                            documentname: data.documentname,
+                            category: data.category,
+                            owner: data.owner,
+                            version: data.version,
+                            tags: data.tags,
+                            contenthtml: data.contenthtml,
+                            lastModified: new Date().toISOString().slice(0, 10)
+                        };
+
+                        if (isUpdate) {
+                            const index = kbDocuments.findIndex(d => d.id === newDoc.id);
+                            if (index !== -1) {
+                                kbDocuments[index] = newDoc;
+                            }
+                        } else {
+                            kbDocuments.push(newDoc);
+                        }
+
+                        hideGlobalLoading();
+                        alert(`Document successfully ${isUpdate ? 'updated' : 'saved'}!`);
+                        renderDocuments(kbDocuments);
+                        loadKbCategories();
+
+                    } catch (error) {
+                        console.error("Error saving document:", error);
+                        hideGlobalLoading();
+                        alert(`Failed to save document: ${error.message}`);
+                    }
+                });
+            }
+
+            // Delete confirmation handler
+            const kbConfirmDeleteButton = document.getElementById('kbConfirmDeleteButton');
+            if (kbConfirmDeleteButton) {
+                kbConfirmDeleteButton.addEventListener('click', () => {
+                    closeKbDeleteModal();
+                    showGlobalLoading("Deleting document...");
+
+                    try {
+                        kbDocuments = kbDocuments.filter(doc => doc.id !== docIdToHandle);
+                        hideGlobalLoading();
+                        alert("Document successfully deleted!");
+                        renderDocuments(kbDocuments);
+                        loadKbCategories();
+                    } catch (error) {
+                        console.error("Error deleting document:", error);
+                        hideGlobalLoading();
+                        alert(`Failed to delete document: ${error.message}`);
+                    }
+                });
+            }
+        });
+
         /* ------------------ INIT ------------------ */
         document.addEventListener('DOMContentLoaded', () => {
             // Show the initial tab (Summary) and set the initial header title
             showTab('summary');
+            
+            // Knowledge Base form submission handler
+            const kbForm = document.getElementById('kbForm');
+            if (kbForm) {
+                kbForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    closeCrudModal();
+                    showGlobalLoading('Saving document...');
+
+                    const form = e.target;
+                    const formData = new FormData(form);
+                    const data = Object.fromEntries(formData.entries());
+                    const id = form.dataset.editId;
+
+                    try {
+                        const isUpdate = !!id;
+                        const newDoc = {
+                            id: isUpdate ? parseInt(id) : Math.floor(Math.random() * 1000) + 10,
+                            documentname: data.documentname,
+                            category: data.category,
+                            owner: data.owner,
+                            version: data.version,
+                            tags: data.tags,
+                            contenthtml: data.contenthtml,
+                            lastModified: new Date().toISOString().slice(0, 10)
+                        };
+
+                        if (isUpdate) {
+                            const index = kbDocuments.findIndex(d => d.id === newDoc.id);
+                            if (index !== -1) {
+                                kbDocuments[index] = newDoc;
+                            }
+                        } else {
+                            kbDocuments.push(newDoc);
+                        }
+
+                        hideGlobalLoading();
+                        alert(`Document successfully ${isUpdate ? 'updated' : 'saved'}!`);
+                        renderDocuments(kbDocuments);
+                        loadKbCategories();
+
+                    } catch (error) {
+                        console.error("Error saving document:", error);
+                        hideGlobalLoading();
+                        alert(`Failed to save document: ${error.message}`);
+                    }
+                });
+            }
+
+            // Delete confirmation handler
+            const kbConfirmDeleteButton = document.getElementById('kbConfirmDeleteButton');
+            if (kbConfirmDeleteButton) {
+                kbConfirmDeleteButton.addEventListener('click', () => {
+                    closeKbDeleteModal();
+                    showGlobalLoading("Deleting document...");
+
+                    try {
+                        kbDocuments = kbDocuments.filter(doc => doc.id !== docIdToHandle);
+                        hideGlobalLoading();
+                        alert("Document successfully deleted!");
+                        renderDocuments(kbDocuments);
+                        loadKbCategories();
+                    } catch (error) {
+                        console.error("Error deleting document:", error);
+                        hideGlobalLoading();
+                        alert(`Failed to delete document: ${error.message}`);
+                    }
+                });
+            }
         });
+
+        /* ------------------ ATTENDANCE (backend logic extracted from attnew.html) ------------------ */
+        (function(){
+            const BASE_URL = "https://script.google.com/macros/s/AKfycbxrwq6w72om22yz5zkHyDO-fhPxqlPBzlUsIjExrI3ZOB1J__Um1NlRJbih-_wFwihAhg/exec";
+
+            const statusColors = {
+                P: "bg-[#38761D]", A: "bg-[#EF4444]", Off: "bg-[#9CA3AF]",
+                L: "bg-[#F59E0B]", VL: "bg-[#0000FF]", T: "bg-[#8E7CC3]",
+                SUS: "bg-[#00FFFF]", HD: "bg-[#00FF00]", L15: "bg-[#FACC15]",
+                L30: "bg-[#FB923C]", L45: "bg-[#F97316]", L60: "bg-[#EA580C]",
+                SL: "bg-[#6FA8DC]", NA: ""
+            };
+
+            // spinner helpers (ref-counted so nested fetches don't flicker)
+            let _loadingCount = 0;
+            function showLoading(text) {
+                _loadingCount++;
+                // global overlay spinner
+                const spinner = document.getElementById('loading-spinner');
+                if (spinner) {
+                    const txt = spinner.querySelector('.text-sm');
+                    if (txt && text) txt.textContent = text;
+                    spinner.style.display = 'flex';
+                }
+                // local attendance card spinner (table-spinner)
+                const attSpinner = document.getElementById('attendanceLoadingSpinner');
+                if (attSpinner) {
+                    const txt = attSpinner.querySelector('.spinner-text');
+                    if (txt && text) txt.textContent = text;
+                    attSpinner.classList.remove('hidden');
+                }
+            }
+
+            function hideLoading() {
+                _loadingCount = Math.max(0, _loadingCount - 1);
+                if (_loadingCount > 0) return;
+                const spinner = document.getElementById('loading-spinner');
+                if (spinner) spinner.style.display = 'none';
+                const attSpinner = document.getElementById('attendanceLoadingSpinner');
+                if (attSpinner) attSpinner.classList.add('hidden');
+            }
+
+            async function loadClusters(){
+                showLoading('Loading teams...');
+                try{
+                    const res = await fetch(BASE_URL + "?api=clusters");
+                    const clusters = await res.json();
+                    const select = document.getElementById("rosterSelector");
+                    if (!select) return;
+                    select.innerHTML = `<option value="">All Teams</option>`;
+                    clusters.forEach(c => {
+                        const opt = document.createElement("option"); opt.value = c; opt.textContent = c; select.appendChild(opt);
+                    });
+                }catch(err){ console.error('Failed to load clusters', err); }
+                finally{ hideLoading(); }
+            }
+
+            async function loadAll(){
+                showLoading('Loading attendance data…');
+
+                const monthVal = document.getElementById('monthSelector') ? document.getElementById('monthSelector').value : '';
+                const clusterVal = document.getElementById('rosterSelector') ? document.getElementById('rosterSelector').value : '';
+
+                try{
+                    const params = new URLSearchParams({ api:'summary', month:monthVal, cluster:clusterVal });
+                    const summary = await (await fetch(BASE_URL + '?' + params.toString())).json();
+
+                    renderKPIs(summary);
+                    renderCampaignSummary(summary);
+
+                    const calParams = new URLSearchParams({ api:'calendars', month:monthVal, cluster:clusterVal });
+                    const calData = await (await fetch(BASE_URL + '?' + calParams.toString())).json();
+                    renderCalendars(calData);
+                }catch(err){ console.error('Attendance loadAll error', err); }
+                finally{ hideLoading(); }
+            }
+
+            function renderKPIs(summary){
+                const present = summary.overall.P || 0;
+                const absent = summary.overall.A || 0;
+                const halfDay = summary.overall.HD || 0;
+                const late = (summary.overall.L || 0) + (summary.overall.L15 || 0) + (summary.overall.L30 || 0) + (summary.overall.L45 || 0) + (summary.overall.L60 || 0);
+                const vacation = summary.overall.VL || 0;
+                const total = present + absent + halfDay + late + vacation;
+                const kpiPresent = document.getElementById('kpi-present'); if (kpiPresent) kpiPresent.textContent = present;
+                const kpiAbsent = document.getElementById('kpi-absent'); if (kpiAbsent) kpiAbsent.textContent = absent;
+                const kpiTardy = document.getElementById('kpi-tardy'); if (kpiTardy) kpiTardy.textContent = late;
+                const kpiLeave = document.getElementById('kpi-leave'); if (kpiLeave) kpiLeave.textContent = vacation;
+                const kpiScore = document.getElementById('kpi-score'); if (kpiScore) kpiScore.textContent = (total > 0 ? ((present/total)*100).toFixed(1) : 0) + '%';
+            }
+
+                        function renderCampaignSummary(summary){
+                                const tbody = document.getElementById('campaign-summary-body'); if (!tbody) return; tbody.innerHTML = '';
+                                const campaigns = summary.campaigns || {};
+
+                                // Build array with numeric scores for sorting
+                                const rows = Object.entries(campaigns).map(([campaign, stats]) => {
+                                        const total = (stats.P||0)+(stats.A||0)+(stats.HD||0)+(stats.L||0)+(stats.L15||0)+(stats.L30||0)+(stats.L45||0)+(stats.L60||0);
+                                        const scoreNum = total>0 ? (stats.P/total)*100 : 0;
+                                        return { campaign, stats, scoreNum };
+                                });
+
+                                // sort lowest to highest
+                                rows.sort((a,b) => a.scoreNum - b.scoreNum);
+
+                                rows.forEach(({campaign, stats, scoreNum}) => {
+                                        const score = scoreNum.toFixed(1) + '%';
+                                        // color score red if below 95%
+                                        const scoreClass = scoreNum < 95 ? 'text-red-600 dark:text-red-400 font-bold' : 'text-gray-900 dark:text-text-dark font-bold';
+
+                                        const row = `
+                                            <tr>
+                                                <td class="px-4 py-2 font-medium text-gray-800 dark:text-text-dark">${campaign}</td>
+                                                <td class="px-4 py-2 text-center text-green-600 dark:text-green-400">${stats.P||0}</td>
+                                                <td class="px-4 py-2 text-center text-yellow-600 dark:text-yellow-400">${(stats.L||0)+(stats.L15||0)+(stats.L30||0)+(stats.L45||0)+(stats.L60||0)}</td>
+                                                <td class="px-4 py-2 text-center text-blue-600 dark:text-blue-400">${stats.HD||0}</td>
+                                                <td class="px-4 py-2 text-center text-red-600 dark:text-red-400">${stats.A||0}</td>
+                                                <td class="px-4 py-2 text-center ${scoreClass}">${score}</td>
+                                            </tr>`;
+                                        tbody.insertAdjacentHTML('beforeend', row);
+                                });
+                        }
+
+            function renderCalendars(data){
+                const feed = document.getElementById('campaign-feed'); if (!feed) return; feed.innerHTML = '';
+
+                Object.entries(data).forEach(([campaign, employees]) => {
+                    // determine how many day columns are needed (max length among employees)
+                    const lengths = Object.values(employees || {}).map(arr => Array.isArray(arr) ? arr.length : 0);
+                    const maxDays = lengths.length ? Math.max(...lengths) : 0;
+                    // clamp between 1 and 31
+                    const daysCount = Math.min(Math.max(maxDays, 1), 31);
+
+                    // compute per-campaign aggregates: Present, Absent, Late (L*), VL
+                    let cntP = 0, cntA = 0, cntHD = 0, cntVL = 0, cntL = 0;
+                    Object.values(employees || {}).forEach(arr => {
+                        if (!Array.isArray(arr)) return;
+                        arr.forEach(s => {
+                            if (!s || s === null) return;
+                            if (s === 'NA') return; // NA doesn't count toward totals
+                            if (s === 'P') cntP++;
+                            else if (s === 'A') cntA++;
+                            else if (s === 'HD') cntHD++;
+                            else if (s === 'VL') cntVL++;
+                            else if (/^L/.test(s)) cntL++;
+                        });
+                    });
+
+                    const totalCount = cntP + cntA + cntHD + cntL + cntVL;
+                    const scoreNum = totalCount > 0 ? (cntP / totalCount) * 100 : 0;
+                    const score = scoreNum.toFixed(1) + '%';
+                    const scoreClass = scoreNum < 95 ? 'text-red-600 dark:text-red-400 font-bold' : 'text-gray-900 dark:text-text-dark font-bold';
+
+                    let table = `
+                        <div class="bg-white dark:bg-card-dark border border-gray-100 dark:border-border-dark rounded-2xl shadow-sm overflow-x-auto">
+                            <div class="p-4 border-b border-gray-100 dark:border-border-dark flex justify-between items-center">
+                                <h3 class="text-xl font-semibold text-gray-700 mb-4">${campaign}</h3>
+                            </div>
+                            <div class="p-4">
+                              <div class="flex flex-col md:flex-row md:items-start md:space-x-6">
+                                <div class="flex-1 overflow-x-auto">
+                                  <table class="table-fixed border-collapse w-auto text-xs">
+                                    <thead class="bg-gray-100">
+                                      <tr>
+                                        <th class="border px-2 py-1 text-left w-40">Employee</th>`;
+                    for (let d = 1; d <= daysCount; d++) table += `<th class='border px-1 py-1 w-6 text-center'>${d}</th>`;
+                    table += `</tr></thead><tbody>`;
+
+                    Object.entries(employees).forEach(([name, statuses]) => {
+                        table += `<tr><td class="border px-2 py-1 font-medium text-gray-700">${name}</td>`;
+                        for (let i = 0; i < daysCount; i++){
+                            const s = (Array.isArray(statuses) && typeof statuses[i] !== 'undefined') ? statuses[i] : null;
+                            if (s === null || s === '') {
+                                // no data for this day: render empty bordered square (blank)
+                                table += `<td class="border w-6 h-6"></td>`;
+                            } else if (s === 'NA') {
+                                // explicit NA: repeating-gradient pattern
+                                table += `<td class="border w-6 h-6" style="background:repeating-linear-gradient(45deg,#E5E7EB 0px,#E5E7EB 2px,#D1D5DB 2px,#D1D5DB 4px);"></td>`;
+                            } else {
+                                const c = statusColors[s] || '';
+                                table += `<td class="border w-6 h-6 ${c}" title="${s}"></td>`;
+                            }
+                        }
+                        table += `</tr>`;
+                    });
+                    table += `</tbody></table>
+                                </div>
+                                <div class="w-44 mt-4 md:mt-0">
+                                  <table class="w-full text-sm">
+                                    <tbody>
+                                      <tr><td class="py-2 font-medium text-gray-700">Present</td><td class="py-2 text-right text-green-600 font-semibold">${cntP}</td></tr>
+                                      <tr><td class="py-2 font-medium text-gray-700">Absent</td><td class="py-2 text-right text-red-600 font-semibold">${cntA}</td></tr>
+                                      <tr><td class="py-2 font-medium text-gray-700">Late</td><td class="py-2 text-right text-yellow-600 font-semibold">${cntL}</td></tr>
+                                      <tr><td class="py-2 font-medium text-gray-700">VL</td><td class="py-2 text-right text-blue-600 font-semibold">${cntVL}</td></tr>
+                                      <tr class="border-t"><td class="py-2 font-medium text-gray-700">Score</td><td class="py-2 text-right ${scoreClass}">${score}</td></tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
+                        </div>`;
+                    feed.insertAdjacentHTML('beforeend', table);
+                });
+            }
+
+            // default filter
+            function setDefaultFilters(){
+                const now = new Date();
+                const month = now.getMonth() + 1;
+                const monthSelector = document.getElementById('monthSelector'); if (monthSelector) monthSelector.value = month;
+                const rosterSelector = document.getElementById('rosterSelector'); if (rosterSelector) rosterSelector.value = 'Admin';
+            }
+
+            // bind controls
+            const refreshBtn = document.getElementById('refreshBtn'); if (refreshBtn) refreshBtn.addEventListener('click', loadAll);
+            const monthSel = document.getElementById('monthSelector'); if (monthSel) monthSel.addEventListener('change', loadAll);
+            const rosterSel = document.getElementById('rosterSelector'); if (rosterSel) rosterSel.addEventListener('change', loadAll);
+
+            // initialization
+            window.addEventListener('DOMContentLoaded', async function(){
+                await loadClusters();
+                setDefaultFilters();
+                loadAll();
+            });
+        })();
     </script>
 </body>
 

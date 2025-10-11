@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance Policy Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily:{sans:['Roboto','sans-serif']},
+      colors:{'brand-accent':'#CBEB33','brand-dark':'#B5D12F'}
+    }
+  }
+}
+</script>
+<style>
+body{background:#f3f4f6;color:#333;font-family:'Roboto',sans-serif;line-height:1.6;}
+.paper{background:#fff;width:8.27in;min-height:11.69in;
+  box-shadow:0 0 8px rgba(0,0,0,0.15);margin:1.5rem auto;padding:1in;page-break-after:always;}
+header.page-header{text-align:center;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:0.4in;}
+header.page-header img{width:180px;margin-bottom:0.4rem;}
+.paper h1{font-size:22px;text-align:center;margin-bottom:0.25in;}
+.paper h2{font-size:18px;margin-top:1rem;color:#222;}
+.paper p,.paper li{font-size:14px;}
+footer.page-footer{text-align:center;font-size:12px;margin-top:2rem;color:#777;}
+@page{size:A4;margin:1in;}
+</style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+<!-- Top bar -->
+<header class="bg-white shadow-md border-b border-gray-200 p-4 flex justify-between items-center">
+  <button id="backBtn" class="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-full font-medium">
+    <span class="material-symbols-outlined">arrow_back</span>Back
+  </button>
+  <h1 id="previewTitle" class="text-2xl font-bold text-gray-800">Document Preview</h1>
+  <button id="downloadBtn" class="flex items-center gap-1 bg-brand-accent hover:bg-brand-dark text-bg-dark font-bold py-2 px-6 rounded-full shadow-md transition">
+    <span class="material-symbols-outlined">download</span>Download
+  </button>
+</header>
+
+<main class="flex-1 overflow-y-auto p-4">
+
+  <!-- Placeholder container; pages will be generated dynamically from sessionStorage -->
+  <div id="previewPagesContainer"></div>
+
+</main>
+
+<script>
+// Read selected document from sessionStorage and render
+function renderFromSession() {
+  try {
+    const raw = sessionStorage.getItem('kb_selected_doc');
+    if (!raw) {
+      console.warn('No selected document found in sessionStorage.');
+      // show a friendly message
+      const container = document.getElementById('previewPagesContainer');
+      container.innerHTML = '<div class="paper"><header class="page-header"><h1>No document selected</h1></header><p style="padding:1rem;">Select a document from the Knowledge Base to preview it here.</p></div>';
+      return;
+    }
+
+    const doc = JSON.parse(raw);
+    const container = document.getElementById('previewPagesContainer');
+    container.innerHTML = '';
+
+    // Normalize pages: prefer doc.pages (array) else fallback to single contenthtml
+    let pages = [];
+    if (Array.isArray(doc.pages) && doc.pages.length) {
+      pages = doc.pages;
+    } else if (doc.contenthtml) {
+      pages = [doc.contenthtml];
+    } else {
+      pages = ['<p>(No content available)</p>'];
+    }
+
+    pages.forEach((pageHtml, idx) => {
+      const page = document.createElement('div');
+      page.className = 'paper';
+
+      // header
+      const header = document.createElement('header');
+      header.className = 'page-header';
+      const logo = document.createElement('img');
+      logo.src = doc.logo || 'https://digitalmindsbpo.com/storage/2021/11/cropped-Digital_Minds_Logo_Original.png';
+      logo.alt = 'Logo';
+      logo.style.width = '160px';
+      header.appendChild(logo);
+
+      const h1 = document.createElement('h1');
+      h1.textContent = doc.documentname || 'Untitled Document';
+      header.appendChild(h1);
+
+      const metaP = document.createElement('p');
+      metaP.style.textAlign = 'center';
+      metaP.style.fontSize = '13px';
+      metaP.style.color = '#555';
+      metaP.innerHTML = `Category: ${doc.category || '-'} | Author: ${doc.owner || '-'} | Version: ${doc.version || '-'} | Page ${idx + 1} of ${pages.length}`;
+      header.appendChild(metaP);
+
+      page.appendChild(header);
+
+      // content
+      const contentDiv = document.createElement('div');
+      contentDiv.innerHTML = pageHtml;
+      page.appendChild(contentDiv);
+
+      // footer
+      const footer = document.createElement('footer');
+      footer.className = 'page-footer';
+      footer.textContent = `Digital Minds Knowledge Base — ${doc.documentname || 'Document'} Page ${idx + 1} of ${pages.length}`;
+      page.appendChild(footer);
+
+      container.appendChild(page);
+    });
+
+    // Update top bar title
+    document.getElementById('previewTitle').textContent = doc.documentname ? `${doc.documentname} — Preview` : 'Document Preview';
+
+  } catch (e) {
+    console.error('Failed to render document preview from session:', e);
+  }
+}
+
+function goBackToKb() {
+  // Use history.back if possible to preserve state; otherwise navigate explicitly
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    location.assign('kb_main.html');
+  }
+}
+
+document.getElementById('backBtn').addEventListener('click', (e) => {
+  e.preventDefault();
+  goBackToKb();
+});
+
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  const pages = Array.from(document.querySelectorAll('#previewPagesContainer .paper'));
+  if (!pages.length) {
+    alert('Nothing to download');
+    return;
+  }
+
+  const w = window.open('', '_blank');
+  w.document.write('<html><head><title>' + (pages[0].querySelector('h1')?.textContent || 'Document') + '</title>');
+  w.document.write('<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">');
+  // Include basic styles so printed pages look similar
+  w.document.write('<style>body{font-family:Roboto, sans-serif;color:#333;margin:0;padding:1in;} .paper{background:#fff;width:100%;min-height:11.69in;box-shadow:none;margin:0 0 1in 0;padding:0;} .page-header{text-align:center;border-bottom:1px solid #000;padding-bottom:8px;margin-bottom:0.4in;} .page-footer{text-align:center;font-size:12px;margin-top:2rem;color:#777;}</style>');
+  w.document.write('</head><body>');
+
+  pages.forEach(p => {
+    w.document.write(p.outerHTML);
+  });
+
+  w.document.write('</body></html>');
+  w.document.close();
+  w.print();
+});
+
+// Run render on load
+document.addEventListener('DOMContentLoaded', renderFromSession);
+</script>
+</body>
+</html>
