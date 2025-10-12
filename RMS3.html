@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>RMS Executive Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <style>
+    .tab-active { color: #2563eb; border-bottom: 3px solid #2563eb; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .badge { border-radius: 999px; padding: 2px 10px; font-size: 12px; font-weight: 600; }
+    .badge-low { background: #dcfce7; color: #166534; }
+    .badge-medium { background: #fef9c3; color: #92400e; }
+    .badge-high { background: #fee2e2; color: #991b1b; }
+    table th { text-transform: uppercase; font-size: 11px; }
+    .chart-box { height: 260px; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <header class="border-b bg-white sticky top-0 z-30 shadow-sm py-4">
+    <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold">Risk Management System</h1>
+        <p class="text-sm text-gray-500">Agency-wide Risk Register, Metrics & Monitoring</p>
+      </div>
+      <div class="text-sm text-gray-600">
+        <span class="font-medium">Reporting Period:</span> Q4 2025
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <!-- NAVIGATION -->
+    <nav class="flex gap-4 mb-6 border-b">
+      <button class="tab-active px-3 py-2" onclick="showTab('dashboard', event)">Dashboard</button>
+      <button class="px-3 py-2" onclick="showTab('register', event)">Risk Register</button>
+      <button class="px-3 py-2" onclick="showTab('heatmap', event)">Heatmap</button>
+      <button class="px-3 py-2" onclick="showTab('metrics', event)">Metrics</button>
+      <button class="px-3 py-2" onclick="showTab('settings', event)">Settings</button>
+    </nav>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="spa-tab">
+      <h2 class="text-xl font-semibold mb-4">Risk Overview</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="card p-4">
+          <div class="text-sm text-gray-600">Total Risks</div>
+          <div class="text-2xl font-bold mt-1">64</div>
+          <div class="text-xs text-gray-500">All categories</div>
+        </div>
+        <div class="card p-4">
+          <div class="text-sm text-gray-600">High Risks</div>
+          <div class="text-2xl font-bold text-red-600 mt-1">9</div>
+          <div class="text-xs text-gray-500">14% of total</div>
+        </div>
+        <div class="card p-4">
+          <div class="text-sm text-gray-600">Mitigations in Progress</div>
+          <div class="text-2xl font-bold text-amber-600 mt-1">23</div>
+          <div class="text-xs text-gray-500">Under review</div>
+        </div>
+        <div class="card p-4">
+          <div class="text-sm text-gray-600">Closed / Resolved</div>
+          <div class="text-2xl font-bold text-green-600 mt-1">18</div>
+          <div class="text-xs text-gray-500">Successfully mitigated</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="card p-4">
+          <h3 class="font-semibold mb-2">Risk Levels Distribution</h3>
+          <div class="chart-box"><canvas id="riskLevelChart"></canvas></div>
+        </div>
+        <div class="card p-4">
+          <h3 class="font-semibold mb-2">Risks by Category</h3>
+          <div class="chart-box"><canvas id="categoryChart"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RISK REGISTER -->
+    <section id="register" class="spa-tab hidden">
+      <h2 class="text-xl font-semibold mb-4">Risk Register</h2>
+      <div class="overflow-x-auto card p-4">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-3 py-2 text-left">Risk ID</th>
+              <th class="px-3 py-2 text-left">Category</th>
+              <th class="px-3 py-2 text-left">Description</th>
+              <th class="px-3 py-2 text-left">Likelihood</th>
+              <th class="px-3 py-2 text-left">Impact</th>
+              <th class="px-3 py-2 text-left">Level</th>
+              <th class="px-3 py-2 text-left">Owner</th>
+              <th class="px-3 py-2 text-left">Status</th>
+              <th class="px-3 py-2 text-left">Next Review</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="px-3 py-2">R-001</td>
+              <td class="px-3 py-2">Strategic</td>
+              <td class="px-3 py-2">Failure to meet funding targets</td>
+              <td class="px-3 py-2">High</td>
+              <td class="px-3 py-2">High</td>
+              <td class="px-3 py-2"><span class="badge badge-high">High</span></td>
+              <td class="px-3 py-2">CEO</td>
+              <td class="px-3 py-2">Mitigation in progress</td>
+              <td class="px-3 py-2">2025-12-15</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2">R-012</td>
+              <td class="px-3 py-2">Operational</td>
+              <td class="px-3 py-2">Key system downtime exceeding SLA</td>
+              <td class="px-3 py-2">Medium</td>
+              <td class="px-3 py-2">High</td>
+              <td class="px-3 py-2"><span class="badge badge-medium">Medium</span></td>
+              <td class="px-3 py-2">IT Manager</td>
+              <td class="px-3 py-2">Ongoing</td>
+              <td class="px-3 py-2">2025-11-01</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2">R-034</td>
+              <td class="px-3 py-2">Compliance</td>
+              <td class="px-3 py-2">Non-compliance with data privacy law</td>
+              <td class="px-3 py-2">Low</td>
+              <td class="px-3 py-2">High</td>
+              <td class="px-3 py-2"><span class="badge badge-medium">Medium</span></td>
+              <td class="px-3 py-2">Legal Officer</td>
+              <td class="px-3 py-2">Closed</td>
+              <td class="px-3 py-2">2025-10-01</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2">R-046</td>
+              <td class="px-3 py-2">Financial</td>
+              <td class="px-3 py-2">Budget overspend for Q3 projects</td>
+              <td class="px-3 py-2">High</td>
+              <td class="px-3 py-2">Medium</td>
+              <td class="px-3 py-2"><span class="badge badge-medium">Medium</span></td>
+              <td class="px-3 py-2">Finance Director</td>
+              <td class="px-3 py-2">Review scheduled</td>
+              <td class="px-3 py-2">2025-12-31</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- HEATMAP -->
+    <section id="heatmap" class="spa-tab hidden">
+      <h2 class="text-xl font-semibold mb-4">Risk Heatmap</h2>
+      <div class="card p-4">
+        <div class="chart-box"><canvas id="heatmapChart"></canvas></div>
+      </div>
+    </section>
+
+    <!-- METRICS -->
+    <section id="metrics" class="spa-tab hidden">
+      <h2 class="text-xl font-semibold mb-4">Key Risk Indicators</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="card p-4">
+          <div class="text-sm text-gray-600">Average Risk Score</div>
+          <div class="text-2xl font-bold mt-1">6.4 / 10</div>
+          <div class="text-xs text-gray-500">Weighted by likelihood × impact</div>
+        </div>
+        <div class="card p-4">
+          <div class="text-sm text-gray-600">Risks Reviewed This Quarter</div>
+          <div class="text-2xl font-bold mt-1">31</div>
+          <div class="text-xs text-gray-500">Out of 64 total</div>
+        </div>
+        <div class="card p-4">
+          <div class="text-sm text-gray-600">Avg Mitigation Effectiveness</div>
+          <div class="text-2xl font-bold text-green-600 mt-1">79%</div>
+          <div class="text-xs text-gray-500">Improvement from Q3: +4%</div>
+        </div>
+      </div>
+
+      <div class="card p-4">
+        <h3 class="font-semibold mb-2">Quarterly Risk Trend</h3>
+        <div class="chart-box"><canvas id="trendChart"></canvas></div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="settings" class="spa-tab hidden">
+      <h2 class="text-xl font-semibold mb-4">Configuration</h2>
+      <div class="card p-4">
+        <p class="text-sm text-gray-600 mb-3">Simulated configuration panel (to be connected to Google Sheet):</p>
+        <ul class="list-disc ml-5 text-sm text-gray-700">
+          <li>Risk Categories: Strategic, Operational, Compliance, Financial, IT, HR</li>
+          <li>Review Frequency: Monthly, Quarterly, Annual</li>
+          <li>Risk Owners loaded from user directory</li>
+          <li>Heatmap and trend chart auto-refresh every 24h</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // --- SPA NAV ---
+    function showTab(tabId, ev) {
+      document.querySelectorAll('.spa-tab').forEach(t => t.classList.add('hidden'));
+      document.getElementById(tabId).classList.remove('hidden');
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
+      ev.currentTarget.classList.add('tab-active');
+    }
+
+    // --- CHARTS ---
+    document.addEventListener('DOMContentLoaded', () => {
+      new Chart(document.getElementById('riskLevelChart'), {
+        type: 'doughnut',
+        data: {
+          labels: ['High', 'Medium', 'Low'],
+          datasets: [{
+            data: [9, 28, 27],
+            backgroundColor: ['#ef4444', '#facc15', '#22c55e']
+          }]
+        },
+        options: { plugins: { legend: { position: 'bottom' } } }
+      });
+
+      new Chart(document.getElementById('categoryChart'), {
+        type: 'bar',
+        data: {
+          labels: ['Strategic', 'Operational', 'Compliance', 'Financial', 'IT', 'HR'],
+          datasets: [{
+            label: 'Number of Risks',
+            data: [8, 17, 10, 12, 9, 8],
+            backgroundColor: '#3b82f6'
+          }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+      });
+
+      new Chart(document.getElementById('heatmapChart'), {
+        type: 'matrix',
+        data: {
+          datasets: [{
+            label: 'Heatmap',
+            data: [
+              {x:1, y:1, v:1}, {x:2, y:1, v:2}, {x:3, y:1, v:4}, {x:4, y:1, v:2}, {x:5, y:1, v:1},
+              {x:1, y:2, v:1}, {x:2, y:2, v:3}, {x:3, y:2, v:5}, {x:4, y:2, v:4}, {x:5, y:2, v:1},
+              {x:1, y:3, v:2}, {x:2, y:3, v:4}, {x:3, y:3, v:7}, {x:4, y:3, v:3}, {x:5, y:3, v:1},
+            ],
+            backgroundColor(ctx) {
+              const value = ctx.raw.v;
+              return value > 5 ? '#ef4444' : value > 2 ? '#facc15' : '#22c55e';
+            },
+            borderWidth: 1,
+            width: 40,
+            height: 40
+          }]
+        },
+        options: {
+          scales: {
+            x: { ticks: { display: false }, grid: { display: false } },
+            y: { ticks: { display: false }, grid: { display: false } }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      new Chart(document.getElementById('trendChart'), {
+        type: 'line',
+        data: {
+          labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+          datasets: [{
+            label: 'Average Risk Score',
+            data: [5.8, 6.2, 6.0, 6.4],
+            borderColor: '#3b82f6',
+            fill: false,
+            tension: 0.2
+          }]
+        },
+        options: { scales: { y: { beginAtZero: false, min: 4, max: 8 } } }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>RMS Executive Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <style>
+    /* Executive Styling */
+    .tab-active { color: #2563eb; border-bottom: 3px solid #2563eb; }
+    .perf-badge { font-weight:600; padding:4px 8px; border-radius:999px; font-size:12px; display:inline-block; }
+    .perf-excellent { background:#e6f9ed; color:#0f8a3f; border:1px solid #cceed6; }
+    .perf-warning { background:#fff7e6; color:#b36b00; border:1px solid #f1d9b0; }
+    .perf-critical { background:#fff0f0; color:#a61b1b; border:1px solid #f4c2c2; }
+    .card { background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(245,245,245,0.9)); border:1px solid #e6e9ee; box-shadow: 0 4px 18px rgba(15,23,42,0.04); border-radius:12px; }
+    .accordion-content { max-height:0; overflow:hidden; transition:max-height 300ms ease, padding 220ms ease; }
+    .accordion-content.open { padding: 12px 16px 18px; }
+    .muted { color:#6b7280; }
+    table th { font-weight:700; }
+    .table-fixed th, .table-fixed td { white-space: nowrap; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <header class="border-b py-6 bg-white sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold">RMS Executive Dashboard</h1>
+        <p class="text-sm muted mt-1">Resource utilization, project efficiency, and team capacity overview.</p>
+      </div>
+      <div class="text-right">
+        <div class="text-xs muted">As of</div>
+        <div id="asOf" class="font-medium">Q4 2025</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <!-- SPA Tabs -->
+    <nav class="flex gap-4 items-center mb-6 border-b">
+      <button class="tab-active px-3 py-2 rounded-t-md" onclick="showTab('overview', event)">Overview</button>
+      <button class="px-3 py-2 rounded-t-md" onclick="showTab('resources', event)">Resources</button>
+      <button class="px-3 py-2 rounded-t-md" onclick="showTab('projects', event)">Projects</button>
+      <button class="px-3 py-2 rounded-t-md" onclick="showTab('capacity', event)">Capacity</button>
+    </nav>
+
+    <!-- Overview Section -->
+    <section id="overview" class="spa-tab">
+      <h2 class="text-lg font-semibold mb-4">Company-Wide Overview</h2>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="card p-4">
+          <div class="text-sm muted">Total Employees</div>
+          <div class="text-2xl font-bold mt-1">412</div>
+          <div class="text-xs muted mt-1">Active as of Q4 2025</div>
+        </div>
+        <div class="card p-4">
+          <div class="text-sm muted">Avg Utilization Rate</div>
+          <div class="text-2xl font-bold mt-1">82%</div>
+          <div class="text-xs muted mt-1">Across all teams</div>
+        </div>
+        <div class="card p-4">
+          <div class="text-sm muted">Projects On Track</div>
+          <div class="text-2xl font-bold mt-1">27</div>
+          <div class="text-xs muted mt-1">Out of 34 total</div>
+        </div>
+        <div class="card p-4">
+          <div class="text-sm muted">Critical Alerts</div>
+          <div class="text-2xl font-bold mt-1 text-red-600">3</div>
+          <div class="text-xs muted mt-1">Projects behind schedule</div>
+        </div>
+      </div>
+
+      <!-- Accordion Mock Data -->
+      <div class="space-y-4">
+        <div class="card p-0 overflow-hidden">
+          <button class="w-full flex items-center justify-between p-4 text-left" onclick="toggleQuarter('q4')" aria-expanded="true">
+            <div>
+              <div class="text-sm font-semibold">Q4 — Oct / Nov / Dec</div>
+              <div class="text-xs muted">Resource Allocation Summary</div>
+            </div>
+            <svg id="icon-q4" class="h-5 w-5 transform transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+
+          <div id="q4" class="accordion-content open px-4 pb-4">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm table-fixed">
+                <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+                  <tr>
+                    <th class="px-3 py-3 text-left">Department</th>
+                    <th class="px-3 py-3 text-left">Project</th>
+                    <th class="px-3 py-3 text-left">Utilization %</th>
+                    <th class="px-3 py-3 text-right">Headcount</th>
+                    <th class="px-3 py-3 text-left">Performance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="px-3 py-2">Software Development</td>
+                    <td class="px-3 py-2 font-medium">CRM Migration</td>
+                    <td class="px-3 py-2 text-right">87%</td>
+                    <td class="px-3 py-2 text-right">42</td>
+                    <td class="px-3 py-2"><span class="perf-badge perf-excellent">Excellent</span></td>
+                  </tr>
+                  <tr>
+                    <td class="px-3 py-2">Design & UX</td>
+                    <td class="px-3 py-2 font-medium">RMS Portal UI</td>
+                    <td class="px-3 py-2 text-right">75%</td>
+                    <td class="px-3 py-2 text-right">18</td>
+                    <td class="px-3 py-2"><span class="perf-badge perf-warning">Needs Attention</span></td>
+                  </tr>
+                  <tr>
+                    <td class="px-3 py-2">Support Operations</td>
+                    <td class="px-3 py-2 font-medium">Incident Automation</td>
+                    <td class="px-3 py-2 text-right">63%</td>
+                    <td class="px-3 py-2 text-right">36</td>
+                    <td class="px-3 py-2"><span class="perf-badge perf-critical">Critical</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Resources Section -->
+    <section id="resources" class="spa-tab hidden">
+      <h2 class="text-lg font-semibold mb-4">Resource Allocation by Department</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm table-fixed">
+          <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+            <tr>
+              <th class="px-3 py-3 text-left">Employee</th>
+              <th class="px-3 py-3 text-left">Department</th>
+              <th class="px-3 py-3 text-left">Role</th>
+              <th class="px-3 py-3 text-right">Utilization</th>
+              <th class="px-3 py-3 text-left">Project</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="px-3 py-2">A. Cruz</td>
+              <td class="px-3 py-2">Software Development</td>
+              <td class="px-3 py-2">Backend Engineer</td>
+              <td class="px-3 py-2 text-right">95%</td>
+              <td class="px-3 py-2">CRM Migration</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2">J. Santos</td>
+              <td class="px-3 py-2">Design & UX</td>
+              <td class="px-3 py-2">UI Designer</td>
+              <td class="px-3 py-2 text-right">68%</td>
+              <td class="px-3 py-2">RMS Portal UI</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2">M. Garcia</td>
+              <td class="px-3 py-2">Support Operations</td>
+              <td class="px-3 py-2">Service Lead</td>
+              <td class="px-3 py-2 text-right">72%</td>
+              <td class="px-3 py-2">Incident Automation</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="spa-tab hidden">
+      <h2 class="text-lg font-semibold mb-4">Active Projects Overview</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm table-fixed">
+          <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+            <tr>
+              <th class="px-3 py-3 text-left">Project</th>
+              <th class="px-3 py-3 text-left">Manager</th>
+              <th class="px-3 py-3 text-right">Progress</th>
+              <th class="px-3 py-3 text-left">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="px-3 py-2">CRM Migration</td>
+              <td class="px-3 py-2">L. Mendoza</td>
+              <td class="px-3 py-2 text-right">94%</td>
+              <td class="px-3 py-2"><span class="perf-badge perf-excellent">On Track</span></td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2">RMS Portal UI</td>
+              <td class="px-3 py-2">J. Santos</td>
+              <td class="px-3 py-2 text-right">78%</td>
+              <td class="px-3 py-2"><span class="perf-badge perf-warning">Delayed</span></td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2">Incident Automation</td>
+              <td class="px-3 py-2">M. Garcia</td>
+              <td class="px-3 py-2 text-right">59%</td>
+              <td class="px-3 py-2"><span class="perf-badge perf-critical">Critical</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Capacity Section -->
+    <section id="capacity" class="spa-tab hidden">
+      <h2 class="text-lg font-semibold mb-4">Capacity Planning</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="card p-4">
+          <div class="text-sm muted">Q1 Forecast</div>
+          <div class="text-2xl font-bold mt-1">78%</div>
+          <div class="text-xs muted mt-1">Expected resource utilization</div>
+        </div>
+        <div class="card p-4">
+          <div class="text-sm muted">Hiring Plan</div>
+          <div class="text-2xl font-bold mt-1">+12</div>
+          <div class="text-xs muted mt-1">Additional engineers planned</div>
+        </div>
+        <div class="card p-4">
+          <div class="text-sm muted">Overcapacity Risk</div>
+          <div class="text-2xl font-bold mt-1 text-red-600">2 Teams</div>
+          <div class="text-xs muted mt-1">Need reallocation</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ---- SPA Tab Logic ----
+    function showTab(tabId, ev) {
+      document.querySelectorAll('.spa-tab').forEach(t => t.classList.add('hidden'));
+      document.getElementById(tabId).classList.remove('hidden');
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
+      ev.currentTarget.classList.add('tab-active');
+    }
+
+    // ---- Accordion Logic ----
+    function toggleQuarter(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const open = el.classList.contains('open');
+      if (open) {
+        el.classList.remove('open');
+        el.style.maxHeight = '0px';
+        document.getElementById('icon-'+id).style.transform = 'rotate(0deg)';
+      } else {
+        el.classList.add('open');
+        el.style.maxHeight = el.scrollHeight + 'px';
+        document.getElementById('icon-'+id).style.transform = 'rotate(180deg)';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('q4').style.maxHeight = '300px';
+    });
+  </script>
+</body>
+</html>
