@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KPI Metrics Dashboard</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                    },
+                    colors: {
+                        // Brand & Accent Colors (MUI-inspired)
+                        'brand-primary': '#4285F4', // Blue (Used in index9.html as brandPrimary)
+                        'brand-success': '#34A853', // Green (Used in index9.html as brandSuccess)
+                        'brand-danger': '#EA4335',  // Red (Used in index9.html as brandDanger)
+                        'brand-warning': '#FBBC05', // Yellow (Used in index9.html as brandWarning)
+                        
+                        // Light Mode Palette
+                        'light-bg': '#f5f5f5',     
+                        'light-surface': '#ffffff',
+                        'light-text': '#212121',
+                        'light-border': '#e0e0e0',
+                        
+                        // Dark Mode Palette (Midnight Blue / #040c24)
+                        'dark-bg': '#040c24',      
+                        'dark-surface': '#0e1a38', // Slightly Lighter Card/Header
+                        'dark-text': '#ffffff',
+                        'dark-border': '#1A2F50',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Base styles using the new theme colors */
+        body {
+            background-color: theme('colors.light-bg');
+            color: theme('colors.light-text');
+        }
+        .dark body {
+            background-color: theme('colors.dark-bg');
+            color: theme('colors.dark-text');
+        }
+        
+        /* Drawer Transition */
+        .drawer {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            transform: translateX(-100%);
+        }
+        .drawer-open {
+            transform: translateX(0);
+        }
+        
+        /* Navigation Active/Hover States */
+        .nav-item {
+            transition: all 0.2s ease-in-out;
+        }
+        .nav-item:hover {
+            background-color: theme('colors.light-border');
+            border-radius: 0.75rem;
+        }
+        .dark .nav-item:hover {
+            background-color: theme('colors.dark-border');
+        }
+        .tab-active {
+            background-color: rgba(66, 133, 244, 0.1); 
+            color: theme('colors.brand-primary');
+            font-weight: 500;
+            border-radius: 0.75rem;
+        }
+        .dark .tab-active {
+            background-color: rgba(66, 133, 244, 0.2); 
+        }
+        .tab-active .material-symbols-outlined {
+            color: theme('colors.brand-primary');
+        }
+
+        /* Filter Select Styling */
+        .filter-select {
+            appearance: none; /* Hide default arrow */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%239CA3AF'%3e%3cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1.5em 1.5em;
+        }
+        .dark .filter-select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%239CA3AF'%3e%3cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3e%3c/svg%3e");
+        }
+
+        /* Styles from index9.html adjusted for kpi.html */
+        table th, table td {
+          padding: 0.4rem 0.6rem;
+          font-size: 0.8rem;
+          white-space: nowrap;
+          text-align: left; /* Default alignment for the reports table */
+        }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        /* Sticky header adjusted for light/dark mode */
+        thead th {
+          position: sticky;
+          top: 0;
+          background-color: theme('colors.light-border');
+          z-index: 10;
+        }
+        .dark thead th {
+            background-color: theme('colors.dark-border');
+        }
+
+        tr:hover {
+          background-color: theme('colors.light-border');
+        }
+        .dark tr:hover {
+            background-color: theme('colors.dark-border');
+        }
+
+        a.link {
+          color: theme('colors.brand-primary');
+          text-decoration: underline;
+        }
+
+        .action-links {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .google-drive-icon {
+          width: 20px;
+          height: 20px;
+          background: url('https://upload.wikimedia.org/wikipedia/commons/1/1d/Google_Drive_logo.svg') no-repeat center;
+          background-size: contain;
+        }
+
+        .download-btn {
+          color: theme('colors.brand-primary');
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-weight: 500;
+        }
+
+        .download-btn:hover {
+          text-decoration: underline;
+        }
+        
+        /* KPI Table adjustments from index9.html */
+        #kpi-table th, #kpi-table td {
+            text-align: right; /* Override the left align for KPI values */
+        }
+        #kpi-table th:nth-child(1), #kpi-table th:nth-child(2), #kpi-table th:nth-child(3), #kpi-table th:nth-child(4) {
+             text-align: left;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen font-sans transition-colors duration-500">
+
+    <aside id="drawer" class="drawer fixed top-0 left-0 h-full w-64 bg-light-surface shadow-2xl z-50 dark:bg-dark-surface dark:text-dark-text">
+        
+        <div class="flex items-center gap-2 p-4 pt-5 border-b sticky top-0 bg-light-surface dark:bg-dark-surface dark:border-dark-border z-10">
+            <img src="dmi_logo.jpg" alt="Logo" class="w-8 h-8 rounded-full object-cover shadow-sm">
+            <h1 class="text-xl font-medium text-light-text dark:text-dark-text">Dashboard</h1>
+            <button id="closeDrawer" class="ml-auto text-gray-500 hover:text-brand-primary dark:text-gray-400 dark:hover:text-brand-primary p-2 rounded-full hover:bg-light-border dark:hover:bg-dark-border">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+        </div>
+
+        <nav class="p-3 text-sm font-normal text-light-text dark:text-dark-text">
+            <ul class="space-y-1">
+                <li>
+                    <button class="nav-item tab-active flex items-center gap-3 p-3 w-full text-left" data-tab-title="Reports" data-tab="reports" onclick="showTab('reports', event)">
+                        <span class="material-symbols-outlined text-xl">folder_open</span>
+                        <span>Reports</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-item flex items-center gap-3 p-3 w-full text-left" data-tab-title="Campaigns" data-tab="campaigns" onclick="showTab('campaigns', event)">
+                        <span class="material-symbols-outlined text-xl">insights</span>
+                        <span>Campaigns</span>
+                    </button>
+                </li>
+                 <li>
+                    <button class="nav-item flex items-center gap-3 p-3 w-full text-left" data-tab-title="Looker Studio" data-tab="looker" onclick="showTab('looker', event)">
+                        <span class="material-symbols-outlined text-xl">data_exploration</span>
+                        <span>Looker Studio</span>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div id="overlay" class="fixed inset-0 bg-black bg-opacity-30 hidden z-40 transition-opacity duration-300"></div>
+
+    <div id="page-content">
+        <header class="flex items-center gap-4 bg-light-surface dark:bg-dark-surface p-4 shadow-lg sticky top-0 z-30 transition-colors duration-500 border-b border-light-border dark:border-dark-border">
+            
+            <button id="menuBtn" class="text-gray-600 dark:text-gray-300 p-2 rounded-full hover:bg-light-border dark:hover:bg-dark-border transition">
+                <span class="material-symbols-outlined text-2xl">menu</span>
+            </button>
+            <h1 id="mainTitleContainer" class="text-2xl font-bold text-light-text dark:text-dark-text">
+                Reports
+            </h1>
+            
+            <div class="ml-auto flex items-center gap-4">
+                
+                <button id="themeToggle"
+                    class="p-2 rounded-full text-light-text dark:text-dark-text bg-light-border dark:bg-dark-border hover:bg-brand-primary hover:text-white transition-all duration-300 transform hover:scale-105"
+                    aria-label="Toggle Dark Mode">
+                </button>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto p-6 lg:p-10 space-y-8">
+            <section id="tab-reports" class="tab-content">
+              <div class="bg-light-surface dark:bg-dark-surface rounded-xl shadow p-6 space-y-6">
+                <div>
+                  <h2 class="text-xl font-semibold mb-4 text-light-text dark:text-dark-text">WFM Performance Reports</h2>
+                  <p class="text-gray-700 dark:text-gray-300 mb-4">Access or download client reports directly from Google Drive.</p>
+
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead class="bg-light-border dark:bg-dark-border">
+                        <tr>
+                          <th class="text-left px-6 py-3 font-medium">Campaign</th>
+                          <th class="text-left px-6 py-3 font-medium">Report</th>
+                          <th class="text-left px-6 py-3 font-medium">Description</th>
+                          <th class="text-left px-6 py-3 font-medium">Google Drive Link</th>
+                          <th class="text-left px-6 py-3 font-medium">Download</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr class="divide-y divide-light-border dark:divide-dark-border">
+                          <td class="px-6 py-4">Network Capital</td>
+                          <td class="px-6 py-4">August 2025</td>
+                          <td class="px-6 py-4">Client Reporting</td>
+                          <td class="px-6 py-4">
+                            <a href="https://drive.google.com/file/d/1ICbWEuMseUlRzLQm3jem9Q4_GF9zMx7A/view?usp=drive_link"
+                               target="_blank" title="Open in Google Drive">
+                              <div class="google-drive-icon"></div>
+                            </a>
+                          </td>
+                          <td class="px-6 py-4">
+                            <div class="action-links">
+                              <a href="https://drive.google.com/file/d/1ICbWEuMseUlRzLQm3jem9Q4_GF9zMx7A/view?usp=drive_link"
+                                 target="_blank" title="Google Drive">
+                                <div class="google-drive-icon"></div>
+                              </a>
+                              <a href="https://drive.google.com/uc?export=download&id=1ICbWEuMseUlRzLQm3jem9Q4_GF9zMx7A"
+                                 class="download-btn" target="_blank">
+                                <span class="material-symbols-outlined text-base">download</span>
+                                Download
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section id="tab-campaigns" class="tab-content hidden">
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="kpi-card bg-light-surface dark:bg-dark-surface shadow rounded-xl p-4 border-t-4 border-brand-primary">
+                  <span class="material-symbols-outlined text-2xl text-brand-primary mb-1">group_work</span>
+                  <p class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Total Campaigns</p>
+                  <p class="text-xl font-bold mt-1" id="cardCampaigns">—</p>
+                </div>
+
+                <div class="kpi-card bg-light-surface dark:bg-dark-surface shadow rounded-xl p-4 border-t-4 border-brand-primary">
+                  <span class="material-symbols-outlined text-2xl text-brand-primary mb-1">checklist</span>
+                  <p class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Total KPIs</p>
+                  <p class="text-xl font-bold mt-1" id="cardTotalKPI">—</p>
+                </div>
+
+                <div class="kpi-card bg-light-surface dark:bg-dark-surface shadow rounded-xl p-4 border-t-4 border-brand-success">
+                  <span class="material-symbols-outlined text-2xl text-brand-success mb-1">task_alt</span>
+                  <p class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Passed</p>
+                  <p class="text-xl font-bold mt-1 text-brand-success" id="cardPassed">—</p>
+                </div>
+
+                <div class="kpi-card bg-light-surface dark:bg-dark-surface shadow rounded-xl p-4 border-t-4 border-brand-danger">
+                  <span class="material-symbols-outlined text-2xl text-brand-danger mb-1">cancel</span>
+                  <p class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Failed</p>
+                  <p class="text-xl font-bold mt-1 text-brand-danger" id="cardFailed">—</p>
+                </div>
+              </div>
+
+              <div class="bg-light-surface dark:bg-dark-surface shadow rounded-xl overflow-x-auto mt-6">
+                <h3 class="p-4 text-lg font-semibold border-b text-light-text dark:text-dark-text dark:border-dark-border">Campaign KPI Targets</h3>
+                <table id="kpi-table" class="min-w-full text-sm">
+                  <thead class="bg-light-border dark:bg-dark-border">
+                    <tr>
+                      <th class="px-6 py-3 font-medium text-left">Campaign</th>
+                      <th class="px-6 py-3 font-medium text-left">KPI</th>
+                      <th class="px-6 py-3 font-medium text-left">Target</th>
+                      <th class="px-6 py-3 font-medium text-left">Threshold</th>
+                      <th class="px-6 py-3 font-medium">Jan</th><th class="px-6 py-3 font-medium">Feb</th><th class="px-6 py-3 font-medium">Mar</th>
+                      <th class="px-6 py-3 font-medium">Apr</th><th class="px-6 py-3 font-medium">May</th><th class="px-6 py-3 font-medium">Jun</th>
+                      <th class="px-6 py-3 font-medium">Jul</th><th class="px-6 py-3 font-medium">Aug</th><th class="px-6 py-3 font-medium">Sep</th>
+                      <th class="px-6 py-3 font-medium">Oct</th><th class="px-6 py-3 font-medium">Nov</th><th class="px-6 py-3 font-medium">Dec</th>
+                      <th class="px-6 py-3 font-medium text-brand-success">Months Passed</th>
+                      <th class="px-6 py-3 font-medium text-brand-danger">Months Failed</th>
+                    </tr>
+                  </thead>
+                  <tbody id="kpiBody" class="divide-y divide-light-border dark:divide-dark-border">
+                    <tr><td colspan="18" class="text-center p-4 text-gray-500 dark:text-gray-400">Loading data...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div id="chart-container" class="bg-light-surface dark:bg-dark-surface shadow rounded-xl p-4 mt-6">
+                <h3 class="text-lg font-semibold mb-4 text-light-text dark:text-dark-text">Monthly KPI Trend</h3>
+                <div id="chart_div" style="height:400px;"></div>
+              </div>
+            </section>
+
+            <section id="tab-looker" class="tab-content hidden">
+              <div class="bg-light-surface dark:bg-dark-surface rounded-xl shadow p-6">
+                <h2 class="text-xl font-semibold mb-4 text-light-text dark:text-dark-text">Google Looker Studio</h2>
+                <p class="text-gray-700 dark:text-gray-300">Embed analytics dashboards or visual summaries here.</p>
+              </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        /* ------------------ CONFIGURATION ------------------ */
+        // KPI API URL from kpi.html / index9.html
+        const KPI_API_URL = "https://script.google.com/macros/s/AKfycbzfwllapfajhXwJZ8gIYzlKq6mA6MRfBrm1LiiuY42QpTVAc0IL1vJ39Z59zP5Iy4Zx/exec"; 
+        const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+        let rawData = {};
+        let googleLoaded = false;
+        
+        // Load Google Charts (used by the Campaigns tab chart)
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(() => googleLoaded = true);
+
+        /* ------------------ KPI DATA FETCHING AND RENDERING (Adapted from index9.html) ------------------ */
+
+        function formatNum(v){ const n=parseFloat(v); return isNaN(n)?'—':n.toFixed(1);}
+        // Use brand-success/brand-danger classes from kpi.html config
+        function colorize(v,t){ 
+            const n=parseFloat(v),tgt=parseFloat(t); 
+            if(isNaN(n)||isNaN(tgt))return v||'—'; 
+            return n>=tgt
+                ?`<span class='text-brand-success font-semibold'>${n.toFixed(1)}</span>`
+                :`<span class='text-brand-danger font-semibold'>${n.toFixed(1)}</span>`;
+        }
+
+        function drawChart(kpi){
+          if(!googleLoaded||!kpi)return;
+          const data=new google.visualization.DataTable();
+          data.addColumn('string','Month');
+          data.addColumn('number',kpi.name);
+          data.addColumn('number','Target');
+          data.addColumn('number','Threshold');
+          const m=Object.keys(kpi.monthly);
+          const vals=Object.values(kpi.monthly).map(x=>parseFloat(x)||0);
+          const target=parseFloat(kpi.target)||0;
+          const thresh=parseFloat(kpi.threshold)||0;
+          data.addRows(m.map((x,i)=>[x,vals[i],target,thresh]));
+          const options={
+            height:400,
+            curveType:'function',
+            legend:{position:'bottom'},
+            backgroundColor:'transparent',
+            hAxis:{title:'Month'},
+            vAxis:{title:'Value',minValue:0},
+            // Colors mapped to kpi.html config (brand-primary, brand-success, brand-warning)
+            colors:['#4285F4','#34A853','#FBBC05'], 
+            series:{1:{lineDashStyle:[5,5]},2:{lineDashStyle:[2,4]}}
+          };
+          const chart=new google.visualization.LineChart(document.getElementById('chart_div'));
+          chart.draw(data,options);
+        }
+
+        async function fetchKPIData(){
+          const body=document.getElementById('kpiBody');
+          body.innerHTML='<tr><td colspan="18" class="text-center p-4 text-gray-500 dark:text-gray-400">Fetching data...</td></tr>';
+          try{
+            const res=await fetch(KPI_API_URL);
+            const data=await res.json();
+            rawData=data;
+            renderKPITable(data);
+          }catch(e){
+            body.innerHTML='<tr><td colspan="18" class="text-center p-4 text-brand-danger dark:text-brand-danger">Error fetching data</td></tr>';
+            console.error(e);
+          }
+        }
+
+        function renderKPITable(data){
+          const body=document.getElementById('kpiBody');
+          body.innerHTML='';
+          let total=0,passCount=0,failCount=0;
+          let firstKpi = null; // To draw initial chart
+          Object.entries(data).forEach(([camp,kpis])=>{
+            kpis.forEach(kpi=>{
+              if (!firstKpi) firstKpi = kpi;
+              total++;
+              const months=MONTHS; // Use predefined MONTHS array
+              let passed=0,failed=0;
+              const row=document.createElement('tr');
+              // Updated to use kpi.html's hover class
+              row.className = "hover:bg-light-border dark:hover:bg-dark-border/50 text-light-text dark:text-dark-text cursor-pointer";
+
+              // Note: The sticky cell logic from kpi.html's original table is not easily applied here due to index9.html's simpler table structure, but the content is inserted.
+
+              let html=`<td class="text-left px-6 py-4">${camp}</td><td class="text-left px-6 py-4">${kpi.name}</td><td class='text-right px-6 py-4'>${formatNum(kpi.target)}</td><td class='text-right px-6 py-4'>${formatNum(kpi.threshold)}</td>`;
+              months.forEach(m=>{
+                const val=kpi.monthly[m],num=parseFloat(val),tgt=parseFloat(kpi.target);
+                // Check if value exists and is valid before comparison
+                if(kpi.monthly.hasOwnProperty(m)){
+                    if(!isNaN(num)&&!isNaN(tgt)){num>=tgt?passed++:failed++;}
+                }
+                html+=`<td class='text-right px-6 py-4'>${colorize(val,kpi.target)}</td>`;
+              });
+              // Use brand-success/brand-danger classes
+              html+=`<td class='text-right px-6 py-4 text-brand-success font-semibold'>${passed}</td>`;
+              html+=`<td class='text-right px-6 py-4 text-brand-danger font-semibold'>${failed}</td>`;
+              if(passed>failed)passCount++;else failCount++;
+              row.innerHTML=html;
+              row.addEventListener('click', function() {
+                    // Highlight selected row
+                    document.querySelectorAll("#kpiBody tr").forEach(r => r.classList.remove('bg-light-border/70', 'dark:bg-dark-border'));
+                    this.classList.add('bg-light-border/70', 'dark:bg-dark-border');
+                    drawChart(kpi)
+                });
+              body.appendChild(row);
+            });
+          });
+          document.getElementById('cardCampaigns').textContent=Object.keys(data).length;
+          document.getElementById('cardTotalKPI').textContent=total;
+          document.getElementById('cardPassed').textContent=passCount;
+          document.getElementById('cardFailed').textContent=failCount;
+          
+          // Automatically load the chart for the first KPI found
+          if (firstKpi) {
+                drawChart(firstKpi);
+                const firstRow = body.querySelector("tr");
+                if (firstRow) {
+                    firstRow.classList.add('bg-light-border/70', 'dark:bg-dark-border');
+                }
+            }
+        }
+        /* ------------------ END KPI DATA FETCHING AND RENDERING ------------------ */
+
+        /* ------------------ UI & THEME FUNCTIONS (From kpi.html) ------------------ */
+        function setTabTitle(title) {
+            document.getElementById('mainTitleContainer').textContent = title;
+        }
+        
+        function showTab(tabId, event) {
+            if (event) { event.preventDefault(); }
+            
+            // Activate nav button visually
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('tab-active'));
+            const buttonToActivate = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
+            if (buttonToActivate) {
+                buttonToActivate.classList.add('tab-active');
+                setTabTitle(buttonToActivate.dataset.tabTitle);
+            }
+            if (window.innerWidth < 1024) { closeDrawer(); }
+            
+            // Show the correct tab content
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            const tabContent = document.getElementById(`tab-${tabId}`);
+            if (tabContent) {
+                 tabContent.classList.remove('hidden');
+            }
+
+            // Load data only for the 'campaigns' tab
+            if (tabId === 'campaigns') {
+                fetchKPIData(); 
+            }
+        }
+
+        // Drawer functionality
+        const drawer = document.getElementById('drawer');
+        const overlay = document.getElementById('overlay');
+        const menuBtn = document.getElementById('menuBtn');
+        const closeDrawerBtn = document.getElementById('closeDrawer');
+
+        function openDrawer() {
+            drawer.classList.add('drawer-open');
+            overlay.classList.remove('hidden');
+        }
+
+        function closeDrawer() {
+            drawer.classList.remove('drawer-open');
+            overlay.classList.add('hidden');
+        }
+
+        menuBtn.addEventListener('click', openDrawer);
+        closeDrawerBtn.addEventListener('click', closeDrawer);
+        overlay.addEventListener('click', closeDrawer);
+
+        // Dark Mode Toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        function updateThemeIcon(isDark) {
+            themeToggle.innerHTML = isDark 
+                ? '<span class="material-symbols-outlined text-xl">light_mode</span>' 
+                : '<span class="material-symbols-outlined text-xl">dark_mode</span>';
+        }
+
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeIcon(isDark);
+        }
+
+        themeToggle.addEventListener('click', toggleTheme);
+        
+        /* ------------------ INITIALIZATION ------------------ */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Apply theme on load
+            const storedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const initialDark = storedTheme === 'dark' || (storedTheme === null && prefersDark);
+            
+            if (initialDark) {
+                document.body.classList.add('dark');
+            }
+            updateThemeIcon(initialDark);
+            
+            // Set initial tab and title - default to 'reports'
+            showTab('reports');
+        });
+    </script>
+</body>
+</html>

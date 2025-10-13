@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KPI Dashboard</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Roboto', 'sans-serif'] },
+          colors: {
+            brandPrimary: '#4285F4',
+            brandSuccess: '#34A853',
+            brandDanger: '#EA4335',
+            brandWarning: '#FBBC05',
+            lightBg: '#f8f9fa',
+            darkBg: '#0e1a38'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    html, body {
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    table th, table td {
+      padding: 0.4rem 0.6rem;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background-color: #f1f1f1;
+      z-index: 10;
+    }
+
+    body.dark thead th {
+      background-color: #1e2a47;
+      color: #fff;
+    }
+
+    tr:hover {
+      background-color: rgba(0,0,0,0.03);
+    }
+
+    body.dark tr:hover {
+      background-color: rgba(255,255,255,0.08);
+    }
+  </style>
+</head>
+
+<body class="font-sans bg-lightBg dark:bg-darkBg text-gray-900 dark:text-gray-100 min-h-screen">
+
+  <header class="flex items-center justify-between bg-white dark:bg-[#132247] p-4 shadow sticky top-0 z-30">
+    <h1 class="text-2xl font-bold text-brandPrimary">KPI Dashboard</h1>
+    <button id="themeToggle" class="p-2 rounded-full border dark:border-gray-600">
+      <span class="material-symbols-outlined">dark_mode</span>
+    </button>
+  </header>
+
+  <main class="max-w-7xl mx-auto p-6 space-y-8">
+    <!-- Tabs -->
+    <div class="border-b border-gray-300 dark:border-gray-600">
+      <nav class="flex space-x-4">
+        <button class="tab-btn py-2 px-4 text-sm font-medium border-b-2 border-brandPrimary text-brandPrimary" data-tab="reports">Reports</button>
+        <button class="tab-btn py-2 px-4 text-sm font-medium text-gray-500 dark:text-gray-400" data-tab="campaigns">Campaigns</button>
+        <button class="tab-btn py-2 px-4 text-sm font-medium text-gray-500 dark:text-gray-400" data-tab="looker">Looker Studio</button>
+      </nav>
+    </div>
+
+    <!-- Reports -->
+    <section id="tab-reports" class="tab-content">
+      <div class="bg-white dark:bg-[#142b53] rounded-xl shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">WFM Performance Reports</h2>
+        <p class="text-gray-600 dark:text-gray-300">Placeholder for detailed WFM metrics and summary visuals.</p>
+      </div>
+    </section>
+
+    <!-- Campaigns -->
+    <section id="tab-campaigns" class="tab-content hidden">
+      <!-- KPI CARDS -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="kpi-card bg-white dark:bg-[#142b53] shadow rounded-xl p-4 border-t-4 border-brandPrimary">
+          <span class="material-symbols-outlined text-2xl text-brandPrimary mb-1">group_work</span>
+          <p class="text-xs font-medium uppercase text-gray-500 dark:text-gray-300">Total Campaigns</p>
+          <p class="text-xl font-bold mt-1" id="cardCampaigns">—</p>
+        </div>
+
+        <div class="kpi-card bg-white dark:bg-[#142b53] shadow rounded-xl p-4 border-t-4 border-brandPrimary">
+          <span class="material-symbols-outlined text-2xl text-brandPrimary mb-1">checklist</span>
+          <p class="text-xs font-medium uppercase text-gray-500 dark:text-gray-300">Total KPIs</p>
+          <p class="text-xl font-bold mt-1" id="cardTotalKPI">—</p>
+        </div>
+
+        <div class="kpi-card bg-white dark:bg-[#142b53] shadow rounded-xl p-4 border-t-4 border-brandSuccess">
+          <span class="material-symbols-outlined text-2xl text-brandSuccess mb-1">task_alt</span>
+          <p class="text-xs font-medium uppercase text-gray-500 dark:text-gray-300">Passed</p>
+          <p class="text-xl font-bold mt-1 text-brandSuccess" id="cardPassed">—</p>
+        </div>
+
+        <div class="kpi-card bg-white dark:bg-[#142b53] shadow rounded-xl p-4 border-t-4 border-brandDanger">
+          <span class="material-symbols-outlined text-2xl text-brandDanger mb-1">cancel</span>
+          <p class="text-xs font-medium uppercase text-gray-500 dark:text-gray-300">Failed</p>
+          <p class="text-xl font-bold mt-1 text-brandDanger" id="cardFailed">—</p>
+        </div>
+      </div>
+
+      <!-- KPI TABLE -->
+      <div class="bg-white dark:bg-[#142b53] shadow rounded-xl overflow-x-auto mt-6">
+        <h3 class="p-4 text-lg font-semibold border-b dark:border-gray-600">Campaign KPI Targets</h3>
+        <table id="kpi-table">
+          <thead>
+            <tr>
+              <th>Campaign</th><th>KPI</th><th>Target</th><th>Threshold</th>
+              <th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>May</th><th>Jun</th>
+              <th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th>
+              <th class="text-green-600">Months Passed</th>
+              <th class="text-red-600">Months Failed</th>
+            </tr>
+          </thead>
+          <tbody id="kpiBody">
+            <tr><td colspan="18" class="text-center p-4 text-gray-500">Loading data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- GOOGLE CHART -->
+      <div id="chart-container" class="bg-white dark:bg-[#142b53] shadow rounded-xl p-4 mt-6">
+        <h3 class="text-lg font-semibold mb-4">Monthly KPI Trend</h3>
+        <div id="chart_div" style="height:400px;"></div>
+      </div>
+    </section>
+
+    <!-- Looker -->
+    <section id="tab-looker" class="tab-content hidden">
+      <div class="bg-white dark:bg-[#142b53] rounded-xl shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">Google Looker Studio</h2>
+        <p class="text-gray-600 dark:text-gray-300">Embed analytics dashboards or visual summaries here.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const KPI_API_URL = "https://script.google.com/macros/s/AKfycbzfwllapfajhXwJZ8gIYzlKq6mA6MRfBrm1LiiuY42QpTVAc0IL1vJ39Z59zP5Iy4Zx/exec";
+    let rawData = {};
+    let googleLoaded = false;
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(() => googleLoaded = true);
+
+    function formatNum(v){ const n=parseFloat(v); return isNaN(n)?'—':n.toFixed(1);}
+    function colorize(v,t){ const n=parseFloat(v),tgt=parseFloat(t); if(isNaN(n)||isNaN(tgt))return v||'—'; return n>=tgt?`<span class='text-green-500 font-semibold'>${n.toFixed(1)}</span>`:`<span class='text-red-500 font-semibold'>${n.toFixed(1)}</span>`;}
+
+    function drawChart(kpi){
+      if(!googleLoaded||!kpi)return;
+      const data=new google.visualization.DataTable();
+      data.addColumn('string','Month');data.addColumn('number',kpi.name);
+      const m=Object.keys(kpi.monthly),v=Object.values(kpi.monthly).map(x=>parseFloat(x)||0);
+      data.addRows(m.map((x,i)=>[x,v[i]]));
+      const options={height:400,curveType:'function',legend:{position:'bottom'},colors:['#4285F4'],backgroundColor:'transparent',hAxis:{title:'Month'},vAxis:{title:'Value',minValue:0}};
+      const chart=new google.visualization.LineChart(document.getElementById('chart_div'));chart.draw(data,options);
+    }
+
+    async function fetchKPIData(){
+      const body=document.getElementById('kpiBody');
+      body.innerHTML='<tr><td colspan="18" class="text-center p-4 text-gray-500">Fetching data...</td></tr>';
+      try{
+        const res=await fetch(KPI_API_URL);const data=await res.json();rawData=data;renderKPITable(data);
+      }catch(e){body.innerHTML='<tr><td colspan="18" class="text-center p-4 text-red-500">Error fetching data</td></tr>';console.error(e);}
+    }
+
+    function renderKPITable(data){
+      const body=document.getElementById('kpiBody');body.innerHTML='';
+      let total=0,passCount=0,failCount=0;
+      Object.entries(data).forEach(([camp,kpis])=>{
+        kpis.forEach(kpi=>{
+          total++;
+          const months=Object.keys(kpi.monthly);let passed=0,failed=0;
+          const row=document.createElement('tr');
+          let html=`<td>${camp}</td><td>${kpi.name}</td><td class='text-right'>${formatNum(kpi.target)}</td><td class='text-right'>${formatNum(kpi.threshold)}</td>`;
+          months.forEach(m=>{
+            const val=kpi.monthly[m],num=parseFloat(val),tgt=parseFloat(kpi.target);
+            if(!isNaN(num)&&!isNaN(tgt)){num>=tgt?passed++:failed++;}
+            html+=`<td class='text-right'>${colorize(val,kpi.target)}</td>`;
+          });
+          html+=`<td class='text-right text-green-500 font-semibold'>${passed}</td>`;
+          html+=`<td class='text-right text-red-500 font-semibold'>${failed}</td>`;
+          if(passed>failed)passCount++;else failCount++;
+          row.innerHTML=html;row.addEventListener('click',()=>drawChart(kpi));body.appendChild(row);
+        });
+      });
+      document.getElementById('cardCampaigns').textContent=Object.keys(data).length;
+      document.getElementById('cardTotalKPI').textContent=total;
+      document.getElementById('cardPassed').textContent=passCount;
+      document.getElementById('cardFailed').textContent=failCount;
+    }
+
+    // Theme toggle
+    const btn=document.getElementById('themeToggle');
+    btn.addEventListener('click',()=>{
+      document.body.classList.toggle('dark');
+      const icon=document.body.classList.contains('dark')?'light_mode':'dark_mode';
+      btn.innerHTML=`<span class="material-symbols-outlined">${icon}</span>`;
+    });
+
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(b=>{
+      b.addEventListener('click',()=>{
+        document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('border-brandPrimary','text-brandPrimary'));
+        b.classList.add('border-brandPrimary','text-brandPrimary');
+        const t=b.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(c=>c.classList.add('hidden'));
+        document.getElementById(`tab-${t}`).classList.remove('hidden');
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded',fetchKPIData);
+  </script>
+</body>
+</html>
