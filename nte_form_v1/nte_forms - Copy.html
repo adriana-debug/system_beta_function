@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NTE Form Log & Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-primary': '#1D4ED8', // Blue-700
+                        'brand-secondary': '#FBBF24', // Amber-400
+                        'danger': '#EF4444', // Red-500
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        // Use Roboto for document-style consistency
+                        document: ['Roboto', 'sans-serif'],
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        /* Custom styles for the responsive table and modal */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        /* Responsive Table */
+        @media (max-width: 768px) {
+            .responsive-table tr {
+                border-top: 1px solid #e5e7eb;
+                margin-bottom: 0.5rem;
+                display: block;
+            }
+
+            .responsive-table td {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.75rem 1rem;
+                border: none !important;
+                /* Remove cell borders */
+            }
+
+            .responsive-table td::before {
+                /* Label the data for small screens */
+                content: attr(data-label);
+                font-weight: 600;
+                margin-right: 1rem;
+            }
+
+            .responsive-table thead {
+                display: none;
+            }
+
+            .responsive-table tbody tr:last-child {
+                border-bottom: 1px solid #e5e7eb;
+            }
+        }
+
+        /* Preview Modal Styles - A4 Look */
+        .page-preview {
+            width: 8.5in;
+            height: 11in;
+            margin: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            background: white;
+            flex-shrink: 0;
+            overflow: hidden;
+            /* iframe will handle the content's internal scroll */
+        }
+
+        /* Responsive preview layout */
+        @media (max-width: 1024px) {
+            .page-preview-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .page-preview {
+                width: 100%;
+                max-width: 8.5in;
+                height: 90vh;
+                /* Allow scrolling on smaller screens */
+            }
+        }
+
+        .page-preview-container {
+            display: flex;
+            flex-wrap: nowrap;
+            /* Prevent wrapping on desktop */
+            overflow-x: auto;
+            /* Scroll horizontally if necessary on desktop */
+            padding: 1rem;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+    <!-- Message Box (Custom Alert/Toast) -->
+    <div id="messageBox"
+        class="fixed top-4 right-4 z-50 bg-brand-primary text-white p-3 rounded-lg shadow-xl hidden transition-opacity duration-300 opacity-0 min-w-[200px] text-center">
+    </div>
+
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-6 flex justify-between items-center bg-white p-6 rounded-xl shadow-lg">
+            <h1 class="text-3xl font-bold text-gray-800">NTE Form Log</h1>
+            <button id="newRecordBtn"
+                class="bg-brand-primary hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200 flex items-center">
+                <i data-feather="plus-circle" class="w-5 h-5 mr-2"></i>
+                New NTE Form
+            </button>
+        </header>
+
+        <!-- Main Data Table -->
+        <div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
+            <table class="w-full text-left responsive-table">
+                <thead class="bg-gray-100 text-gray-600 uppercase text-sm">
+                    <tr>
+                        <th class="py-3 px-4 rounded-tl-lg">ID</th>
+                        <th class="py-3 px-4">Employee</th>
+                        <th class="py-3 px-4">Department</th>
+                        <th class="py-3 px-4">Date Issued</th>
+                        <th class="py-3 px-4">Supervisor</th>
+                        <th class="py-3 px-4 rounded-tr-lg text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="recordsTableBody" class="text-gray-700 divide-y divide-gray-200">
+                    <!-- Data rows will be injected here -->
+                    <tr>
+                        <td colspan="6" class="text-center py-8 text-gray-500">Loading records...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ---------------------------------------------------- -->
+    <!-- CREATE/UPDATE MODAL (Form Modal) -->
+    <!-- ---------------------------------------------------- -->
+    <div id="formModal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center z-40 transition-opacity duration-300">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl m-4 md:m-8 overflow-y-auto max-h-[90vh]">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h2 id="formModalTitle" class="text-2xl font-semibold text-gray-800">New NTE Form</h2>
+                <button onclick="closeFormModal()" class="text-gray-500 hover:text-gray-700">
+                    <i data-feather="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <form id="nteForm" class="p-6 space-y-4">
+                <input type="hidden" id="recordId">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Employee Name -->
+                    <div>
+                        <label for="employeeName" class="block text-sm font-medium text-gray-700">Employee Name *</label>
+                        <input type="text" id="employeeName" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-brand-primary focus:border-brand-primary">
+                    </div>
+
+                    <!-- Employee Number -->
+                    <div>
+                        <label for="employeeNumber" class="block text-sm font-medium text-gray-700">Employee Number
+                            *</label>
+                        <input type="text" id="employeeNumber" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-brand-primary focus:border-brand-primary">
+                    </div>
+
+                    <!-- Date Issued -->
+                    <div>
+                        <label for="dateIssued" class="block text-sm font-medium text-gray-700">Date Issued *</label>
+                        <input type="date" id="dateIssued" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-brand-primary focus:border-brand-primary">
+                    </div>
+
+                    <!-- Supervisor -->
+                    <div>
+                        <label for="supervisor" class="block text-sm font-medium text-gray-700">Supervisor *</label>
+                        <input type="text" id="supervisor" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-brand-primary focus:border-brand-primary">
+                    </div>
+                    
+                    <!-- Date of Incident -->
+                    <div>
+                        <label for="dateOfIncident" class="block text-sm font-medium text-gray-700">Date of Incident</label>
+                        <input type="date" id="dateOfIncident"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-brand-primary focus:border-brand-primary">
+                    </div>
+
+                    <!-- Place of Incident -->
+                    <div>
+                        <label for="placeOfIncident" class="block text-sm font-medium text-gray-700">Place of Incident</label>
+                        <input type="text" id="placeOfIncident"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-brand-primary focus:border-brand-primary">
+                    </div>
+                </div>
+                
+                <!-- Position / Department -->
+                <div>
+                    <label for="positionDepartment" class="block text-sm font-medium text-gray-700">Position /
+                        Department *</label>
+                    <input type="text" id="positionDepartment" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-brand-primary focus:border-brand-primary">
+                </div>
+
+                <!-- Narration of Incident (IR Content) -->
+                <div>
+                    <label for="narrationOfIncident" class="block text-sm font-medium text-gray-700">Narration of Incident
+                        (IR Content) *</label>
+                    <textarea id="narrationOfIncident" rows="4" required
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-brand-primary focus:border-brand-primary"></textarea>
+                </div>
+                
+                <!-- Explanation (NTE Content) -->
+                <div>
+                    <label for="explanation" class="block text-sm font-medium text-gray-700">Explanation Details (NTE
+                        Content)</label>
+                    <textarea id="explanation" rows="4"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-brand-primary focus:border-brand-primary"></textarea>
+                </div>
+
+                <!-- Consequence -->
+                <div>
+                    <label for="consequence" class="block text-sm font-medium text-gray-700">Possible Consequence</label>
+                    <textarea id="consequence" rows="2"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-brand-primary focus:border-brand-primary"></textarea>
+                </div>
+
+                <div class="pt-4 flex justify-end space-x-3">
+                    <button type="button" onclick="closeFormModal()"
+                        class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-200">Cancel</button>
+                    <button type="submit" id="saveBtn"
+                        class="bg-brand-primary hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200">
+                        Save Form
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- ---------------------------------------------------- -->
+    <!-- PREVIEW MODAL -->
+    <!-- ---------------------------------------------------- -->
+    <div id="previewModal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-80 hidden items-center justify-center z-40 transition-opacity duration-300">
+        <div class="bg-gray-100 rounded-xl shadow-2xl w-full h-full p-4 overflow-hidden flex flex-col">
+            <div class="p-3 bg-white rounded-t-xl border-b border-gray-200 flex justify-between items-center flex-shrink-0">
+                <h2 id="previewModalTitle" class="text-xl font-semibold text-gray-800">Document Preview</h2>
+                <div id="previewActions" class="flex space-x-2">
+                    <!-- Action buttons for the signature canvas will go here -->
+                </div>
+                <button onclick="closePreviewModal()"
+                    class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition duration-200">
+                    <i data-feather="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="previewContent" class="flex-grow overflow-auto page-preview-container">
+                <!-- Two A4 preview pages will be inserted here -->
+                <p class="text-center text-gray-500 py-12">Loading preview...</p>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // ***************************************************************
+        // CRITICAL: Replace the placeholder URL below with your actual,
+        // deployed Google Apps Script Web App URL (must end in /exec).
+        // ***************************************************************
+        const IRNTE_API_URL = 'https://script.google.com/macros/s/AKfycbyNRV6JAHmuqtjdH9j9HIHyq_qbtAx0oEgPEhr_I2eg_K6U9dFgJEXv9yYBYV_Xo_EzrA/exec'; // <--- PASTE YOUR DEPLOYED URL HERE
+
+        // --- Utility Functions ---
+
+        /**
+         * Formats a date string (YYYY-MM-DD) into a Philippine standard date format.
+         * @param {string} dateString 
+         * @returns {string} Formatted date string or 'N/A'
+         */
+        function formatPHDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                // Use new Date(dateString + 'T00:00:00') to avoid timezone issues for date-only strings
+                return new Date(dateString + 'T00:00:00').toLocaleDateString('en-US', options);
+            } catch (e) {
+                return dateString; // Return original if parsing fails
+            }
+        }
+        
+        /**
+         * Escapes backticks in user-provided content to prevent breaking the outer document template literal.
+         * @param {string} text 
+         * @returns {string} Escaped text.
+         */
+        function escapeBackticks(text) {
+            if (!text) return '';
+            return text.replace(/`/g, '\\`');
+        }
+
+        /**
+         * Escapes HTML content for safe insertion into the srcdoc attribute of an iframe.
+         * This prevents single quotes and backticks from breaking the outer template string and the srcdoc attribute.
+         * @param {string} html 
+         * @returns {string} Escaped HTML.
+         */
+        function escapeHtmlForSrcDoc(html) {
+            // 1. Escape backticks to prevent breaking the outer template literal
+            let escaped = html.replace(/`/g, '\\`');
+            // 2. Escape single quotes for use inside the srcdoc='...' attribute
+            escaped = escaped.replace(/'/g, "&apos;");
+            return escaped;
+        }
+
+        // --- Custom Message Box (replacing alert()) ---
+        function showMessage(message, type = 'success') {
+            const box = document.getElementById('messageBox');
+            box.textContent = message;
+            box.className = 'fixed top-4 right-4 z-50 p-3 rounded-lg shadow-xl transition-opacity duration-300 opacity-0 min-w-[200px] text-center';
+
+            let bgColor = 'bg-brand-primary';
+            if (type === 'error') bgColor = 'bg-danger';
+            if (type === 'warning') bgColor = 'bg-brand-secondary';
+
+            box.classList.add(bgColor, 'text-white', 'block');
+            setTimeout(() => box.classList.remove('opacity-0'), 10);
+
+            setTimeout(() => {
+                box.classList.add('opacity-0');
+                setTimeout(() => box.classList.remove('block'), 300);
+            }, 3000);
+        }
+
+        // --- Loading State ---
+        function showLoading(message = "Processing...") {
+            showMessage(message, 'warning');
+            document.getElementById('saveBtn').disabled = true;
+            document.getElementById('saveBtn').textContent = message;
+        }
+
+        function hideLoading() {
+            document.getElementById('saveBtn').disabled = false;
+            document.getElementById('saveBtn').textContent = 'Save Form';
+            // Hide messageBox only if it was showing a loading message
+            if (document.getElementById('messageBox').textContent.includes("Processing...") || document.getElementById('messageBox').textContent.includes("record...")) {
+                 document.getElementById('messageBox').classList.add('hidden');
+            }
+        }
+
+        // --- Modal Control ---
+        function openFormModal(record = null) {
+            const modal = document.getElementById('formModal');
+            const form = document.getElementById('nteForm');
+            form.reset();
+            document.getElementById('recordId').value = '';
+
+            if (record) {
+                document.getElementById('formModalTitle').textContent = `Edit NTE Form (ID: ${record.id})`;
+                document.getElementById('recordId').value = record.id;
+                document.getElementById('employeeName').value = record.employeeName || '';
+                document.getElementById('employeeNumber').value = record.employeeNumber || '';
+                // Format date for input[type=date]
+                document.getElementById('dateIssued').value = record.dateIssued ? new Date(record.dateIssued).toISOString().split('T')[0] : '';
+                document.getElementById('supervisor').value = record.supervisor || '';
+                document.getElementById('positionDepartment').value = record.positionDepartment || '';
+                document.getElementById('narrationOfIncident').value = record.narrationOfIncident || '';
+                document.getElementById('explanation').value = record.explanation || '';
+                document.getElementById('consequence').value = record.consequence || '';
+                document.getElementById('dateOfIncident').value = record.dateOfIncident ? new Date(record.dateOfIncident).toISOString().split('T')[0] : '';
+                document.getElementById('placeOfIncident').value = record.placeOfIncident || '';
+
+            } else {
+                document.getElementById('formModalTitle').textContent = 'New NTE Form';
+                // Set default date to today
+                document.getElementById('dateIssued').value = new Date().toISOString().split('T')[0];
+            }
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeFormModal() {
+            const modal = document.getElementById('formModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function openPreviewModal() {
+            const modal = document.getElementById('previewModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closePreviewModal() {
+            const modal = document.getElementById('previewModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.getElementById('previewContent').innerHTML = '<p class="text-center text-gray-500 py-12">Loading preview...</p>'; // Clear content
+            document.getElementById('previewActions').innerHTML = ''; // Clear buttons
+        }
+
+        // --- API & CRUD Logic ---
+
+        // (R) READ: Fetch all records and render the table
+        async function loadRecords() {
+            document.getElementById('recordsTableBody').innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">Loading records...</td></tr>';
+
+            try {
+                const res = await fetch(`${IRNTE_API_URL}?action=getIRNTE`);
+                const result = await res.json();
+
+                if (result.status === 'ERROR') throw new Error(result.error);
+
+                renderRecords(result.data);
+
+            } catch (error) {
+                console.error("Error loading records:", error);
+                document.getElementById('recordsTableBody').innerHTML = `<tr><td colspan="6" class="text-center py-8 text-danger font-semibold">Failed to load records: ${error.message}</td></tr>`;
+                showMessage(`Failed to load records: ${error.message}`, 'error');
+            }
+            feather.replace();
+        }
+
+        // Render the data table
+        function renderRecords(records) {
+            const tbody = document.getElementById('recordsTableBody');
+            if (!records || records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">No NTE Forms found. Click "New NTE Form" to add one.</td></tr>';
+                return;
+            }
+
+            const rows = records.map(record => {
+                const dateIssued = record.dateIssued ? new Date(record.dateIssued).toLocaleDateString() : 'N/A';
+
+                return `
+                    <tr class="hover:bg-gray-50 transition duration-150">
+                        <td class="py-3 px-4" data-label="ID">${record.id}</td>
+                        <td class="py-3 px-4 font-medium" data-label="Employee">${record.employeeName} (${record.employeeNumber})</td>
+                        <td class="py-3 px-4" data-label="Department">${record.positionDepartment || 'N/A'}</td>
+                        <td class="py-3 px-4" data-label="Date Issued">${dateIssued}</td>
+                        <td class="py-3 px-4" data-label="Supervisor">${record.supervisor}</td>
+                        <td class="py-3 px-4 text-right" data-label="Actions">
+                            <div class="flex justify-end space-x-2">
+                                <button onclick="handlePreview(${record.id})" title="Preview Document"
+                                    class="text-brand-primary hover:text-blue-700 p-1 rounded-full bg-blue-50 transition">
+                                    <i data-feather="eye" class="w-5 h-5"></i>
+                                </button>
+                                <button onclick="handleEdit(${record.id})" title="Edit Form"
+                                    class="text-brand-secondary hover:text-yellow-600 p-1 rounded-full bg-yellow-50 transition">
+                                    <i data-feather="edit-2" class="w-5 h-5"></i>
+                                </button>
+                                <button onclick="handleDelete(${record.id})" title="Delete Form"
+                                    class="text-danger hover:text-red-700 p-1 rounded-full bg-red-50 transition">
+                                    <i data-feather="trash-2" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = rows;
+            feather.replace(); // Re-render icons after DOM update
+        }
+
+        // (C/U) CREATE/UPDATE: Handle form submission
+        document.getElementById('nteForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const id = document.getElementById('recordId').value;
+            const isUpdate = !!id;
+
+            const data = {
+                // Ensure field names match the camelCase headers expected by Code.gs
+                id: isUpdate ? parseInt(id, 10) : undefined,
+                employeeName: document.getElementById('employeeName').value,
+                employeeNumber: document.getElementById('employeeNumber').value,
+                dateIssued: document.getElementById('dateIssued').value,
+                supervisor: document.getElementById('supervisor').value,
+                positionDepartment: document.getElementById('positionDepartment').value,
+                narrationOfIncident: document.getElementById('narrationOfIncident').value,
+                explanation: document.getElementById('explanation').value,
+                consequence: document.getElementById('consequence').value,
+                dateOfIncident: document.getElementById('dateOfIncident').value,
+                placeOfIncident: document.getElementById('placeOfIncident').value,
+            };
+
+            const action = isUpdate ? 'updateIRNTE' : 'createIRNTE';
+            showLoading(isUpdate ? "Updating record..." : "Creating record...");
+
+            try {
+                const res = await fetch(IRNTE_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action, data })
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({ error: 'Unknown server error' }));
+                    throw new Error(errorData.error || 'Server responded with an error.');
+                }
+
+                const result = await res.json();
+                if (result.status === 'ERROR') throw new Error(result.error);
+
+                closeFormModal();
+                showMessage(`Record successfully ${isUpdate ? 'updated' : 'created'}!`);
+                await loadRecords();
+
+            } catch (error) {
+                console.error(`Error ${isUpdate ? 'updating' : 'creating'} record:`, error);
+                showMessage(`Failed to ${isUpdate ? 'update' : 'create'} record: ${error.message}.`, 'error');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Event handler for New Record button
+        document.getElementById('newRecordBtn').addEventListener('click', () => openFormModal());
+
+        // Event handler for Edit button
+        async function handleEdit(id) {
+            try {
+                const res = await fetch(`${IRNTE_API_URL}?action=getIRNTE`);
+                const result = await res.json();
+                const records = result.data || [];
+                const recordToEdit = records.find(r => r.id === id);
+
+                if (recordToEdit) {
+                    openFormModal(recordToEdit);
+                } else {
+                    showMessage(`Record ID ${id} not found. Please refresh.`, 'error');
+                }
+            } catch (error) {
+                console.error("Error fetching record for edit:", error);
+                showMessage("Failed to fetch record data for editing.", 'error');
+            }
+        }
+
+        // (D) DELETE: Handle delete action
+        async function handleDelete(id) {
+            const modal = document.getElementById('formModal');
+            if (!modal.classList.contains('hidden')) return; 
+
+            // IMPORTANT: Since we cannot use custom modals here, we rely on window.confirm for critical deletion.
+            if (!window.confirm(`Are you sure you want to permanently delete record ID ${id}? This cannot be undone.`)) {
+                return;
+            }
+            
+            showLoading("Deleting record...");
+
+            try {
+                const res = await fetch(IRNTE_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'deleteIRNTE', id: parseInt(id, 10) })
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({ error: 'Unknown server error' }));
+                    throw new Error(errorData.error || 'Server responded with an error.');
+                }
+
+                const result = await res.json();
+                if (result.status === 'ERROR') throw new Error(result.error);
+
+                showMessage("Record successfully deleted!");
+                await loadRecords(); // Refresh data
+
+            } catch (error) {
+                console.error("Error deleting record:", error);
+                showMessage(`Failed to delete record: ${error.message}.`, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        /* ---------------------------------------------------- */
+        /* --- DOCUMENT GENERATION & SIGNATURE LOGIC (CLIENT) --- */
+        /* ---------------------------------------------------- */
+
+        /**
+         * The core script for the signature canvas, designed to run inside the iframe's context.
+         */
+        const SIGNATURE_CANVAS_SCRIPT = `
+            <script>
+                const canvas = document.getElementById('signatureCanvas');
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    let drawing = false;
+
+                    // Set canvas resolution for crisp drawing
+                    const scale = window.devicePixelRatio;
+                    canvas.width = canvas.offsetWidth * scale;
+                    canvas.height = canvas.offsetHeight * scale;
+                    ctx.scale(scale, scale);
+
+                    // Initial settings
+                    ctx.lineWidth = 2;
+                    ctx.lineCap = 'round';
+                    ctx.strokeStyle = '#000';
+
+                    // Utility to get touch/mouse position relative to canvas
+                    function getPosition(e) {
+                        const rect = canvas.getBoundingClientRect();
+                        let clientX = e.clientX;
+                        let clientY = e.clientY;
+
+                        // Handle touch events
+                        if (e.touches && e.touches.length > 0) {
+                            clientX = e.touches[0].clientX;
+                            clientY = e.touches[0].clientY;
+                        }
+
+                        // Calculate position in drawing buffer coordinates
+                        return {
+                            x: (clientX - rect.left) / scale,
+                            y: (clientY - rect.top) / scale,
+                        };
+                    }
+
+                    function startDraw(e) {
+                        drawing = true;
+                        ctx.beginPath();
+                        const pos = getPosition(e);
+                        ctx.moveTo(pos.x, pos.y);
+                    }
+
+                    function drawLine(e) {
+                        if (!drawing) return;
+                        e.preventDefault(); // Prevent scrolling/selection while drawing
+                        const pos = getPosition(e);
+                        ctx.lineTo(pos.x, pos.y);
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.moveTo(pos.x, pos.y);
+                    }
+                    
+                    function stopDraw() {
+                        drawing = false;
+                        ctx.beginPath();
+                    }
+
+
+                    // Event Listeners (Mouse and Touch)
+                    canvas.addEventListener('mousedown', startDraw);
+                    canvas.addEventListener('mouseup', stopDraw);
+                    canvas.addEventListener('mouseleave', stopDraw);
+                    canvas.addEventListener('mousemove', drawLine);
+
+                    canvas.addEventListener('touchstart', startDraw);
+                    canvas.addEventListener('touchend', stopDraw);
+                    canvas.addEventListener('touchcancel', stopDraw);
+                    canvas.addEventListener('touchmove', drawLine, { passive: false });
+
+                    // Expose functions to the parent window
+                    window.clearSignature = () => {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.beginPath();
+                    }
+                    
+                    window.getSignatureDataURL = () => {
+                        // Check if the canvas is empty (a heuristic check)
+                        const pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                        const hasSignature = pixelData.some(channel => channel !== 0);
+
+                        if (hasSignature) {
+                            return canvas.toDataURL('image/png');
+                        }
+                        return null; // Return null if canvas is empty
+                    }
+                }
+            </script>
+        `;
+
+        /**
+         * Mocks the server-side generation of the two-page document, incorporating PDF/HTML styles.
+         * @param {object} record - The NTE record data.
+         * @returns {Array<string>} [irHtml, nteHtml]
+         */
+        function generateDocumentHtml(record) {
+            const dateIssued = formatPHDate(record.dateIssued);
+            const dateOfIncident = formatPHDate(record.dateOfIncident);
+            const employeeFirstName = record.employeeName.split(' ')[0];
+            
+            // ESCAPE user-provided content for safe insertion into template literals
+            const escapedNarration = escapeBackticks(record.narrationOfIncident || 'No narration provided.');
+            const escapedExplanation = escapeBackticks(record.explanation || '');
+            const escapedConsequence = escapeBackticks(record.consequence || '');
+
+            const violations = (record.narrationOfIncident.split('\n').filter(v => v.trim()).map((v, i) => `
+                <li class="mb-2"><strong>Violation ${i + 1}.</strong> ${escapeBackticks(v.trim())}</li>
+            `)).join('');
+
+
+            // --- BASE HTML STYLE FRAMEWORK ---
+            const baseStyle = `
+                <style>
+                    body { font-family: 'Roboto', sans-serif; margin: 0; padding: 0; background: #fff; color: #333; font-size: 11pt; }
+                    .document { padding: 0.75in; box-sizing: border-box; width: 8.5in; height: 11in; line-height: 1.5; }
+                    .header { text-align: center; margin-bottom: 20px; }
+                    .header img { max-width: 200px; height: auto; }
+                    .title { font-size: 16pt; font-weight: 700; text-align: center; margin-bottom: 5px; }
+                    .subtitle { font-size: 10pt; text-align: center; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+                    .info-grid { display: table; width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+                    .info-row { display: table-row; }
+                    .info-cell { display: table-cell; padding: 5px; border-bottom: 1px dashed #ccc; font-size: 10pt; }
+                    .label { font-weight: 500; width: 150px; }
+                    .data-box { border: 1px solid #000; padding: 10px; min-height: 100px; margin-bottom: 15px; }
+                    .footer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 40px; }
+                    .signature-area { border-top: 1px solid #000; padding-top: 5px; text-align: center; font-size: 9pt; }
+                    .section-heading { font-size: 12pt; font-weight: 700; margin-top: 20px; border-bottom: 1px solid #000; padding-bottom: 3px; }
+                    .page-break { page-break-before: always; }
+                    
+                    /* Signature Canvas Style */
+                    #signatureCanvas { border: 1px solid #ccc; width: 100%; height: 80px; box-sizing: border-box; cursor: crosshair; }
+                </style>
+            `;
+
+            // --- PAGE 1: INCIDENT REPORT (IR) ---
+            const irHtml = `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <title>Incident Report - ${record.id}</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+                    ${baseStyle}
+                </head>
+                <body>
+                    <div class="document">
+                        <div class="header">
+                            <h1 class="title" style="margin-bottom:0; font-size:20pt;">Digital Minds BPO Services Incorporated</h1>
+                            <p class="subtitle" style="border:none;">HR & Admin Department</p>
+                            <h2 class="title" style="margin-top:10px; margin-bottom: 20px;">INCIDENT REPORT</h2>
+                            <p style="text-align:right; font-size:10pt; margin-bottom:15px;">IR CODE NUMBER: <span style="font-weight:700;">IR-${record.id}</span></p>
+                        </div>
+
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <div class="info-cell label">Name of Employee:</div>
+                                <div class="info-cell">${record.employeeName || ''}</div>
+                                <div class="info-cell label">Employee Number:</div>
+                                <div class="info-cell">${record.employeeNumber || ''}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-cell label">Date:</div>
+                                <div class="info-cell">${dateIssued}</div>
+                                <div class="info-cell label">Department/Campaign:</div>
+                                <div class="info-cell">${record.positionDepartment || ''}</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-cell label">Date of Incident:</div>
+                                <div class="info-cell">${dateOfIncident}</div>
+                                <div class="info-cell label">Place of Incident:</div>
+                                <div class="info-cell">${record.placeOfIncident || ''}</div>
+                            </div>
+                        </div>
+
+                        <h3 class="section-heading">Narration of Incident:</h3>
+                        <div class="data-box" style="min-height: 150px; white-space: pre-wrap; font-size: 11pt;">
+                            ${escapedNarration}
+                        </div>
+                        <p style="font-size:9pt; text-align:right;">(Kindly provide proof as exhibits in a separate sheet)</p>
+
+                        <h3 class="section-heading" style="margin-top:40px;">Prepared By:</h3>
+                        <div class="footer-grid">
+                            <div>
+                                <p style="margin-bottom: 5px;">Agent Signature (Draw below)</p>
+                                <canvas id="signatureCanvas" class="w-full h-20"></canvas>
+                                <p class="signature-area">${record.supervisor || 'Supervisor Name'}</p>
+                                <p class="text-xs" style="font-size:9pt;">Immediate Supervisor Signature Over Printed Name</p>
+                            </div>
+                            <div>
+                                <p style="margin-top:40px; text-align:left;">Date: ${dateIssued}</p>
+                            </div>
+                        </div>
+                        <div style="font-size:9pt; margin-top:20px;">
+                            Witnesses: (Attach separate sheet if necessary)<br>
+                            <span style="border-bottom: 1px solid #000; display: inline-block; width: 150px; margin-right: 20px;"></span> Name
+                            <span style="border-bottom: 1px solid #000; display: inline-block; width: 150px; margin-right: 20px;"></span> Position
+                            <span style="border-bottom: 1px solid #000; display: inline-block; width: 150px;"></span> Signature/Date
+                        </div>
+                    </div>
+                    ${SIGNATURE_CANVAS_SCRIPT}
+                </body>
+                </html>
+            `;
+
+            // --- PAGE 2: NOTICE TO EXPLAIN (NTE) ---
+            const nteHtml = `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <title>Notice to Explain - ${record.id}</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+                    ${baseStyle}
+                </head>
+                <body>
+                    <div class="document">
+                        <div class="header">
+                            <h1 class="title" style="margin-bottom:0; font-size:20pt;">Digital Minds BPO Services Incorporated</h1>
+                            <p class="subtitle" style="border:none;">HR & Admin Department</p>
+                            <h2 class="title" style="margin-top:10px; margin-bottom: 20px;">NOTICE TO EXPLAIN</h2>
+                            <p style="text-align:right; font-size:10pt; margin-bottom:15px;">NTE REFERENCE CODE: <span style="font-weight:700;">NTE-${record.id}</span></p>
+                        </div>
+
+                        <p style="margin-bottom: 10px; font-size:10pt;">Date: ${dateIssued}</p>
+                        <p style="margin-bottom: 5px;">${record.employeeName || '[Employee\'s Complete Name]'}</p>
+                        <p style="margin-bottom: 5px;">${record.positionDepartment || '[Position] / [Department]'}</p>
+                        <p style="margin-bottom: 20px;">Dear Mr./Ms. ${employeeFirstName || ''}</p>
+
+                        <p style="margin-bottom: 20px;">
+                            This Notice is being issued to require you to explain in writing why no disciplinary action should be imposed on you for the following violation(s):
+                        </p>
+
+                        <ul style="list-style-type: none; padding-left: 20px; margin-bottom: 30px; font-size: 11pt;">
+                            ${violations || '<li>No violations recorded. Refer to Incident Report IR-'+record.id+' for details.</li>'}
+                        </ul>
+
+                        <p style="margin-bottom: 15px;">
+                            You are hereby directed to submit your written explanation regarding the above-mentioned matters within <strong>five (5) working days from receipt of this Notice</strong>. You may also submit any supporting evidence to substantiate your explanation.
+                        </p>
+                        <p style="margin-bottom: 15px;">
+                            You may be invited to attend an administrative hearing to ensure that due process is observed, in accordance with existing labor laws.
+                        </p>
+                        <p style="margin-bottom: 15px;">
+                            Failure to submit your written explanation within the prescribed period will be considered a waiver of your right to be heard, and the Company shall proceed to evaluate the case based on the information available.
+                        </p>
+                        <p style="margin-bottom: 30px;">
+                            Please be advised that, depending on the outcome of the investigation, you may be subject to disciplinary action, up to and including termination of employment, in accordance with company policies and the Labor Code of the Philippines.
+                        </p>
+                        
+                        <!-- NTE Content/Explanation/Consequence here if applicable -->
+                        <h3 class="section-heading" style="margin-top:20px;">Explanation Details (For HR Reference):</h3>
+                        <div class="data-box" style="min-height: 50px; white-space: pre-wrap; font-size: 10pt; border: 1px dashed #ccc;">
+                            ${escapedExplanation || 'N/A'}
+                        </div>
+                        <h3 class="section-heading" style="margin-top:20px;">Possible Consequence (For HR Reference):</h3>
+                        <div class="data-box" style="min-height: 30px; white-space: pre-wrap; font-size: 10pt; border: 1px dashed #ccc;">
+                            ${escapedConsequence || 'N/A'}
+                        </div>
+
+                        <div class="footer-grid">
+                            <div>
+                                <p class="signature-area" style="margin-top: 40px;">${record.supervisor || 'Immediate Supervisor Name'}</p>
+                                <p class="text-xs" style="font-size:9pt;">Immediate Supervisor Signature Over Printed Name</p>
+                            </div>
+                            <div>&nbsp;</div>
+                        </div>
+
+                        <h3 class="section-heading" style="margin-top:40px; text-align:center;">ACKNOWLEDGMENT OF RECEIPT OF THE NOTICE TO EXPLAIN</h3>
+
+                        <p style="margin-top: 20px; margin-bottom: 30px; font-size: 10pt;">
+                            I confirm that I have received the Notice to Explain dated <strong>${dateIssued}</strong> and that I am given a period of <strong>five (5) working days from today to submit my written explanation.</strong>
+                        </p>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-top: 40px;">
+                            <div style="width: 45%;">
+                                <p class="signature-area" style="border:none; text-align:left; font-size:10pt;">
+                                    Date and Time of Receipt: <span style="border-bottom: 1px solid #000; display: inline-block; width: 60%;"></span>
+                                </p>
+                            </div>
+                            <div style="width: 45%;">
+                                <p class="signature-area" style="margin-top: 40px;">&nbsp;</p>
+                                <p class="text-xs" style="font-size:9pt;">Employee's Signature Over Printed Name</p>
+                            </div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            return [irHtml, nteHtml];
+        }
+
+        /**
+         * Clears the signature canvas in the currently visible IR page iframe.
+         */
+        function clearAgentSignature() {
+            const irPage = document.getElementById('irPage');
+            if (irPage && irPage.contentWindow.clearSignature) {
+                irPage.contentWindow.clearSignature();
+                showMessage('Signature cleared.', 'warning');
+            } else {
+                showMessage('Preview not ready or clear function not found.', 'error');
+            }
+        }
+        
+        /**
+         * Saves the signature as a Data URL (Placeholder for actual saving).
+         */
+        function saveAgentSignature() {
+            const irPage = document.getElementById('irPage');
+            if (irPage && irPage.contentWindow.getSignatureDataURL) {
+                const dataUrl = irPage.contentWindow.getSignatureDataURL();
+                if (dataUrl) {
+                    // This is where you would send the dataUrl (base64 image) to your Apps Script
+                    // For now, we will just log it.
+                    console.log("Signature Data URL (Send to Apps Script for storage/attachment):", dataUrl);
+                    showMessage('Signature saved! (Data logged to console).', 'success');
+                } else {
+                    showMessage('The canvas is empty. Please draw a signature.', 'error');
+                }
+            } else {
+                showMessage('Preview not ready or save function not found.', 'error');
+            }
+        }
+
+
+        // (P) PREVIEW: Handle two-page document preview
+        async function handlePreview(id) {
+            openPreviewModal();
+            const previewContentDiv = document.getElementById('previewContent');
+            previewContentDiv.innerHTML = '<p class="text-center text-gray-500 py-12">Fetching record data...</p>';
+            document.getElementById('previewModalTitle').textContent = `Document Preview (ID: ${id})`;
+
+            try {
+                // 1. Fetch the single record data
+                const res = await fetch(`${IRNTE_API_URL}?action=getIRNTE`);
+                const result = await res.json();
+                
+                if (result.status === 'ERROR') throw new Error(result.error);
+                
+                const record = (result.data || []).find(r => r.id === id);
+
+                if (!record) {
+                    throw new Error(`Record ID ${id} not found.`);
+                }
+                
+                document.getElementById('previewModalTitle').textContent = `Document Preview: IR/NTE-${id}`;
+
+                // 2. Client-side generation of document HTML
+                const [irHtml, nteHtml] = generateDocumentHtml(record);
+                
+                // CRITICAL FIX: Escape HTML for safe insertion into srcdoc attribute
+                const irHtmlSrcDoc = escapeHtmlForSrcDoc(irHtml);
+                const nteHtmlSrcDoc = escapeHtmlForSrcDoc(nteHtml);
+
+                // 3. Insert iframes and generated HTML
+                previewContentDiv.innerHTML = `
+                    <div class="page-preview flex-col">
+                        <iframe id="irPage" class="w-full h-full border-none" srcdoc='${irHtmlSrcDoc}' sandbox="allow-scripts"></iframe>
+                        <div class="text-center text-gray-500 text-xs p-1">Page 1: Incident Report (Agent Signature)</div>
+                    </div>
+                    <div class="page-preview flex-col">
+                        <iframe id="ntePage" class="w-full h-full border-none" srcdoc='${nteHtmlSrcDoc}' sandbox="allow-scripts"></iframe>
+                        <div class="text-center text-gray-500 text-xs p-1">Page 2: Notice to Explain (Employee Acknowledgment)</div>
+                    </div>
+                `;
+                
+                // 4. Add signature action buttons
+                document.getElementById('previewActions').innerHTML = `
+                    <button onclick="clearAgentSignature()"
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-3 rounded-lg transition duration-200 text-sm flex items-center">
+                        <i data-feather="trash" class="w-4 h-4 mr-1"></i> Clear
+                    </button>
+                    <button onclick="saveAgentSignature()"
+                        class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-lg transition duration-200 text-sm flex items-center">
+                        <i data-feather="save" class="w-4 h-4 mr-1"></i> Save Signature
+                    </button>
+                `;
+                feather.replace(); // Initialize new icons
+
+            } catch (error) {
+                console.error("Error generating preview:", error);
+                previewContentDiv.innerHTML = `<p class="text-center text-danger py-12">Failed to load preview: ${error.message}</p>`;
+                showMessage(`Failed to generate preview: ${error.message}`, 'error');
+            }
+        }
+        
+        // --- INIT ---
+        window.onload = () => {
+            loadRecords();
+            feather.replace();
+        };
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Minds BPO - IR / NTE Log</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        // Colors adopted from form3.html
+                        'brand-accent': '#CBEB33',
+                        'brand-dark': '#B5D12F',
+                        'bg-dark': '#0f172a',
+                        'text-dark': '#f1f5f9',
+                        'bg-light': '#f8fafc',
+                        'text-light': '#1e293b',
+                        'card-dark': '#1e293b',
+                        'border-dark': '#334155',
+                        'danger': '#ef4444',
+                        'danger-dark': '#dc2626'
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* Custom spinner and scrollbar styles from previous/provided files */
+        .animate-spin-slow {
+            animation: spin 2.5s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+    </style>
+</head>
+
+<body
+    class="min-h-screen bg-bg-light text-text-light dark:bg-bg-dark dark:text-text-dark transition-colors duration-500 font-sans">
+
+    <header
+        class="flex justify-between items-center px-8 py-4 bg-white dark:bg-card-dark shadow-lg w-full fixed top-0 left-0 z-20 transition-all duration-500 border-b border-gray-100 dark:border-border-dark">
+        <h1 class="text-3xl font-extrabold text-text-light dark:text-text-dark transition-colors duration-500">
+            <span class="text-brand-accent">Digital</span> IR / NTE Log
+        </h1>
+        <button id="themeToggle"
+            class="p-2 rounded-full text-text-light dark:text-text-dark bg-gray-100 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark transition-all duration-300 transform hover:scale-105"
+            aria-label="Toggle Dark Mode">
+        </button>
+    </header>
+
+    <div class="max-w-7xl mx-auto p-4 md:p-8 mt-24 space-y-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+            <h2 class="text-3xl font-extrabold text-text-light dark:text-text-dark">Record Management</h2>
+            <button id="openCreateModal" onclick="openModal()"
+                class="inline-flex items-center bg-brand-accent hover:bg-brand-dark text-bg-dark px-6 py-3 rounded-full shadow-lg font-bold transition duration-300 transform hover:scale-[1.03] text-lg">
+                <i class="fas fa-plus-circle mr-3"></i>File New IR / NTE
+            </button>
+        </div>
+
+        <div class="flex justify-between items-center">
+            <input type="text" id="irnteSearch" placeholder="Search by Employee, Code, or Campaign..."
+                class="p-3 border border-gray-300 rounded-lg w-full max-w-lg focus:ring-brand-accent focus:border-brand-accent dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition duration-150"
+                onkeyup="handleSearch()">
+        </div>
+
+        <div id="tableContainer"
+            class="bg-white dark:bg-card-dark rounded-2xl shadow-2xl shadow-gray-200/50 dark:shadow-xl dark:shadow-black/50 overflow-hidden transition-colors duration-500 border border-gray-100 dark:border-border-dark relative">
+
+            <div id="loadingSpinner"
+                class="absolute inset-0 bg-white/80 dark:bg-card-dark/80 backdrop-blur-sm flex justify-center items-center z-40 rounded-xl hidden">
+                <div class="flex flex-col items-center">
+                    <div class="relative flex items-center justify-center">
+                        <div
+                            class="w-16 h-16 border-4 border-gray-300 dark:border-border-dark border-t-brand-accent rounded-full animate-spin">
+                        </div>
+                        <div
+                            class="absolute w-10 h-10 border-4 border-gray-200 dark:border-gray-700 border-b-brand-dark rounded-full animate-spin-slow">
+                        </div>
+                    </div>
+                    <p id="loadingText" class="mt-4 text-brand-accent text-lg font-semibold">Loading data...</p>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto no-scrollbar max-h-[70vh]">
+                <table class="min-w-full text-sm">
+                    <thead
+                        class="bg-gray-100 dark:bg-border-dark text-left sticky top-0 z-10 text-gray-700 dark:text-text-dark">
+                        <tr>
+                            <th class="font-semibold uppercase tracking-wider px-6 py-4">ID</th>
+                            <th class="font-semibold uppercase tracking-wider px-6 py-4">Date Filed</th>
+                            <th class="font-semibold uppercase tracking-wider px-6 py-4">Employee Name</th>
+                            <th class="font-semibold uppercase tracking-wider px-6 py-4">NTE/IR Code</th>
+                            <th class="font-semibold uppercase tracking-wider px-6 py-4">Category</th>
+                            <th class="font-semibold uppercase tracking-wider px-6 py-4">Decision (HR)</th>
+                            <th class="font-semibold uppercase tracking-wider text-center px-6 py-4">NTE Docs</th>
+                            <th class="font-semibold uppercase tracking-wider text-center px-6 py-4">NOD Docs</th>
+                            <th class="font-semibold uppercase tracking-wider text-center px-6 py-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="irnteSessionsTable" class="divide-y divide-gray-200 dark:divide-border-dark">
+                        <tr>
+                            <td colspan="9" class="text-center py-6 text-gray-500 dark:text-gray-400">Loading IR/NTE
+                                data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="crudModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-300">
+        <div class="bg-white dark:bg-card-dark rounded-xl shadow-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-8 relative transition-all duration-500 transform scale-95 opacity-0"
+            id="modalContent">
+
+            <h3 id="modalTitle" class="text-3xl font-extrabold mb-6 text-brand-accent">New IR / NTE Record</h3>
+            <button onclick="closeModal()"
+                class="absolute top-4 right-4 p-2 rounded-full text-gray-400 hover:text-brand-accent transition">
+                <i class="fas fa-times fa-xl"></i>
+            </button>
+
+            <form id="irnteForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <input type="hidden" name="id" id="recordId">
+
+                <div class="col-span-1">
+                    <label for="employeeName"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name of
+                        Employee</label>
+                    <input type="text" name="employeeName" id="employeeName" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div class="col-span-1">
+                    <label for="employeeNumber"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Employee No.</label>
+                    <input type="text" name="employeeNumber" id="employeeNumber" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+
+                <div class="col-span-1">
+                    <label for="campaign"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Campaign/Account</label>
+                    <input type="text" name="campaign" id="campaign"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div class="col-span-1">
+                    <label for="codeNumber"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">NTE/IR Code
+                        Number</label>
+                    <input type="text" name="codeNumber" id="codeNumber"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+
+                <div class="col-span-1">
+                    <label for="dateFiled"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Filed</label>
+                    <input type="date" name="dateFiled" id="dateFiled"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div class="col-span-1">
+                    <label for="dateReceived"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Received by
+                        Employee</label>
+                    <input type="date" name="dateReceived" id="dateReceived"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+
+                <div class="col-span-1">
+                    <label for="category"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                    <input type="text" name="category" id="category"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div class="col-span-1">
+                    <label for="subCategory"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sub Category</label>
+                    <input type="text" name="subCategory" id="subCategory"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="complaints"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Complaints/Allegations/Violations</label>
+                    <textarea name="complaints" id="complaints" rows="3"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition"></textarea>
+                </div>
+
+
+                <div class="col-span-1">
+                    <label for="dateSubmitted"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of NTE
+                        Submitted</label>
+                    <input type="date" name="dateSubmitted" id="dateSubmitted"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div class="col-span-1">
+                    <label for="nodRefNumber"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">NOD Reference
+                        Number</label>
+                    <input type="text" name="nodRefNumber" id="nodRefNumber"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div class="col-span-1">
+                    <label for="decisionHR"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Decision (HR)</label>
+                    <input type="text" name="decisionHR" id="decisionHR"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div class="col-span-1">
+                    <label for="dateFinality"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of
+                        Finality/Effectivity</label>
+                    <input type="date" name="dateFinality" id="dateFinality"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+
+                <div>
+                    <label for="withEL"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">With Explanation Letter?</label>
+                    <select name="withEL" id="withEL"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="withNOD"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">With NOD?</label>
+                    <select name="withNOD" id="withNOD"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+                <div class="col-span-2">
+                    <label for="receivedByEmployee"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Received by
+                        Employee?</label>
+                    <select name="receivedByEmployee" id="receivedByEmployee"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+
+                <div class="col-span-2">
+                    <label for="nteAttachment" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Attachment (NTE with EL) - Drive URL</label>
+                    <input type="url" name="nteAttachment" id="nteAttachment" placeholder="Google Drive Link for NTE/EL"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div class="col-span-2">
+                    <label for="nodAttachment" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Attachment (NOD) - Drive URL</label>
+                    <input type="url" name="nodAttachment" id="nodAttachment" placeholder="Google Drive Link for NOD"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+
+                <div class="col-span-2">
+                    <label for="remarks" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Remarks (Hidden from main table)</label>
+                    <textarea name="remarks" id="remarks" rows="2"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition"></textarea>
+                </div>
+
+                <div
+                    class="col-span-2 flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-border-dark modal-actions">
+                    <button type="button" id="deleteButton" onclick="openDeleteModal(form.dataset.editId, document.getElementById('employeeName').value)"
+                        class="hidden py-3 px-6 bg-danger hover:bg-danger-dark text-white font-bold rounded-full shadow-md transition transform hover:scale-[1.02]">
+                        <i class="fas fa-trash-alt mr-2"></i>Delete Record
+                    </button>
+                    <button type="submit" id="saveButton"
+                        class="py-3 px-6 bg-brand-accent hover:bg-brand-dark text-bg-dark font-bold rounded-full shadow-md transition transform hover:scale-[1.02]">
+                        <i class="fas fa-save mr-2"></i>Save Record
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="deleteConfirmModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-300">
+        <div id="deleteModalContent"
+            class="bg-white dark:bg-card-dark rounded-xl shadow-3xl w-full max-w-sm p-6 relative transition-all duration-500 transform scale-95 opacity-0 text-center">
+
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/50">
+                <i class="fas fa-trash-alt text-danger fa-lg"></i>
+            </div>
+
+            <h3 class="text-xl font-bold mt-3 text-text-light dark:text-text-dark">Confirm Deletion</h3>
+            <p id="deleteMessage" class="text-sm text-gray-500 dark:text-gray-400 mt-2">Are you absolutely sure you want
+                to delete this session? This action cannot be undone.</p>
+
+            <div class="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
+                <button type="button" id="confirmDeleteButton"
+                    class="inline-flex w-full justify-center rounded-full border border-transparent bg-danger hover:bg-danger-dark px-4 py-2 text-base font-semibold text-white shadow-sm transition sm:ml-3 sm:w-auto sm:text-sm transform hover:scale-[1.02]">
+                    Delete
+                </button>
+                <button type="button" onclick="closeDeleteModal()"
+                    class="mt-3 inline-flex w-full justify-center rounded-full border border-gray-300 dark:border-border-dark bg-white dark:bg-card-dark px-4 py-2 text-base font-semibold text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-bg-dark transition sm:mt-0 sm:w-auto sm:text-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="loadingModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-70 flex flex-col justify-center items-center z-50">
+        <div class="relative flex items-center justify-center">
+            <div
+                class="w-16 h-16 border-4 border-gray-300 dark:border-border-dark border-t-brand-accent rounded-full animate-spin">
+            </div>
+            <div
+                class="absolute w-10 h-10 border-4 border-gray-200 dark:border-gray-700 border-b-brand-dark rounded-full animate-spin-slow">
+            </div>
+        </div>
+        <p id="loadingText" class="mt-4 text-brand-accent text-lg font-semibold">Processing...</p>
+    </div>
+
+    <script>
+        feather.replace();
+
+        // 🛑 CRITICAL: USE THE PROVIDED API URL
+        const IRNTE_API_URL = "https://script.google.com/macros/s/AKfycbxKOgIbfCyvVYbcCvDhw4wbhSkS8H0Ua2cVw9VOVuXXQZTCbBiNwhl9bPyhfP9ecWDKjA/exec";
+
+        const form = document.getElementById('irnteForm');
+        const crudModal = document.getElementById('crudModal');
+        const modalContent = document.getElementById('modalContent');
+        const modalTitle = document.getElementById('modalTitle');
+        const saveButton = document.getElementById('saveButton');
+        const deleteButton = document.getElementById('deleteButton');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const loadingModal = document.getElementById('loadingModal');
+        const loadingText = document.getElementById('loadingText');
+        const deleteModal = document.getElementById('deleteConfirmModal');
+        const deleteModalContent = document.getElementById('deleteModalContent');
+        const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+
+        let allIRNTESessions = [];
+        let sessionIdToDelete = null;
+
+        /* ------------------ THEME TOGGLE (Adopted from form3.html) ------------------ */
+
+        const toggleBtn = document.getElementById('themeToggle');
+
+        function setTheme(isDark) {
+            if (isDark) {
+                document.body.classList.add("dark");
+                localStorage.setItem("theme", "dark");
+                toggleBtn.innerHTML = feather.icons.sun.toSvg();
+            } else {
+                document.body.classList.remove("dark");
+                localStorage.setItem("theme", "light");
+                toggleBtn.innerHTML = feather.icons.moon.toSvg();
+            }
+        }
+
+        if (localStorage.getItem("theme") === "dark" || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            setTheme(true);
+        } else {
+            setTheme(false);
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            const isDark = document.body.classList.contains('dark');
+            setTheme(!isDark);
+        });
+
+        /* ------------------ HELPERS ------------------ */
+
+        function formatDate(dateString) {
+            if (!dateString) return "N/A";
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return dateString;
+                // Use US date format (MM/DD/YYYY)
+                return `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${date.getFullYear()}`;
+            } catch (e) {
+                return dateString;
+            }
+        }
+
+        function showLoading(text) {
+            loadingText.textContent = text || "Processing...";
+            loadingModal.classList.remove('hidden');
+            loadingModal.classList.add('flex');
+        }
+
+        function hideLoading() {
+            loadingModal.classList.add('hidden');
+            loadingModal.classList.remove('flex');
+        }
+        
+        /* ------------------ MODAL & FORM ------------------ */
+
+        function openModal(session = null) {
+            form.reset();
+            deleteButton.classList.add('hidden');
+            delete form.dataset.editId; // Clear the edit ID
+
+            if (session) {
+                modalTitle.textContent = `Edit IR / NTE Record (ID: ${session.id})`;
+                saveButton.innerHTML = '<i class="fas fa-save mr-2"></i>Update Record';
+                deleteButton.classList.remove('hidden');
+                form.dataset.editId = session.id;
+
+                // Populate the form fields using the camelCase keys from the script
+                document.getElementById('recordId').value = session.id || "";
+                document.getElementById('employeeName').value = session.employeeName || "";
+                document.getElementById('employeeNumber').value = session.employeeNumber || "";
+                document.getElementById('campaign').value = session.campaign || "";
+                document.getElementById('codeNumber').value = session.codeNumber || "";
+                document.getElementById('dateFiled').value = session.dateFiled || "";
+                document.getElementById('category').value = session.category || "";
+                document.getElementById('subCategory').value = session.subCategory || "";
+                document.getElementById('complaints').value = session.complaints || "";
+                document.getElementById('dateReceived').value = session.dateReceived || "";
+                document.getElementById('dateSubmitted').value = session.dateSubmitted || "";
+                document.getElementById('withEL').value = session.withEL || "No";
+                document.getElementById('withNOD').value = session.withNOD || "No";
+                document.getElementById('nodRefNumber').value = session.nodRefNumber || "";
+                document.getElementById('decisionHR').value = session.decisionHR || "";
+                document.getElementById('receivedByEmployee').value = session.receivedByEmployee || "No";
+                document.getElementById('dateFinality').value = session.dateFinality || "";
+                document.getElementById('nteAttachment').value = session.nteAttachment || "";
+                document.getElementById('nodAttachment').value = session.nodAttachment || "";
+                document.getElementById('remarks').value = session.remarks || "";
+
+            } else {
+                modalTitle.textContent = "New IR / NTE Record";
+                saveButton.innerHTML = '<i class="fas fa-plus-circle mr-2"></i>Save Record';
+                // Pre-fill default selects
+                document.getElementById('withEL').value = "No";
+                document.getElementById('withNOD').value = "No";
+                document.getElementById('receivedByEmployee').value = "No";
+            }
+            
+            // Open with animation (Adopted from form3.html)
+            crudModal.classList.remove('hidden');
+            setTimeout(() => {
+                crudModal.classList.add('opacity-100');
+                modalContent.classList.remove('opacity-0', 'scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            // Close with animation (Adopted from form3.html)
+            crudModal.classList.remove('opacity-100');
+            modalContent.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                crudModal.classList.add('hidden');
+                form.reset();
+                delete form.dataset.editId;
+            }, 300);
+        }
+        
+        function openEditRecord(id) {
+            const session = allIRNTESessions.find(s => s.id == id);
+            if (session) {
+                openModal(session);
+            } else {
+                alert("Record not found.");
+            }
+        }
+
+
+        /* ------------------ DELETE MODAL FUNCTIONS (Adopted from form3.html) ------------------ */
+
+        function openDeleteModal(id, employeeName) {
+            sessionIdToDelete = id;
+            document.getElementById('deleteMessage').innerText = `Are you absolutely sure you want to delete the record for ${employeeName} (ID: ${id})? This action cannot be undone.`;
+            deleteModal.classList.remove('hidden');
+            // Open with animation
+            setTimeout(() => {
+                deleteModal.classList.add('opacity-100');
+                deleteModalContent.classList.remove('opacity-0', 'scale-95');
+            }, 10);
+        }
+
+        function closeDeleteModal() {
+            // Close with animation
+            deleteModal.classList.remove('opacity-100');
+            deleteModalContent.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                deleteModal.classList.add('hidden');
+                sessionIdToDelete = null;
+            }, 300);
+        }
+
+        confirmDeleteButton.addEventListener('click', () => {
+            if (sessionIdToDelete !== null) {
+                executeDeleteRecord(sessionIdToDelete);
+            }
+            closeDeleteModal();
+        });
+
+
+        /* ------------------ READ (R) ------------------ */
+
+        function renderTable(sessionsToRender) {
+            const table = document.getElementById("irnteSessionsTable");
+            table.innerHTML = "";
+
+            if (!Array.isArray(sessionsToRender) || sessionsToRender.length === 0) {
+                table.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-gray-500 dark:text-gray-400">No IR / NTE records match your criteria.</td></tr>`;
+                return;
+            }
+
+            sessionsToRender.sort((a, b) => new Date(b.dateFiled) - new Date(a.dateFiled));
+
+            sessionsToRender.forEach(session => {
+                const dateFiled = formatDate(session.dateFiled);
+                const nteUrl = session.nteAttachment && session.nteAttachment.length > 5 && session.nteAttachment !== '#' ? session.nteAttachment : "#";
+                const nodUrl = session.nodAttachment && session.nodAttachment.length > 5 && session.nodAttachment !== '#' ? session.nodAttachment : "#";
+                
+                // Status for Decision (HR)
+                let decisionColor = "text-gray-500 dark:text-gray-400";
+                if (session.decisionHR && session.decisionHR.toLowerCase().includes('termination')) {
+                    decisionColor = "text-red-500 dark:text-red-400 font-semibold";
+                } else if (session.decisionHR && session.decisionHR.toLowerCase().includes('warning')) {
+                    decisionColor = "text-yellow-600 dark:text-yellow-500 font-semibold";
+                } else if (session.decisionHR && session.decisionHR.toLowerCase().includes('closure')) {
+                    decisionColor = "text-green-500 dark:text-green-400 font-semibold";
+                }
+
+                const renderUrlIcon = (url, title) => {
+                    const iconClass = url === '#' ? 'text-gray-400 cursor-default' : 'text-blue-500 hover:text-brand-accent';
+                    return `<a href="${url}" target="_blank" class="${iconClass}" title="${title}">
+                                <i class="fab fa-google-drive fa-lg"></i>
+                            </a>`;
+                };
+
+                table.innerHTML += `
+                    <tr class="text-gray-700 dark:text-gray-300 border-b dark:border-border-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 transition duration-150">
+                        <td class="px-6 py-4">${session.id || "N/A"}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${dateFiled}</td>
+                        <td class="px-6 py-4 font-medium">${session.employeeName || "N/A"}</td>
+                        <td class="px-6 py-4">${session.codeNumber || "N/A"}</td>
+                        <td class="px-6 py-4">${session.category || "N/A"}</td>
+                        <td class="px-6 py-4 ${decisionColor}">${session.decisionHR || "Pending"}</td>
+                        <td class="px-6 py-4 text-center">
+                            ${renderUrlIcon(nteUrl, nteUrl === '#' ? 'NTE document not available' : 'Open NTE Document')}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            ${renderUrlIcon(nodUrl, nodUrl === '#' ? 'NOD document not available' : 'Open NOD Document')}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <button onclick="openEditRecord(${session.id})" class="text-blue-500 hover:text-brand-accent transition text-sm font-semibold">Edit</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        async function loadRecords() {
+            const table = document.getElementById("irnteSessionsTable");
+            table.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-gray-500 dark:text-gray-400">Loading IR/NTE data...</td></tr>`;
+            loadingSpinner.classList.remove('hidden');
+
+            try {
+                const fetchUrl = IRNTE_API_URL + '?action=getIRNTE';
+                const res = await fetch(fetchUrl);
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}. Check Apps Script Deployment/URL.`);
+                }
+
+                allIRNTESessions = await res.json();
+
+                if (allIRNTESessions.error) {
+                    throw new Error(allIRNTESessions.error);
+                }
+
+                renderTable(allIRNTESessions);
+
+            } catch (error) {
+                console.error("Error loading IR/NTE records:", error);
+                const errorMessage = `Failed to load data. (Error: ${error.message})`;
+                table.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-red-500 dark:text-red-400 font-semibold">${errorMessage}</td></tr>`;
+            }
+            loadingSpinner.classList.add('hidden');
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('irnteSearch').value.toLowerCase().trim();
+
+            if (!query) {
+                renderTable(allIRNTESessions);
+                return;
+            }
+
+            const filteredSessions = allIRNTESessions.filter(session => {
+                // Search across multiple fields
+                return (session.employeeName && session.employeeName.toLowerCase().includes(query)) ||
+                    (session.employeeNumber && String(session.employeeNumber).toLowerCase().includes(query)) ||
+                    (session.campaign && session.campaign.toLowerCase().includes(query)) ||
+                    (session.codeNumber && String(session.codeNumber).toLowerCase().includes(query)) ||
+                    (session.category && session.category.toLowerCase().includes(query)) ||
+                    (session.decisionHR && session.decisionHR.toLowerCase().includes(query));
+            });
+
+            renderTable(filteredSessions);
+        }
+
+        /* ------------------ CREATE & UPDATE (C, U) ------------------ */
+
+        form.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const isUpdate = form.dataset.editId;
+            showLoading(isUpdate ? "Updating record..." : "Saving new record...");
+            closeModal(); // Close the form modal immediately
+
+            const formData = Object.fromEntries(new FormData(this).entries());
+            let payload = formData;
+            let method = "POST";
+
+            if (isUpdate) {
+                // For Update, send PUT method override and the ID
+                payload = { _method: "PUT", ...formData };
+                method = "POST"; 
+            }
+            
+            if (payload.id) payload.id = parseInt(payload.id);
+
+            try {
+                const res = await fetch(IRNTE_API_URL, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ action: isUpdate ? 'updateIRNTE' : 'createIRNTE', data: payload })
+                });
+
+                if (!res.ok) {
+                     const errorData = await res.json().catch(() => ({ error: 'Unknown server error' }));
+                     throw new Error(errorData.error || 'Server responded with an error.');
+                }
+                
+                const result = await res.json();
+                if (result.status === 'ERROR') throw new Error(result.message);
+
+                hideLoading();
+                // Use the built-in alert for simplicity and consistency with previous logic
+                alert(`Record successfully ${isUpdate ? 'updated' : 'created'}!`);
+                await loadRecords(); // Refresh data
+
+            } catch (error) {
+                console.error("Error saving record:", error);
+                hideLoading();
+                alert(`Failed to save record: ${error.message}. Check the console for details.`);
+            }
+        });
+
+
+        /* ------------------ DELETE (D) ------------------ */
+
+        async function executeDeleteRecord(id) {
+            showLoading("Deleting record...");
+
+            try {
+                const res = await fetch(IRNTE_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    // Send DELETE method override and ID
+                    body: JSON.stringify({ action: 'deleteIRNTE', id: parseInt(id) })
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({ error: 'Unknown server error' }));
+                    throw new Error(errorData.error || 'Server responded with an error.');
+                }
+                
+                const result = await res.json();
+                if (result.status === 'ERROR') throw new Error(result.message);
+
+                hideLoading();
+                alert("Record successfully deleted!");
+                await loadRecords(); // Refresh data
+
+            } catch (error) {
+                console.error("Error deleting record:", error);
+                hideLoading();
+                alert(`Failed to delete record: ${error.message}. Check the console for details.`);
+            }
+        }
+
+
+        /* ------------------ INIT ------------------ */
+        window.onload = loadRecords;
+    </script>
+</body>
+
+</html>

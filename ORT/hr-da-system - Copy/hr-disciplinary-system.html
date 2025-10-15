@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HR Disciplinary Policy Software</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'hr-primary': '#1e40af',
+            'hr-accent': '#3b82f6',
+            'dark-bg': '#0f172a',
+            'dark-surface': '#1e293b',
+            'dark-border': '#334155',
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 dark:bg-dark-bg text-gray-800 dark:text-white transition-colors duration-300">
+  
+  <!-- Header -->
+  <header class="bg-white dark:bg-dark-surface shadow-lg border-b dark:border-dark-border">
+    <div class="flex items-center justify-between px-6 py-4">
+      <div class="flex items-center gap-2">
+        <div class="w-10 h-10 bg-hr-primary rounded-lg flex items-center justify-center">
+          <i class="fas fa-shield-alt text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-hr-primary dark:text-white">HR Disciplinary System</h1>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Policy Management Platform</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-4">
+        <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-dark-surface transition">
+          <i id="themeIcon" class="fas fa-sun text-xl dark:text-white"></i>
+        </button>
+        <div class="relative">
+          <button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-dark-surface transition">
+            <i class="fas fa-bell text-xl"></i>
+            <span class="absolute -top-1 -right-1 bg-red-500 text-xs rounded-full h-5 w-5 flex items-center justify-center">5</span>
+          </button>
+        </div>
+        <div class="flex items-center space-x-2">
+          <img src="/placeholder.svg?height=32&width=32" alt="User" class="w-8 h-8 rounded-full" />
+          <div class="text-sm">
+            <div class="font-medium">Sarah Wilson</div>
+            <div class="text-gray-500 dark:text-gray-400 text-xs">HR Manager</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-dark-surface shadow-lg border-r dark:border-dark-border">
+      <nav class="mt-6">
+        <div class="px-6 py-2">
+          <h2 class="text-sm uppercase font-semibold text-gray-500 dark:text-gray-400 tracking-wider">Navigation</h2>
+        </div>
+        <ul class="space-y-2 px-4 mt-4">
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 bg-hr-primary text-white rounded-lg">
+              <i class="fas fa-chart-line mr-3"></i>Dashboard
+            </a>
+          </li>
+          <li>
+            <div class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors cursor-pointer" onclick="toggleSubmenu('disciplinary')">
+              <i class="fas fa-exclamation-triangle mr-3"></i>
+              <span class="flex-1">Disciplinary Management</span>
+              <i class="fas fa-chevron-down text-xs" id="disciplinary-icon"></i>
+            </div>
+            <ul class="ml-8 mt-2 space-y-1" id="disciplinary-submenu">
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">Active Cases</a></li>
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">New Case</a></li>
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">Case History</a></li>
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">Appeals</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors">
+              <i class="fas fa-users mr-3"></i>Employee Records
+            </a>
+          </li>
+          <li>
+            <div class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors cursor-pointer" onclick="toggleSubmenu('offenses')">
+              <i class="fas fa-shield-alt mr-3"></i>
+              <span class="flex-1">Offense Management</span>
+              <i class="fas fa-chevron-down text-xs" id="offenses-icon"></i>
+            </div>
+            <ul class="ml-8 mt-2 space-y-1 hidden" id="offenses-submenu">
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">Offense Types</a></li>
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">Severity Levels</a></li>
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">Categories</a></li>
+            </ul>
+          </li>
+          <li>
+            <div class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors cursor-pointer" onclick="toggleSubmenu('policies')">
+              <i class="fas fa-book mr-3"></i>
+              <span class="flex-1">Policies & Procedures</span>
+              <i class="fas fa-chevron-down text-xs" id="policies-icon"></i>
+            </div>
+            <ul class="ml-8 mt-2 space-y-1 hidden" id="policies-submenu">
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">Company Policies</a></li>
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">Procedures</a></li>
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">Compliance</a></li>
+            </ul>
+          </li>
+          <li>
+            <div class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors cursor-pointer" onclick="toggleSubmenu('reports')">
+              <i class="fas fa-chart-bar mr-3"></i>
+              <span class="flex-1">Analytics & Reports</span>
+              <i class="fas fa-chevron-down text-xs" id="reports-icon"></i>
+            </div>
+            <ul class="ml-8 mt-2 space-y-1 hidden" id="reports-submenu">
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">Dashboard Analytics</a></li>
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">Department Reports</a></li>
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">Trend Analysis</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors">
+              <i class="fas fa-clock mr-3"></i>Workflow Management
+            </a>
+          </li>
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors">
+              <i class="fas fa-file-alt mr-3"></i>Document Templates
+            </a>
+          </li>
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors">
+              <i class="fas fa-cog mr-3"></i>System Settings
+            </a>
+          </li>
+          <li class="pt-4 border-t dark:border-dark-border">
+            <a href="#" class="flex items-center px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+              <i class="fas fa-sign-out-alt mr-3"></i>Logout
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-8">
+      <!-- Page Header -->
+      <div class="mb-8">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-3xl font-bold text-hr-primary dark:text-white">HR Disciplinary Dashboard</h2>
+            <p class="text-gray-500 dark:text-gray-400 mt-1">Monitor and manage employee disciplinary actions</p>
+          </div>
+          <div class="flex gap-3">
+            <button class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+              <i class="fas fa-download mr-2"></i>Export Report
+            </button>
+            <button class="px-6 py-2 bg-hr-primary text-white font-semibold rounded-lg hover:bg-hr-accent transition-colors" onclick="openModal('newCaseModal')">
+              <i class="fas fa-plus mr-2"></i>New Case
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Employees</p>
+              <p class="text-2xl font-bold text-hr-primary dark:text-white mt-1">1,247</p>
+            </div>
+            <div class="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+              <i class="fas fa-users text-hr-primary dark:text-hr-accent text-xl"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <span class="text-xs text-green-600 dark:text-green-400">+12 this month</span>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Active Cases</p>
+              <p class="text-2xl font-bold text-hr-primary dark:text-white mt-1">23</p>
+            </div>
+            <div class="p-3 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
+              <i class="fas fa-exclamation-triangle text-orange-600 dark:text-orange-400 text-xl"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <span class="text-xs text-red-600 dark:text-red-400">+5 from last week</span>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Resolved Cases</p>
+              <p class="text-2xl font-bold text-hr-primary dark:text-white mt-1">156</p>
+            </div>
+            <div class="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
+              <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-xl"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <span class="text-xs text-green-600 dark:text-green-400">+18 this month</span>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Policy Violations</p>
+              <p class="text-2xl font-bold text-hr-primary dark:text-white mt-1">8</p>
+            </div>
+            <div class="p-3 bg-red-100 dark:bg-red-900/20 rounded-lg">
+              <i class="fas fa-shield-alt text-red-600 dark:text-red-400 text-xl"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <span class="text-xs text-red-600 dark:text-red-400">Critical level</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts and Analytics -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Offense Trends Chart -->
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-hr-primary dark:text-white">
+              <i class="fas fa-chart-line mr-2"></i>Offense Trends
+            </h3>
+            <select class="px-3 py-1 text-sm border border-gray-300 dark:border-dark-border rounded dark:bg-dark-bg dark:text-white">
+              <option>Last 30 days</option>
+              <option>Last 90 days</option>
+              <option>Last year</option>
+            </select>
+          </div>
+          <div class="h-64 flex items-end justify-between gap-2">
+            <div class="flex flex-col items-center">
+              <div class="w-8 bg-blue-500 rounded-t mb-2" style="height: 120px;"></div>
+              <span class="text-xs text-gray-500">Jan</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <div class="w-8 bg-blue-500 rounded-t mb-2" style="height: 80px;"></div>
+              <span class="text-xs text-gray-500">Feb</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <div class="w-8 bg-blue-500 rounded-t mb-2" style="height: 140px;"></div>
+              <span class="text-xs text-gray-500">Mar</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <div class="w-8 bg-blue-500 rounded-t mb-2" style="height: 100px;"></div>
+              <span class="text-xs text-gray-500">Apr</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <div class="w-8 bg-blue-500 rounded-t mb-2" style="height: 160px;"></div>
+              <span class="text-xs text-gray-500">May</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <div class="w-8 bg-blue-500 rounded-t mb-2" style="height: 90px;"></div>
+              <span class="text-xs text-gray-500">Jun</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Department Breakdown -->
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border p-6">
+          <h3 class="text-lg font-semibold text-hr-primary dark:text-white mb-6">
+            <i class="fas fa-building mr-2"></i>Department Breakdown
+          </h3>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span class="font-medium">Sales</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div class="bg-blue-500 h-2 rounded-full" style="width: 35%;"></div>
+                </div>
+                <span class="text-sm text-gray-600 dark:text-gray-400">12 cases</span>
+                <span class="text-sm font-medium">35%</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span class="font-medium">Marketing</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div class="bg-green-500 h-2 rounded-full" style="width: 24%;"></div>
+                </div>
+                <span class="text-sm text-gray-600 dark:text-gray-400">8 cases</span>
+                <span class="text-sm font-medium">24%</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                <span class="font-medium">IT</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div class="bg-yellow-500 h-2 rounded-full" style="width: 18%;"></div>
+                </div>
+                <span class="text-sm text-gray-600 dark:text-gray-400">6 cases</span>
+                <span class="text-sm font-medium">18%</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                <span class="font-medium">HR</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div class="bg-purple-500 h-2 rounded-full" style="width: 12%;"></div>
+                </div>
+                <span class="text-sm text-gray-600 dark:text-gray-400">4 cases</span>
+                <span class="text-sm font-medium">12%</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                <span class="font-medium">Finance</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div class="bg-red-500 h-2 rounded-full" style="width: 11%;"></div>
+                </div>
+                <span class="text-sm text-gray-600 dark:text-gray-400">4 cases</span>
+                <span class="text-sm font-medium">11%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Cases -->
+      <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border mb-6">
+        <div class="p-6 border-b dark:border-dark-border">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-hr-primary dark:text-white">
+              <i class="fas fa-clock mr-2"></i>Recent Disciplinary Cases
+            </h3>
+            <button class="px-4 py-2 text-sm border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+              View All Cases
+            </button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50 dark:bg-dark-bg">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Case ID</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Employee</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Department</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Offense</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Severity</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Action</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-dark-border">
+              <tr class="hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm font-mono text-hr-primary dark:text-hr-accent">DC-2024-001</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <img class="h-8 w-8 rounded-full" src="/placeholder.svg?height=32&width=32" alt="Employee">
+                    <div class="ml-3">
+                      <div class="text-sm font-medium text-gray-900 dark:text-white">John Smith</div>
+                      <div class="text-sm text-gray-500 dark:text-gray-400">EMP-001</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Sales</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">Tardiness</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">Minor</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">Under Review</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Verbal Warning</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">2024-01-15</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div class="flex gap-2">
+                    <button class="text-hr-primary dark:text-hr-accent hover:underline">View</button>
+                    <button class="text-gray-600 dark:text-gray-400 hover:underline">Edit</button>
+                    <button class="text-green-600 dark:text-green-400 hover:underline">Action</button>
+                  </div>
+                </td>
+              </tr>
+              <tr class="hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm font-mono text-hr-primary dark:text-hr-accent">DC-2024-002</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <img class="h-8 w-8 rounded-full" src="/placeholder.svg?height=32&width=32" alt="Employee">
+                    <div class="ml-3">
+                      <div class="text-sm font-medium text-gray-900 dark:text-white">Sarah Johnson</div>
+                      <div class="text-sm text-gray-500 dark:text-gray-400">EMP-002</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Marketing</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">Insubordination</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">Major</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">Resolved</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Written Warning</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">2024-01-14</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div class="flex gap-2">
+                    <button class="text-hr-primary dark:text-hr-accent hover:underline">View</button>
+                    <button class="text-gray-600 dark:text-gray-400 hover:underline">Edit</button>
+                    <button class="text-gray-400 cursor-not-allowed">Action</button>
+                  </div>
+                </td>
+              </tr>
+              <tr class="hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm font-mono text-hr-primary dark:text-hr-accent">DC-2024-003</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <img class="h-8 w-8 rounded-full" src="/placeholder.svg?height=32&width=32" alt="Employee">
+                    <div class="ml-3">
+                      <div class="text-sm font-medium text-gray-900 dark:text-white">Mike Davis</div>
+                      <div class="text-sm text-gray-500 dark:text-gray-400">EMP-003</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">IT</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">Policy Violation</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400">Critical</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">Open</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Suspension</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">2024-01-13</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div class="flex gap-2">
+                    <button class="text-hr-primary dark:text-hr-accent hover:underline">View</button>
+                    <button class="text-gray-600 dark:text-gray-400 hover:underline">Edit</button>
+                    <button class="text-red-600 dark:text-red-400 hover:underline">Urgent</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Progressive Discipline Framework -->
+      <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border mb-6">
+        <div class="p-6 border-b dark:border-dark-border">
+          <h3 class="text-lg font-semibold text-hr-primary dark:text-white">
+            <i class="fas fa-layer-group mr-2"></i>Progressive Discipline Framework
+          </h3>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div class="text-center">
+              <div class="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-comment text-yellow-600 dark:text-yellow-400 text-xl"></i>
+              </div>
+              <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Verbal Warning</h4>
+              <p class="text-sm text-gray-500 dark:text-gray-400">First step for minor offenses</p>
+              <div class="mt-2">
+                <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400 rounded-full">Step 1</span>
+              </div>
+            </div>
+            <div class="text-center">
+              <div class="w-16 h-16 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-file-alt text-orange-600 dark:text-orange-400 text-xl"></i>
+              </div>
+              <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Written Warning</h4>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Formal documentation</p>
+              <div class="mt-2">
+                <span class="px-2 py-1 text-xs bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400 rounded-full">Step 2</span>
+              </div>
+            </div>
+            <div class="text-center">
+              <div class="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-pause-circle text-red-600 dark:text-red-400 text-xl"></i>
+              </div>
+              <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Suspension</h4>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Temporary removal</p>
+              <div class="mt-2">
+                <span class="px-2 py-1 text-xs bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400 rounded-full">Step 3</span>
+              </div>
+            </div>
+            <div class="text-center">
+              <div class="w-16 h-16 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-exclamation-triangle text-purple-600 dark:text-purple-400 text-xl"></i>
+              </div>
+              <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Final Warning</h4>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Last chance notice</p>
+              <div class="mt-2">
+                <span class="px-2 py-1 text-xs bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400 rounded-full">Step 4</span>
+              </div>
+            </div>
+            <div class="text-center">
+              <div class="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-times-circle text-gray-600 dark:text-gray-400 text-xl"></i>
+              </div>
+              <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Termination</h4>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Employment ended</p>
+              <div class="mt-2">
+                <span class="px-2 py-1 text-xs bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 rounded-full">Final</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+        © 2024 HR Disciplinary Policy Software. All rights reserved.
+      </div>
+    </main>
+  </div>
+
+  <!-- New Case Modal -->
+  <div id="newCaseModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white dark:bg-dark-surface rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b dark:border-dark-border">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-hr-primary dark:text-white">Create New Disciplinary Case</h3>
+          <button onclick="closeModal('newCaseModal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+      </div>
+      <div class="p-6">
+        <form class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Employee</label>
+              <select class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+                <option>Select employee...</option>
+                <option>John Smith (EMP-001)</option>
+                <option>Sarah Johnson (EMP-002)</option>
+                <option>Mike Davis (EMP-003)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Severity Level</label>
+              <select class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+                <option>Select severity...</option>
+                <option>Minor</option>
+                <option>Moderate</option>
+                <option>Major</option>
+                <option>Critical</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Offense Type</label>
+            <input type="text" placeholder="Enter offense type" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+            <textarea rows="4" placeholder="Provide detailed description of the incident" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent"></textarea>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned To</label>
+              <select class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+                <option>Select HR personnel...</option>
+                <option>Sarah Wilson</option>
+                <option>Mike Davis</option>
+                <option>Emily Chen</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Due Date</label>
+              <input type="date" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+            </div>
+          </div>
+          <div class="flex justify-end gap-3 pt-4">
+            <button type="button" onclick="closeModal('newCaseModal')" class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+              Cancel
+            </button>
+            <button type="submit" class="px-6 py-2 bg-hr-primary text-white font-semibold rounded-lg hover:bg-hr-accent transition-colors">
+              Create Case
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Theme toggle functionality
+    const toggleButton = document.getElementById('themeToggle');
+    const icon = document.getElementById('themeIcon');
+    const html = document.documentElement;
+
+    const updateIcon = () => {
+      icon.classList.toggle('fa-sun', !html.classList.contains('dark'));
+      icon.classList.toggle('fa-moon', html.classList.contains('dark'));
+    };
+
+    toggleButton.addEventListener('click', () => {
+      html.classList.toggle('dark');
+      localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+      updateIcon();
+    });
+
+    // Initial theme setup
+    if (localStorage.getItem('theme') === 'light') {
+      html.classList.remove('dark');
+    } else {
+      html.classList.add('dark');
+    }
+    updateIcon();
+
+    // Submenu toggle functionality
+    function toggleSubmenu(menuId) {
+      const submenu = document.getElementById(menuId + '-submenu');
+      const icon = document.getElementById(menuId + '-icon');
+      
+      submenu.classList.toggle('hidden');
+      icon.classList.toggle('fa-chevron-down');
+      icon.classList.toggle('fa-chevron-right');
+    }
+
+    // Modal functionality
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(event) {
+      const modals = document.querySelectorAll('[id$="Modal"]');
+      modals.forEach(modal => {
+        if (event.target === modal) {
+          closeModal(modal.id);
+        }
+      });
+    });
+
+    // Initialize submenu states
+    document.addEventListener('DOMContentLoaded', function() {
+      // Show disciplinary submenu by default
+      const disciplinarySubmenu = document.getElementById('disciplinary-submenu');
+      const disciplinaryIcon = document.getElementById('disciplinary-icon');
+      disciplinarySubmenu.classList.remove('hidden');
+      disciplinaryIcon.classList.remove('fa-chevron-down');
+      disciplinaryIcon.classList.add('fa-chevron-right');
+    });
+  </script>
+
+</body>
+</html>

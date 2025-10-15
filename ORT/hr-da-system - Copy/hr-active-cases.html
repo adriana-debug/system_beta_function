@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Active Cases - HR Disciplinary System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'hr-primary': '#1e40af',
+            'hr-accent': '#3b82f6',
+            'dark-bg': '#0f172a',
+            'dark-surface': '#1e293b',
+            'dark-border': '#334155',
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 dark:bg-dark-bg text-gray-800 dark:text-white transition-colors duration-300">
+  
+  <!-- Header -->
+  <header class="bg-white dark:bg-dark-surface shadow-lg border-b dark:border-dark-border">
+    <div class="flex items-center justify-between px-6 py-4">
+      <div class="flex items-center gap-2">
+        <div class="w-10 h-10 bg-hr-primary rounded-lg flex items-center justify-center">
+          <i class="fas fa-shield-alt text-white text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-hr-primary dark:text-white">HR Disciplinary System</h1>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Policy Management Platform</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-4">
+        <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-dark-surface transition">
+          <i id="themeIcon" class="fas fa-sun text-xl dark:text-white"></i>
+        </button>
+        <div class="relative">
+          <button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-dark-surface transition">
+            <i class="fas fa-bell text-xl"></i>
+            <span class="absolute -top-1 -right-1 bg-red-500 text-xs rounded-full h-5 w-5 flex items-center justify-center">8</span>
+          </button>
+        </div>
+        <div class="flex items-center space-x-2">
+          <img src="/placeholder.svg?height=32&width=32" alt="User" class="w-8 h-8 rounded-full" />
+          <div class="text-sm">
+            <div class="font-medium">Sarah Wilson</div>
+            <div class="text-gray-500 dark:text-gray-400 text-xs">HR Manager</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white dark:bg-dark-surface shadow-lg border-r dark:border-dark-border">
+      <nav class="mt-6">
+        <div class="px-6 py-2">
+          <h2 class="text-sm uppercase font-semibold text-gray-500 dark:text-gray-400 tracking-wider">Navigation</h2>
+        </div>
+        <ul class="space-y-2 px-4 mt-4">
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors">
+              <i class="fas fa-chart-line mr-3"></i>Dashboard
+            </a>
+          </li>
+          <li>
+            <div class="flex items-center px-4 py-3 bg-hr-primary text-white rounded-lg">
+              <i class="fas fa-exclamation-triangle mr-3"></i>
+              <span class="flex-1">Disciplinary Management</span>
+              <i class="fas fa-chevron-down text-xs"></i>
+            </div>
+            <ul class="ml-8 mt-2 space-y-1">
+              <li><a href="#" class="block px-4 py-2 text-sm bg-hr-accent text-white rounded">Active Cases</a></li>
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">New Case</a></li>
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">Case History</a></li>
+              <li><a href="#" class="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-hr-primary rounded">Appeals</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors">
+              <i class="fas fa-users mr-3"></i>Employee Records
+            </a>
+          </li>
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors">
+              <i class="fas fa-shield-alt mr-3"></i>Offense Management
+            </a>
+          </li>
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors">
+              <i class="fas fa-book mr-3"></i>Policies & Procedures
+            </a>
+          </li>
+          <li>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors">
+              <i class="fas fa-chart-bar mr-3"></i>Analytics & Reports
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-8">
+      <!-- Page Header -->
+      <div class="mb-8">
+        <div class="flex justify-between items-center">
+          <div>
+            <nav class="text-sm text-gray-500 dark:text-gray-400 mb-2">
+              <a href="#" class="hover:text-hr-primary">Dashboard</a> 
+              <span class="mx-2">/</span>
+              <a href="#" class="hover:text-hr-primary">Disciplinary Management</a>
+              <span class="mx-2">/</span>
+              <span class="text-hr-primary font-medium">Active Cases</span>
+            </nav>
+            <h2 class="text-3xl font-bold text-hr-primary dark:text-white">Active Cases</h2>
+            <p class="text-gray-500 dark:text-gray-400 mt-1">Monitor and manage ongoing disciplinary cases</p>
+          </div>
+          <div class="flex gap-3">
+            <button class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+              <i class="fas fa-download mr-2"></i>Export Cases
+            </button>
+            <button class="px-6 py-2 bg-hr-primary text-white font-semibold rounded-lg hover:bg-hr-accent transition-colors" onclick="openModal('newCaseModal')">
+              <i class="fas fa-plus mr-2"></i>New Case
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Active</p>
+              <p class="text-2xl font-bold text-hr-primary dark:text-white mt-1">23</p>
+            </div>
+            <div class="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+              <i class="fas fa-folder-open text-hr-primary dark:text-hr-accent text-xl"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <span class="text-xs text-red-600 dark:text-red-400">+3 this week</span>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Overdue</p>
+              <p class="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">5</p>
+            </div>
+            <div class="p-3 bg-red-100 dark:bg-red-900/20 rounded-lg">
+              <i class="fas fa-clock text-red-600 dark:text-red-400 text-xl"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <span class="text-xs text-red-600 dark:text-red-400">Requires attention</span>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Under Review</p>
+              <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mt-1">12</p>
+            </div>
+            <div class="p-3 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg">
+              <i class="fas fa-search text-yellow-600 dark:text-yellow-400 text-xl"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <span class="text-xs text-yellow-600 dark:text-yellow-400">In progress</span>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border p-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Critical</p>
+              <p class="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">3</p>
+            </div>
+            <div class="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+              <i class="fas fa-exclamation-triangle text-purple-600 dark:text-purple-400 text-xl"></i>
+            </div>
+          </div>
+          <div class="mt-2">
+            <span class="text-xs text-purple-600 dark:text-purple-400">High priority</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters and Search -->
+      <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border p-6 mb-6">
+        <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
+          <div class="flex flex-wrap gap-4 flex-1">
+            <div class="relative">
+              <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              <input type="text" placeholder="Search cases, employees, or offense types..." 
+                class="pl-10 pr-4 py-2 w-80 rounded-lg border dark:border-dark-border dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent" />
+            </div>
+            <select class="px-4 py-2 rounded-lg border dark:border-dark-border dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+              <option>All Status</option>
+              <option>Open</option>
+              <option>Under Review</option>
+              <option>Investigation</option>
+              <option>Pending Action</option>
+            </select>
+            <select class="px-4 py-2 rounded-lg border dark:border-dark-border dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+              <option>All Severity</option>
+              <option>Minor</option>
+              <option>Moderate</option>
+              <option>Major</option>
+              <option>Critical</option>
+            </select>
+            <select class="px-4 py-2 rounded-lg border dark:border-dark-border dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+              <option>All Departments</option>
+              <option>Sales</option>
+              <option>Marketing</option>
+              <option>IT</option>
+              <option>Finance</option>
+              <option>HR</option>
+            </select>
+          </div>
+          <div class="flex gap-3">
+            <button class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+              <i class="fas fa-filter mr-2"></i>Advanced Filters
+            </button>
+            <button class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+              <i class="fas fa-sort mr-2"></i>Sort
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- View Toggle -->
+      <div class="flex justify-between items-center mb-6">
+        <div class="flex gap-2">
+          <button id="cardView" class="px-4 py-2 bg-hr-primary text-white rounded-lg transition-colors">
+            <i class="fas fa-th-large mr-2"></i>Card View
+          </button>
+          <button id="tableView" class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+            <i class="fas fa-list mr-2"></i>Table View
+          </button>
+        </div>
+        <div class="text-sm text-gray-500 dark:text-gray-400">
+          Showing 23 active cases
+        </div>
+      </div>
+
+      <!-- Cases Card View -->
+      <div id="casesCardView" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <!-- Case Card 1 - Critical -->
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border hover:shadow-xl transition-shadow">
+          <div class="p-6">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+                  <i class="fas fa-exclamation-triangle text-purple-600 dark:text-purple-400 text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">DC-2024-001</h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Created: Jan 15, 2024</p>
+                </div>
+              </div>
+              <div class="flex flex-col gap-2">
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400">Critical</span>
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">Overdue</span>
+              </div>
+            </div>
+            
+            <div class="mb-4">
+              <h4 class="font-medium text-gray-900 dark:text-white mb-2">Security Policy Violation</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Unauthorized access to confidential client data and sharing sensitive information with external parties.</p>
+              
+              <div class="flex items-center gap-2 mb-2">
+                <img src="/placeholder.svg?height=24&width=24" alt="Employee" class="w-6 h-6 rounded-full" />
+                <span class="text-sm font-medium">Mike Davis</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">EMP-003 • IT Department</span>
+              </div>
+            </div>
+
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Assigned to:</span>
+                <span class="font-medium">Emily Chen</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Due Date:</span>
+                <span class="font-medium text-red-600 dark:text-red-400">Jan 20, 2024</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Current Action:</span>
+                <span class="font-medium">Suspension</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Evidence:</span>
+                <span class="font-medium text-blue-600 dark:text-blue-400">3 items</span>
+              </div>
+            </div>
+
+            <div class="border-t dark:border-dark-border pt-4">
+              <div class="flex gap-2">
+                <button class="flex-1 px-3 py-2 text-sm bg-hr-primary text-white rounded hover:bg-hr-accent transition-colors" onclick="openCaseDetails('DC-2024-001')">
+                  View Details
+                </button>
+                <button class="px-3 py-2 text-sm border border-gray-300 dark:border-dark-border rounded hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="px-3 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
+                  <i class="fas fa-gavel"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Case Card 2 - Major -->
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border hover:shadow-xl transition-shadow">
+          <div class="p-6">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+                  <i class="fas fa-user-times text-red-600 dark:text-red-400 text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">DC-2024-002</h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Created: Jan 14, 2024</p>
+                </div>
+              </div>
+              <div class="flex flex-col gap-2">
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">Major</span>
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">Under Review</span>
+              </div>
+            </div>
+            
+            <div class="mb-4">
+              <h4 class="font-medium text-gray-900 dark:text-white mb-2">Workplace Harassment</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Multiple reports of inappropriate behavior and creating hostile work environment for team members.</p>
+              
+              <div class="flex items-center gap-2 mb-2">
+                <img src="/placeholder.svg?height=24&width=24" alt="Employee" class="w-6 h-6 rounded-full" />
+                <span class="text-sm font-medium">Robert Johnson</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">EMP-007 • Sales Department</span>
+              </div>
+            </div>
+
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Assigned to:</span>
+                <span class="font-medium">Sarah Wilson</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Due Date:</span>
+                <span class="font-medium">Jan 25, 2024</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Current Action:</span>
+                <span class="font-medium">Investigation</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Evidence:</span>
+                <span class="font-medium text-blue-600 dark:text-blue-400">5 items</span>
+              </div>
+            </div>
+
+            <div class="border-t dark:border-dark-border pt-4">
+              <div class="flex gap-2">
+                <button class="flex-1 px-3 py-2 text-sm bg-hr-primary text-white rounded hover:bg-hr-accent transition-colors" onclick="openCaseDetails('DC-2024-002')">
+                  View Details
+                </button>
+                <button class="px-3 py-2 text-sm border border-gray-300 dark:border-dark-border rounded hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="px-3 py-2 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Case Card 3 - Moderate -->
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border hover:shadow-xl transition-shadow">
+          <div class="p-6">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
+                  <i class="fas fa-ban text-orange-600 dark:text-orange-400 text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">DC-2024-003</h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Created: Jan 16, 2024</p>
+                </div>
+              </div>
+              <div class="flex flex-col gap-2">
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">Moderate</span>
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">Open</span>
+              </div>
+            </div>
+            
+            <div class="mb-4">
+              <h4 class="font-medium text-gray-900 dark:text-white mb-2">Insubordination</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Refused to follow direct supervisor instructions and showed disrespectful behavior during team meeting.</p>
+              
+              <div class="flex items-center gap-2 mb-2">
+                <img src="/placeholder.svg?height=24&width=24" alt="Employee" class="w-6 h-6 rounded-full" />
+                <span class="text-sm font-medium">Lisa Martinez</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">EMP-012 • Marketing Department</span>
+              </div>
+            </div>
+
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Assigned to:</span>
+                <span class="font-medium">Mike Davis</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Due Date:</span>
+                <span class="font-medium">Jan 28, 2024</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Current Action:</span>
+                <span class="font-medium">Written Warning</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Evidence:</span>
+                <span class="font-medium text-blue-600 dark:text-blue-400">2 items</span>
+              </div>
+            </div>
+
+            <div class="border-t dark:border-dark-border pt-4">
+              <div class="flex gap-2">
+                <button class="flex-1 px-3 py-2 text-sm bg-hr-primary text-white rounded hover:bg-hr-accent transition-colors" onclick="openCaseDetails('DC-2024-003')">
+                  View Details
+                </button>
+                <button class="px-3 py-2 text-sm border border-gray-300 dark:border-dark-border rounded hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="px-3 py-2 text-sm bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors">
+                  <i class="fas fa-file-alt"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Case Card 4 - Minor -->
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border hover:shadow-xl transition-shadow">
+          <div class="p-6">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center">
+                  <i class="fas fa-clock text-yellow-600 dark:text-yellow-400 text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">DC-2024-004</h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Created: Jan 17, 2024</p>
+                </div>
+              </div>
+              <div class="flex flex-col gap-2">
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">Minor</span>
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">Under Review</span>
+              </div>
+            </div>
+            
+            <div class="mb-4">
+              <h4 class="font-medium text-gray-900 dark:text-white mb-2">Chronic Tardiness</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Employee has been consistently late for work over the past month, affecting team productivity.</p>
+              
+              <div class="flex items-center gap-2 mb-2">
+                <img src="/placeholder.svg?height=24&width=24" alt="Employee" class="w-6 h-6 rounded-full" />
+                <span class="text-sm font-medium">John Smith</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">EMP-001 • Sales Department</span>
+              </div>
+            </div>
+
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Assigned to:</span>
+                <span class="font-medium">Sarah Wilson</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Due Date:</span>
+                <span class="font-medium">Jan 30, 2024</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Current Action:</span>
+                <span class="font-medium">Verbal Warning</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Evidence:</span>
+                <span class="font-medium text-blue-600 dark:text-blue-400">1 item</span>
+              </div>
+            </div>
+
+            <div class="border-t dark:border-dark-border pt-4">
+              <div class="flex gap-2">
+                <button class="flex-1 px-3 py-2 text-sm bg-hr-primary text-white rounded hover:bg-hr-accent transition-colors" onclick="openCaseDetails('DC-2024-004')">
+                  View Details
+                </button>
+                <button class="px-3 py-2 text-sm border border-gray-300 dark:border-dark-border rounded hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="px-3 py-2 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors">
+                  <i class="fas fa-comment"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Case Card 5 - Major -->
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border hover:shadow-xl transition-shadow">
+          <div class="p-6">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+                  <i class="fas fa-shield-alt text-red-600 dark:text-red-400 text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">DC-2024-005</h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Created: Jan 18, 2024</p>
+                </div>
+              </div>
+              <div class="flex flex-col gap-2">
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">Major</span>
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">Open</span>
+              </div>
+            </div>
+            
+            <div class="mb-4">
+              <h4 class="font-medium text-gray-900 dark:text-white mb-2">Safety Violation</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Failure to follow safety protocols resulting in workplace accident and potential injury to colleagues.</p>
+              
+              <div class="flex items-center gap-2 mb-2">
+                <img src="/placeholder.svg?height=24&width=24" alt="Employee" class="w-6 h-6 rounded-full" />
+                <span class="text-sm font-medium">David Wilson</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">EMP-015 • Operations Department</span>
+              </div>
+            </div>
+
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Assigned to:</span>
+                <span class="font-medium">Emily Chen</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Due Date:</span>
+                <span class="font-medium">Jan 26, 2024</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Current Action:</span>
+                <span class="font-medium">Investigation</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Evidence:</span>
+                <span class="font-medium text-blue-600 dark:text-blue-400">4 items</span>
+              </div>
+            </div>
+
+            <div class="border-t dark:border-dark-border pt-4">
+              <div class="flex gap-2">
+                <button class="flex-1 px-3 py-2 text-sm bg-hr-primary text-white rounded hover:bg-hr-accent transition-colors" onclick="openCaseDetails('DC-2024-005')">
+                  View Details
+                </button>
+                <button class="px-3 py-2 text-sm border border-gray-300 dark:border-dark-border rounded hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="px-3 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Case Card 6 - Moderate -->
+        <div class="bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border hover:shadow-xl transition-shadow">
+          <div class="p-6">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
+                  <i class="fas fa-user-slash text-orange-600 dark:text-orange-400 text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white">DC-2024-006</h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Created: Jan 19, 2024</p>
+                </div>
+              </div>
+              <div class="flex flex-col gap-2">
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">Moderate</span>
+                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">Pending Action</span>
+              </div>
+            </div>
+            
+            <div class="mb-4">
+              <h4 class="font-medium text-gray-900 dark:text-white mb-2">Excessive Absenteeism</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Unauthorized absences exceeding company policy limits without proper documentation or approval.</p>
+              
+              <div class="flex items-center gap-2 mb-2">
+                <img src="/placeholder.svg?height=24&width=24" alt="Employee" class="w-6 h-6 rounded-full" />
+                <span class="text-sm font-medium">Jennifer Brown</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">EMP-009 • Finance Department</span>
+              </div>
+            </div>
+
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Assigned to:</span>
+                <span class="font-medium">Mike Davis</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Due Date:</span>
+                <span class="font-medium">Feb 2, 2024</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Current Action:</span>
+                <span class="font-medium">Written Warning</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Evidence:</span>
+                <span class="font-medium text-blue-600 dark:text-blue-400">3 items</span>
+              </div>
+            </div>
+
+            <div class="border-t dark:border-dark-border pt-4">
+              <div class="flex gap-2">
+                <button class="flex-1 px-3 py-2 text-sm bg-hr-primary text-white rounded hover:bg-hr-accent transition-colors" onclick="openCaseDetails('DC-2024-006')">
+                  View Details
+                </button>
+                <button class="px-3 py-2 text-sm border border-gray-300 dark:border-dark-border rounded hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="px-3 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                  <i class="fas fa-gavel"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cases Table View (Hidden by default) -->
+      <div id="casesTableView" class="hidden bg-white dark:bg-dark-surface rounded-xl shadow-lg border dark:border-dark-border overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50 dark:bg-dark-bg">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Case ID</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Employee</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Offense</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Severity</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Assigned To</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Due Date</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-dark-border">
+              <tr class="hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm font-mono text-hr-primary dark:text-hr-accent">DC-2024-001</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <img class="h-8 w-8 rounded-full" src="/placeholder.svg?height=32&width=32" alt="Employee">
+                    <div class="ml-3">
+                      <div class="text-sm font-medium text-gray-900 dark:text-white">Mike Davis</div>
+                      <div class="text-sm text-gray-500 dark:text-gray-400">EMP-003 • IT</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">Security Policy Violation</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400">Critical</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">Overdue</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">Emily Chen</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 dark:text-red-400">Jan 20, 2024</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div class="flex gap-2">
+                    <button class="text-hr-primary dark:text-hr-accent hover:underline">View</button>
+                    <button class="text-gray-600 dark:text-gray-400 hover:underline">Edit</button>
+                    <button class="text-red-600 dark:text-red-400 hover:underline">Action</button>
+                  </div>
+                </td>
+              </tr>
+              <!-- Additional table rows would go here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="mt-8 flex items-center justify-between">
+        <div class="text-sm text-gray-500 dark:text-gray-400">
+          Showing 6 of 23 active cases
+        </div>
+        <div class="flex gap-2">
+          <button class="px-3 py-1 text-sm border border-gray-300 dark:border-dark-border rounded hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+            Previous
+          </button>
+          <button class="px-3 py-1 text-sm bg-hr-primary text-white rounded hover:bg-hr-accent transition-colors">
+            1
+          </button>
+          <button class="px-3 py-1 text-sm border border-gray-300 dark:border-dark-border rounded hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+            2
+          </button>
+          <button class="px-3 py-1 text-sm border border-gray-300 dark:border-dark-border rounded hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+            3
+          </button>
+          <button class="px-3 py-1 text-sm border border-gray-300 dark:border-dark-border rounded hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+            Next
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+        © 2024 HR Disciplinary Policy Software. All rights reserved.
+      </div>
+    </main>
+  </div>
+
+  <!-- Case Details Modal -->
+  <div id="caseDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white dark:bg-dark-surface rounded-xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b dark:border-dark-border">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-hr-primary dark:text-white">Case Details - <span id="caseId">DC-2024-001</span></h3>
+          <button onclick="closeModal('caseDetailsModal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Case Information -->
+          <div class="lg:col-span-2 space-y-6">
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Case Information</h4>
+              <div class="bg-gray-50 dark:bg-dark-bg rounded-lg p-4 space-y-3">
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Offense Type:</span>
+                  <span class="font-medium">Security Policy Violation</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Severity:</span>
+                  <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400">Critical</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Status:</span>
+                  <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">Overdue</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Created Date:</span>
+                  <span class="font-medium">January 15, 2024</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Due Date:</span>
+                  <span class="font-medium text-red-600">January 20, 2024</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Description</h4>
+              <p class="text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-dark-bg rounded-lg p-4">
+                Employee accessed confidential client data without authorization and shared sensitive information with external parties. This violation compromises client trust and violates our data protection policies. Investigation revealed multiple instances of unauthorized access over the past two weeks.
+              </p>
+            </div>
+
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Timeline</h4>
+              <div class="space-y-4">
+                <div class="flex gap-4">
+                  <div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                  <div>
+                    <p class="font-medium">Case Created</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">January 15, 2024 - 9:30 AM</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Initial report filed by IT Security</p>
+                  </div>
+                </div>
+                <div class="flex gap-4">
+                  <div class="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                  <div>
+                    <p class="font-medium">Investigation Started</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">January 15, 2024 - 2:00 PM</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Assigned to Emily Chen for investigation</p>
+                  </div>
+                </div>
+                <div class="flex gap-4">
+                  <div class="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                  <div>
+                    <p class="font-medium">Employee Suspended</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">January 16, 2024 - 10:00 AM</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Immediate suspension pending investigation</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Employee & Assignment Info -->
+          <div class="space-y-6">
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Employee</h4>
+              <div class="bg-gray-50 dark:bg-dark-bg rounded-lg p-4">
+                <div class="flex items-center gap-3 mb-3">
+                  <img src="/placeholder.svg?height=48&width=48" alt="Employee" class="w-12 h-12 rounded-full" />
+                  <div>
+                    <h5 class="font-medium text-gray-900 dark:text-white">Mike Davis</h5>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">EMP-003</p>
+                  </div>
+                </div>
+                <div class="space-y-2 text-sm">
+                  <div class="flex justify-between">
+                    <span class="text-gray-600 dark:text-gray-400">Department:</span>
+                    <span class="font-medium">IT</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600 dark:text-gray-400">Position:</span>
+                    <span class="font-medium">Software Developer</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600 dark:text-gray-400">Hire Date:</span>
+                    <span class="font-medium">March 2020</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600 dark:text-gray-400">Previous Cases:</span>
+                    <span class="font-medium text-orange-600">2</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Assignment</h4>
+              <div class="bg-gray-50 dark:bg-dark-bg rounded-lg p-4 space-y-3">
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Assigned To:</span>
+                  <span class="font-medium">Emily Chen</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Current Action:</span>
+                  <span class="font-medium">Suspension</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600 dark:text-gray-400">Next Action:</span>
+                  <span class="font-medium">Final Warning</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Evidence</h4>
+              <div class="space-y-2">
+                <div class="flex items-center gap-2 p-2 bg-gray-50 dark:bg-dark-bg rounded">
+                  <i class="fas fa-file-alt text-blue-500"></i>
+                  <span class="text-sm">Access Logs.pdf</span>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-gray-50 dark:bg-dark-bg rounded">
+                  <i class="fas fa-video text-red-500"></i>
+                  <span class="text-sm">Security Footage</span>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-gray-50 dark:bg-dark-bg rounded">
+                  <i class="fas fa-file-alt text-green-500"></i>
+                  <span class="text-sm">IT Audit Report.pdf</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-6 border-t dark:border-dark-border mt-6">
+          <button onclick="closeModal('caseDetailsModal')" class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+            Close
+          </button>
+          <button class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+            <i class="fas fa-edit mr-2"></i>Edit Case
+          </button>
+          <button class="px-6 py-2 bg-hr-primary text-white font-semibold rounded-lg hover:bg-hr-accent transition-colors">
+            <i class="fas fa-gavel mr-2"></i>Take Action
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Case Modal -->
+  <div id="newCaseModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white dark:bg-dark-surface rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b dark:border-dark-border">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-hr-primary dark:text-white">Create New Disciplinary Case</h3>
+          <button onclick="closeModal('newCaseModal')" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+      </div>
+      <div class="p-6">
+        <form class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Employee</label>
+              <select class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+                <option>Select employee...</option>
+                <option>John Smith (EMP-001)</option>
+                <option>Sarah Johnson (EMP-002)</option>
+                <option>Mike Davis (EMP-003)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Severity Level</label>
+              <select class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+                <option>Select severity...</option>
+                <option>Minor</option>
+                <option>Moderate</option>
+                <option>Major</option>
+                <option>Critical</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Offense Type</label>
+            <input type="text" placeholder="Enter offense type" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+            <textarea rows="4" placeholder="Provide detailed description of the incident" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent"></textarea>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned To</label>
+              <select class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+                <option>Select HR personnel...</option>
+                <option>Sarah Wilson</option>
+                <option>Mike Davis</option>
+                <option>Emily Chen</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Due Date</label>
+              <input type="date" class="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg dark:bg-dark-bg dark:text-white focus:outline-none focus:ring-2 focus:ring-hr-accent">
+            </div>
+          </div>
+          <div class="flex justify-end gap-3 pt-4">
+            <button type="button" onclick="closeModal('newCaseModal')" class="px-4 py-2 border border-gray-300 dark:border-dark-border rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg transition-colors">
+              Cancel
+            </button>
+            <button type="submit" class="px-6 py-2 bg-hr-primary text-white font-semibold rounded-lg hover:bg-hr-accent transition-colors">
+              Create Case
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Theme toggle functionality
+    const toggleButton = document.getElementById('themeToggle');
+    const icon = document.getElementById('themeIcon');
+    const html = document.documentElement;
+
+    const updateIcon = () => {
+      icon.classList.toggle('fa-sun', !html.classList.contains('dark'));
+      icon.classList.toggle('fa-moon', html.classList.contains('dark'));
+    };
+
+    toggleButton.addEventListener('click', () => {
+      html.classList.toggle('dark');
+      localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+      updateIcon();
+    });
+
+    // Initial theme setup
+    if (localStorage.getItem('theme') === 'light') {
+      html.classList.remove('dark');
+    } else {
+      html.classList.add('dark');
+    }
+    updateIcon();
+
+    // View toggle functionality
+    const cardViewBtn = document.getElementById('cardView');
+    const tableViewBtn = document.getElementById('tableView');
+    const casesCardView = document.getElementById('casesCardView');
+    const casesTableView = document.getElementById('casesTableView');
+
+    cardViewBtn.addEventListener('click', () => {
+      // Show card view
+      casesCardView.classList.remove('hidden');
+      casesTableView.classList.add('hidden');
+      
+      // Update button styles
+      cardViewBtn.classList.add('bg-hr-primary', 'text-white');
+      cardViewBtn.classList.remove('border', 'border-gray-300', 'dark:border-dark-border', 'hover:bg-gray-100', 'dark:hover:bg-dark-bg');
+      
+      tableViewBtn.classList.remove('bg-hr-primary', 'text-white');
+      tableViewBtn.classList.add('border', 'border-gray-300', 'dark:border-dark-border', 'hover:bg-gray-100', 'dark:hover:bg-dark-bg');
+    });
+
+    tableViewBtn.addEventListener('click', () => {
+      // Show table view
+      casesCardView.classList.add('hidden');
+      casesTableView.classList.remove('hidden');
+      
+      // Update button styles
+      tableViewBtn.classList.add('bg-hr-primary', 'text-white');
+      tableViewBtn.classList.remove('border', 'border-gray-300', 'dark:border-dark-border', 'hover:bg-gray-100', 'dark:hover:bg-dark-bg');
+      
+      cardViewBtn.classList.remove('bg-hr-primary', 'text-white');
+      cardViewBtn.classList.add('border', 'border-gray-300', 'dark:border-dark-border', 'hover:bg-gray-100', 'dark:hover:bg-dark-bg');
+    });
+
+    // Modal functionality
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+
+    function openCaseDetails(caseId) {
+      document.getElementById('caseId').textContent = caseId;
+      openModal('caseDetailsModal');
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(event) {
+      const modals = document.querySelectorAll('[id$="Modal"]');
+      modals.forEach(modal => {
+        if (event.target === modal) {
+          closeModal(modal.id);
+        }
+      });
+    });
+
+    // Search functionality
+    document.querySelector('input[placeholder*="Search cases"]').addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const caseCards = document.querySelectorAll('#casesCardView > div');
+      
+      caseCards.forEach(card => {
+        const caseText = card.textContent.toLowerCase();
+        if (caseText.includes(searchTerm)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+
+    // Filter functionality
+    const filterSelects = document.querySelectorAll('select');
+    filterSelects.forEach(select => {
+      select.addEventListener('change', function() {
+        // Filter logic would go here
+        console.log('Filter changed:', this.value);
+      });
+    });
+  </script>
+
+</body>
+</html>
