@@ -1,0 +1,3324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KPI Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            // Dark Mode configuration applied only to elements with 'dark:' prefix
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    // Use Roboto as the primary font
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                    },
+                    colors: {
+                        // Google-inspired colors
+                        'google-blue': '#4285F4',
+                        'google-green': '#34A853',
+                        'google-red': '#EA4335',
+                        'google-yellow': '#FBBC05',
+                        // Coaching Log/IR NTE colors
+                        'brand-accent': '#CBEB33',
+                        'brand-dark': '#B5D12F',
+                        // Custom dark mode palette for isolated dark elements
+                        'bg-dark': '#0f172a', // Main dark background
+                        'text-dark': '#f1f5f9', // Light text on dark backgrounds
+                        'card-dark': '#1e293b', // Card/Header dark background
+                        'border-dark': '#334155', // Dark border/secondary background
+                        'danger': '#ef4444',
+                        'danger-dark': '#dc2626',
+                        'bg-light': '#f8fafc', // IR Log standard light background
+                        'text-light': '#1e293b', // IR Log standard dark text
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom styles for Drawer and active tab indicator (KPI Dashboard) */
+        .drawer {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(-100%);
+        }
+
+        .drawer-open {
+            transform: translateX(0);
+        }
+
+        .tab-active {
+            background-color: theme('colors.blue.50');
+            color: theme('colors.google-blue');
+            font-weight: 500;
+            border-radius: 9999px;
+        }
+
+        .tab-active .material-symbols-outlined {
+            color: theme('colors.google-blue');
+        }
+
+        /* Hover state for nav items */
+        .nav-item:hover {
+            background-color: theme('colors.gray.100');
+            border-radius: 9999px;
+        }
+
+        /* Style for the main KPI cards */
+        .kpi-card {
+            transition: box-shadow 0.3s ease;
+        }
+
+        .kpi-card:hover {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Coaching Log/IR NTE loading animation */
+        .animate-spin-slow {
+            animation: spin 2.5s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Styles for Print View Modal (Coaching Log) */
+        @media print {
+
+            /* Hide all UI elements from the main dashboard when printing the Coaching Log modal */
+            body>*:not(#modalBg):not(#deleteConfirmModal) {
+                display: none !important;
+            }
+
+            /* Only show the view modal content */
+            #modalBg {
+                display: flex !important;
+                position: static !important;
+                background: none !important;
+                width: 100% !important;
+                height: auto !important;
+                overflow: visible !important;
+                padding: 0 !important;
+            }
+
+            #modalContent {
+                box-shadow: none !important;
+                border: none !important;
+                transform: none !important;
+                opacity: 1 !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 3rem !important;
+                min-height: 100vh;
+            }
+
+            /* Hide close and print buttons in print view */
+            #modalContent button,
+            #modalContent .modal-actions {
+                display: none !important;
+            }
+
+            /* Ensure the content is black on white paper */
+            #modalContent,
+            #modalContent * {
+                color: #000 !important;
+                background-color: white !important;
+                filter: none !important;
+            }
+
+            .view-field {
+                border-bottom: 1px solid #ddd !important;
+                padding-bottom: 0.5rem !important;
+                margin-bottom: 1rem !important;
+            }
+
+            .view-title {
+                font-weight: bold !important;
+                color: #4b5563 !important;
+                text-transform: uppercase;
+                font-size: 0.875rem;
+            }
+
+            .view-value {
+                font-size: 1rem !important;
+                padding-top: 0.25rem !important;
+            }
+        }
+
+        /* IR / NTE Log specific styles */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+    </style>
+
+    <!-- Hide scrollbar globally -->
+<style>
+  .custom-scrollbar-hide::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+  }
+  .custom-scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+</style>
+
+
+    <!-- Tab Button Styles -->
+    <style>
+        .tab-button {
+            background-color: #f3f4f6;
+            color: #374151;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            transition: all 0.3s;
+        }
+
+        .tab-button:hover {
+            background-color: #e5e7eb;
+        }
+
+        .dark .tab-button {
+            background-color: #1f2937;
+            color: #e5e7eb;
+        }
+
+        .active-tab {
+            background-color: #CBEB33 !important;
+            color: #04101d !important;
+            font-weight: 600;
+        }
+
+        .table-tab {
+            display: none;
+        }
+
+        .active-tab-content {
+            display: block;
+        }
+    </style>
+
+    <!-- Loading spinner styles for tables (brand palette) -->
+    <style>
+        .table-spinner {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.85);
+            z-index: 40;
+            border-radius: 0.75rem; /* match container rounded */
+        }
+
+        .table-spinner.hidden { display: none; }
+
+        .spinner-ring {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 6px solid rgba(0,0,0,0.08);
+            border-top-color: #CBEB33; /* brand-accent */
+            border-right-color: #B5D12F; /* brand-dark-ish */
+            animation: spin 1s linear infinite;
+            box-shadow: 0 4px 12px rgba(20,20,20,0.06);
+        }
+
+        .table-spinner .spinner-text {
+            margin-top: 0.5rem;
+            font-weight: 600;
+            color: #374151; /* slate-700 */
+        }
+
+        .dark .table-spinner { background: rgba(15,23,42,0.85); }
+        .dark .table-spinner .spinner-text { color: var(--tw-text-opacity, 1); }
+    </style>
+
+    <!-- Google-like compact table styling for SOP and Tools (invisible scrollbar) -->
+    <style>
+        /* Scroll container: vertical scrolling while allowing horizontal overflow */
+        #sop .overflow-x-auto, #tools .overflow-x-auto {
+            max-height: 52vh; /* dashboard-appropriate height */
+            overflow-y: auto;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Invisible scrollbar: still scrollable but no visible track */
+        #sop .overflow-x-auto::-webkit-scrollbar, #tools .overflow-x-auto::-webkit-scrollbar {
+            width: 0px;
+            height: 0px;
+        }
+        #sop .overflow-x-auto, #tools .overflow-x-auto {
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge legacy */
+        }
+
+        /* Google DataTable-like visual: compact, clear typography */
+        #sop table, #tools table {
+            font-family: Roboto, system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial;
+            font-size: 0.9rem;
+            width: 100%;
+            border-collapse: collapse;
+            background: transparent;
+        }
+
+        /* Header */
+        #sop thead th, #tools thead th {
+            padding: 10px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #374151; /* slate-700 */
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            text-align: left;
+            background: linear-gradient(180deg,#ffffff,#f8fafc);
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            border-bottom: 1px solid rgba(16,24,40,0.06);
+        }
+
+        /* Body rows: allow wrapping and proper alignment */
+        #sop tbody td, #tools tbody td {
+            padding: 8px 12px;
+            vertical-align: top; /* align multiline content at top for readability */
+            color: #111827; /* slate-900 */
+            white-space: normal; /* allow wrapping */
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
+        /* Preserve no-wrap for narrow columns (ID and link columns) */
+        #sop tbody td:nth-child(1), #sop tbody td:nth-child(5),
+        #tools tbody td:nth-child(1), #tools tbody td:nth-child(5), #tools tbody td:nth-child(6) {
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        /* Alternating row subtle lines to match Google Table */
+        #sop tbody tr:nth-child(even), #tools tbody tr:nth-child(even) {
+            background: rgba(15,23,42,0.02);
+        }
+
+        #sop tbody tr:hover, #tools tbody tr:hover {
+            background: rgba(16,185,129,0.06); /* subtle green-ish hover for focus */
+        }
+
+        /* Let rows size naturally when content wraps */
+        #sop tbody tr, #tools tbody tr { height: auto; }
+
+        /* Dark mode: invert colors and keep visibility */
+        .dark #sop thead th, .dark #tools thead th {
+            background: linear-gradient(180deg,#0b1220,#0f172a);
+            color: #cbd5e1;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .dark #sop tbody td, .dark #tools tbody td {
+            color: #cbd5e1;
+        }
+        .dark #sop tbody tr:nth-child(even), .dark #tools tbody tr:nth-child(even) {
+            background: rgba(255,255,255,0.01);
+        }
+        .dark #sop tbody tr:hover, .dark #tools tbody tr:hover {
+            background: rgba(203,235,51,0.06);
+        }
+
+        /* Gentle card look around the table area */
+        #sop .overflow-x-auto, #tools .overflow-x-auto {
+            border-radius: 0 0 12px 12px;
+        }
+
+        /* Make spinner overlay not block scroll gestures but still visually on top */
+        .table-spinner { pointer-events: none; }
+    </style>
+
+
+</head>
+
+<body class="min-h-screen bg-gray-100 text-gray-800 font-sans transition-colors duration-500">
+
+<aside id="drawer"
+  class="drawer fixed top-0 left-0 h-full w-64 bg-white shadow-2xl z-50 dark:bg-card-dark dark:text-text-dark">
+  <!-- Header -->
+<div class="flex items-center justify-between p-4 pt-5 border-b sticky top-0 bg-white dark:bg-card-dark dark:border-border-dark z-10">
+  <!-- Logo -->
+  <img src="dmi_logo.png" alt="Digital Minds BPO Logo"
+    class="h-10 object-contain" />
+
+  <!-- Close button -->
+  <button id="closeDrawer"
+    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-text-dark p-2 rounded-full hover:bg-gray-100 dark:hover:bg-border-dark transition-all duration-300">
+    <span class="material-symbols-outlined text-2xl">close</span>
+  </button>
+</div>
+<script type="text/javascript">
+// Load Google Charts Calendar package dynamically if not already loaded
+(function() {
+    function loadGoogleCharts(cb) {
+        if (window.google && google.charts && google.visualization) return cb();
+        var s = document.createElement('script');
+        s.src = 'https://www.gstatic.com/charts/loader.js';
+        s.onload = function() {
+            google.charts.load('current', {packages:['calendar']});
+            google.charts.setOnLoadCallback(cb);
+        };
+        document.head.appendChild(s);
+    }
+
+    // drawAttendance exposed globally so showTab can call it
+    window.drawAttendance = function drawAttendance() {
+        loadGoogleCharts(function() {
+            try {
+                const container = document.getElementById('attendanceCalendar');
+                if (!container) return;
+
+                // Build mock data for demo (replace with real fetch when available)
+                const dataTable = new google.visualization.DataTable();
+                dataTable.addColumn({ type: 'date', id: 'Date' });
+                dataTable.addColumn({ type: 'number', id: 'Status' });
+
+                const start = new Date();
+                start.setMonth(start.getMonth() - 3);
+                dataTable.removeRows(0, dataTable.getNumberOfRows());
+                for (let d = new Date(start); d <= new Date(); d.setDate(d.getDate() + 1)) {
+                    let status = 1;
+                    const r = Math.random();
+                    if (r < 0.03) status = 9;
+                    else if (r < 0.06) status = 4;
+                    else if (r < 0.08) status = 6;
+                    dataTable.addRow([new Date(d), status]);
+                }
+
+                // Determine sizing from the container so the chart fills the card
+                const rect = container.getBoundingClientRect();
+                const width = Math.max(rect.width || container.clientWidth, 320);
+                // Use the inline style height if set, otherwise derive from viewport
+                let height = 0;
+                if (container.style && container.style.height && container.style.height.includes('px')) {
+                    height = parseInt(container.style.height, 10) || Math.floor(window.innerHeight * 0.6);
+                } else {
+                    height = Math.max(320, Math.min(Math.floor(window.innerHeight * 0.76), 900));
+                }
+
+                const chart = new google.visualization.Calendar(container);
+                const options = {
+                    title: "Attendance",
+                    height: height,
+                    width: width,
+                    calendar: { cellSize: 14 },
+                    colorAxis: { values: [1,4,6,9], colors: ['#38761D','#F59E0B','#6FA8DC','#EF4444'] },
+                    noDataPattern: { backgroundColor: 'transparent', color: 'transparent' }
+                };
+                chart.draw(dataTable, options);
+
+                // Make sure employee meta doesn't overflow
+                const nameEl = document.getElementById('attName');
+                const noEl = document.getElementById('attNo');
+                if (nameEl) nameEl.style.whiteSpace = 'normal';
+                if (noEl) noEl.style.whiteSpace = 'normal';
+
+            } catch (err) {
+                console.error('Error drawing attendance chart', err);
+            }
+        });
+    };
+
+    // redraw on selector change + update employee info
+    function attachAttendanceHandlers() {
+        const camp = document.getElementById('attCampaign');
+        const emp = document.getElementById('attEmployee');
+        if (camp) camp.addEventListener('change', function(){
+            // placeholder for future campaign-specific behavior
+            drawAttendance();
+        });
+        if (emp) emp.addEventListener('change', function(){
+            const selectedName = emp.options[emp.selectedIndex] ? emp.options[emp.selectedIndex].text : '';
+            document.getElementById('attName').textContent = selectedName || '—';
+            document.getElementById('attNo').textContent = 'EMP' + (emp.selectedIndex + 1).toString().padStart(3, '0');
+            drawAttendance();
+        });
+
+        // debounce resize
+        let resizeTimer = null;
+        window.addEventListener('resize', function(){
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function(){ if (typeof drawAttendance === 'function') drawAttendance(); }, 150);
+        });
+    }
+
+    // attach handlers after DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', attachAttendanceHandlers);
+    } else {
+        attachAttendanceHandlers();
+    }
+})();
+</script>
+
+
+  <!-- Navigation -->
+  <nav class="p-3 text-sm font-normal text-gray-700 dark:text-gray-300">
+    <ul class="space-y-1">
+      <!-- Reusable nav item -->
+      <li>
+        <button
+          class="nav-item group flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                 hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]"
+          data-tab-title="Summary" onclick="showTab('summary', event)">
+          <span class="material-symbols-outlined text-xl transition-colors duration-300">dashboard</span>
+          <span class="transition-colors duration-300">Dashboard</span>
+        </button>
+      </li>
+
+      <li>
+        <button
+          class="nav-item group flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                 hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]"
+          data-tab-title="KPI Dashboard" onclick="showTab('kpi-dashboard', event)">
+          <span class="material-symbols-outlined text-xl">insights</span>
+          <span>KPI</span>
+        </button>
+      </li>
+
+
+  <!-- SOP Navigation -->
+  <li>
+    <button
+      class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+             hover:text-google-green dark:hover:bg-border-dark"
+      data-tab-title="SOP Documents" onclick="showTab('sop', event)">
+      <span class="material-symbols-outlined text-xl text-google-green">description</span>
+      <span>SOP Documents</span>
+    </button>
+  </li>
+
+  <!-- Tools Navigation -->
+  <li>
+    <button
+      class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+             hover:text-google-green dark:hover:bg-border-dark"
+      data-tab-title="Campaign Tools" onclick="showTab('tools', event)">
+      <span class="material-symbols-outlined text-xl text-google-green">build</span>
+      <span>Campaign Tools</span>
+    </button>
+  </li>
+
+    <!-- Attendance Navigation -->
+    <li>
+        <button
+            class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                         hover:text-google-blue dark:hover:bg-border-dark"
+            data-tab-title="Attendance" onclick="showTab('attendance', event)">
+            <span class="material-symbols-outlined text-xl text-google-blue">calendar_month</span>
+            <span>Attendance</span>
+        </button>
+    </li>
+
+
+
+      <li>
+        <button
+          class="nav-item group flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                 hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]"
+          data-tab-title="Coaching Sessions" onclick="showTab('coaching-log', event)">
+          <span class="material-symbols-outlined text-xl">person_pin_circle</span>
+          <span>Coaching Log</span>
+        </button>
+      </li>
+
+      <li>
+        <button
+          class="nav-item group flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                 hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]"
+          data-tab-title="IR / NTE Log" onclick="showTab('ir-nte-log', event)">
+          <span class="material-symbols-outlined text-xl">gavel</span>
+          <span>IR / NTE Log</span>
+        </button>
+      </li>
+
+      <li>
+        <button
+          class="nav-item group flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                 hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]"
+          data-tab-title="Team Alpha Dashboard" onclick="showTab('alpha', event)">
+          <span class="material-symbols-outlined text-xl">group</span>
+          <span>Team Alpha</span>
+        </button>
+      </li>
+
+      <li>
+        <button
+          class="nav-item group flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                 hover:bg-[#e3f37b] hover:text-black dark:hover:bg-border-dark dark:hover:text-[#CBEB33]"
+          data-tab-title="Team Bravo Dashboard" onclick="showTab('bravo', event)">
+          <span class="material-symbols-outlined text-xl">group</span>
+          <span>Team Bravo</span>
+        </button>
+      </li>
+
+      <li>
+        <button
+          class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                 hover:text-google-green dark:hover:bg-border-dark"
+          data-tab-title="Top Gainers Report" onclick="showTab('gainers', event)">
+          <span class="material-symbols-outlined text-xl text-google-green">trending_up</span>
+          <span>Performers</span>
+        </button>
+      </li>
+
+      <li>
+        <button
+          class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02]
+                 hover:text-google-red dark:hover:bg-border-dark"
+          data-tab-title="Underperformers Report" onclick="showTab('losers', event)">
+          <span class="material-symbols-outlined text-xl text-google-red">trending_down</span>
+          <span>Underperformers</span>
+        </button>
+      </li>
+
+      <li>
+<button
+  class="nav-item flex items-center gap-3 p-3 w-full text-left rounded-md transition-all duration-300 ease-out transform-gpu hover:scale-[1.02] hover:text-google-blue dark:hover:bg-border-dark"
+  onclick="window.location.href='kb.html'">
+  <span class="material-symbols-outlined text-xl text-google-blue">link</span>
+  <span>Quick Links</span>
+</button>
+
+</li>
+
+
+
+    </ul>
+  </nav>
+</aside>
+
+
+    <div id="overlay" class="fixed inset-0 bg-black bg-opacity-30 hidden z-40 transition-opacity duration-300"></div>
+
+    <div id="page-content">
+        <header
+            class="flex items-center gap-4 bg-white dark:bg-card-dark p-4 shadow-md sticky top-0 z-30 transition-colors duration-500 border-b border-gray-100 dark:border-border-dark">
+            <button id="menuBtn"
+                class="text-gray-600 dark:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-border-dark transition">
+                <span class="material-symbols-outlined text-2xl">menu</span>
+            </button>
+            <h1 id="mainTitleContainer" class="text-2xl font-extrabold text-gray-900 dark:text-text-dark">
+            </h1>
+            <button id="themeToggle"
+                class="ml-auto p-2 rounded-full text-gray-800 dark:text-text-dark bg-gray-100 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark transition-all duration-300 transform hover:scale-105"
+                aria-label="Toggle Dark Mode">
+            </button>
+        </header>
+
+        <main class="max-w-7xl mx-auto p-6 lg:p-10 space-y-12">
+
+<!-- SOP Page -->
+<div id="sop" class="tab-content hidden">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 mt-2">
+        <!-- Search -->
+        <div class="relative w-full md:w-1/3">
+            <input type="text" id="sopSearch" onkeyup="handleSOPSearch()"
+                placeholder="Search by Document Name, Campaign, or Description..."
+                class="w-full p-3 pl-10 border border-gray-300 rounded-full focus:ring-2 focus:ring-brand-accent 
+                       focus:border-brand-accent dark:bg-card-dark dark:border-border-dark dark:text-text-dark 
+                       transition shadow-md">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 
+                       text-gray-400 text-xl">search</span>
+        </div>
+
+        <!-- Action -->
+        <a href="#" target="_blank"
+            class="inline-flex items-center bg-brand-accent hover:bg-brand-dark text-bg-dark px-6 py-3 
+                   rounded-full shadow-lg font-bold transition duration-300 transform hover:scale-[1.03] text-lg">
+            <i class="fas fa-file-alt mr-3"></i>New SOP Entry
+        </a>
+    </div>
+
+    <!-- Table -->
+    <div class="mt-6 bg-white dark:bg-card-dark rounded-2xl shadow-2xl shadow-gray-200/50 
+                dark:shadow-xl dark:shadow-black/50 overflow-hidden transition-colors duration-500 
+                border border-gray-100 dark:border-border-dark">
+        <div class="relative overflow-x-auto">
+            <div id="sopLoadingSpinner" class="table-spinner hidden">
+                <div class="flex flex-col items-center">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-text">Loading SOP documents...</div>
+                </div>
+            </div>
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-100 dark:bg-border-dark text-left">
+                    <tr>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">ID</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Document Name</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Campaign</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Description</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Link</th>
+                    </tr>
+                </thead>
+                <tbody id="sopTable" class="divide-y divide-gray-200 dark:divide-border-dark">
+                    <tr class="text-center">
+                        <td colspan="5" class="p-8 text-gray-500 dark:text-gray-400">Loading SOP data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Tools Page -->
+<div id="tools" class="tab-content hidden">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 mt-2">
+        <!-- Search -->
+        <div class="relative w-full md:w-1/3">
+            <input type="text" id="toolsSearch" onkeyup="handleToolsSearch()"
+                placeholder="Search by Tool Name, Campaign, or Description..."
+                class="w-full p-3 pl-10 border border-gray-300 rounded-full focus:ring-2 focus:ring-brand-accent 
+                       focus:border-brand-accent dark:bg-card-dark dark:border-border-dark dark:text-text-dark 
+                       transition shadow-md">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 
+                       text-gray-400 text-xl">search</span>
+        </div>
+
+        <!-- Action -->
+        <a href="#" target="_blank"
+            class="inline-flex items-center bg-brand-accent hover:bg-brand-dark text-bg-dark px-6 py-3 
+                   rounded-full shadow-lg font-bold transition duration-300 transform hover:scale-[1.03] text-lg">
+            <i class="fas fa-tools mr-3"></i>New Tool Entry
+        </a>
+    </div>
+
+    <!-- Table -->
+    <div class="mt-6 bg-white dark:bg-card-dark rounded-2xl shadow-2xl shadow-gray-200/50 
+                dark:shadow-xl dark:shadow-black/50 overflow-hidden transition-colors duration-500 
+                border border-gray-100 dark:border-border-dark">
+        <div class="relative overflow-x-auto">
+            <div id="toolsLoadingSpinner" class="table-spinner hidden">
+                <div class="flex flex-col items-center">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-text">Loading Tools data...</div>
+                </div>
+            </div>
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-100 dark:bg-border-dark text-left">
+                    <tr>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">ID</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Tool Name</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Campaign</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Description</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">URL</th>
+                        <th class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">Work Instruction</th>
+                    </tr>
+                </thead>
+                <tbody id="toolsTable" class="divide-y divide-gray-200 dark:divide-border-dark">
+                    <tr class="text-center">
+                        <td colspan="6" class="p-8 text-gray-500 dark:text-gray-400">Loading Tools data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+        </div>
+
+
+<div id="attendance" class="tab-content hidden">
+    <div class="mt-6 grid grid-cols-1 gap-6">
+        <!-- Filters and header spacing (filters sit below main app header) -->
+        <div class="bg-white dark:bg-card-dark rounded-2xl p-4 shadow-sm">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-text-dark mb-1">Attendance Overview</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">Choose month and team to view campaign attendance heatmaps.</p>
+                </div>
+            </div>
+
+            <div class="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                <div class="w-full sm:w-64">
+                    <label class="block text-xs text-gray-500 dark:text-gray-400">Month</label>
+                    <select id="monthSelector" class="w-full p-2 rounded-lg border border-gray-200 dark:border-border-dark bg-white dark:bg-bg-dark dark:text-text-dark">
+                        <option value="" disabled>Select Month</option>
+                        <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+                        <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+                        <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+                        <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                    </select>
+                </div>
+
+                <div class="w-full sm:w-64">
+                    <label class="block text-xs text-gray-500 dark:text-gray-400">Team</label>
+                    <select id="rosterSelector" class="w-full p-2 rounded-lg border border-gray-200 dark:border-border-dark bg-white dark:bg-bg-dark dark:text-text-dark">
+                        <option value="">All Teams</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-3 ml-auto">
+                    <button id="refreshBtn" title="Reload" class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-border-dark dark:hover:bg-gray-700 transition">
+                        <span class="material-symbols-outlined">refresh</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI cards + layout: campaign summary + legend sidebar -->
+        <div class="grid grid-cols-1 lg:grid-cols-6 gap-6">
+            <section class="lg:col-span-4 bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-border-dark shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-text-dark">Campaign Summary</h3>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">Updated live</div>
+                </div>
+                <div class="relative overflow-x-auto">
+                    <div id="attendanceLoadingSpinner" class="table-spinner hidden">
+                        <div class="flex flex-col items-center">
+                            <div class="spinner-ring"></div>
+                            <div class="spinner-text">Loading attendance summary...</div>
+                        </div>
+                    </div>
+                    <table class="min-w-full text-sm">
+                        <thead class="table-head dark:bg-border-dark">
+                            <tr class="text-xs text-gray-600 dark:text-gray-300 uppercase">
+                                <th class="px-4 py-2 text-left">Campaign</th>
+                                <th class="px-4 py-2 text-center">Present</th>
+                                <th class="px-4 py-2 text-center">Late</th>
+                                <th class="px-4 py-2 text-center">Half Day</th>
+                                <th class="px-4 py-2 text-center">Absent</th>
+                                <th class="px-4 py-2 text-center">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="campaign-summary-body" class="divide-y divide-gray-100 dark:divide-border-dark"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <aside class="lg:col-span-2 bg-white dark:bg-card-dark rounded-2xl p-6 border border-gray-100 dark:border-border-dark shadow-sm">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-text-dark mb-4">Legend</h3>
+                <div class="grid grid-cols-1 gap-3 text-sm text-gray-700 dark:text-gray-300">
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#38761D]"></span><span>P – Present</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#EF4444]"></span><span>A – Absent</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#9CA3AF]"></span><span>Off – Day Off</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#F59E0B]"></span><span>L – Late</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#0000FF]"></span><span>VL – Vacation Leave</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#8E7CC3]"></span><span>T – Training</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#00FFFF]"></span><span>SUS – Suspended</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#00FF00]"></span><span>HD – Half Day</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#FACC15]"></span><span>L15 – Late 15m</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#FB923C]"></span><span>L30 – Late 30m</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#F97316]"></span><span>L45 – Late 45m</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#EA580C]"></span><span>L60 – Late 60m</span></div>
+                    <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-[#6FA8DC]"></span><span>SL – Sick Leave</span></div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Campaign Feed (heatmap tables) -->
+        <section>
+            <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-text-dark">Campaign Feed</h2>
+            <div id="campaign-feed" class="space-y-6"></div>
+        </section>
+
+        <footer class="py-6 text-center text-sm text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-border-dark">
+            &copy; 2025 Digital Minds BPO. All rights reserved.
+        </footer>
+    </div>
+</div>
+
+            <div id="coaching-log" class="tab-content hidden">
+                <div
+                    class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 mt-2">
+
+                    <div class="relative w-full md:w-1/3">
+                        <input type="text" id="searchInput" onkeyup="filterSessions()"
+                            placeholder="Search employee, coach, or focus area..."
+                            class="w-full p-3 pl-10 border border-gray-300 rounded-full focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition shadow-md">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">search</span>
+                    </div>
+
+                    <button onclick="openModal()"
+                        class="inline-flex items-center bg-brand-accent hover:bg-brand-dark text-bg-dark px-6 py-3 rounded-full shadow-lg font-bold transition duration-300 transform hover:scale-[1.03] text-lg">
+                        <i class="fas fa-plus-circle mr-3"></i>New Session
+                    </button>
+                </div>
+
+                <div
+                    class="mt-6 bg-white dark:bg-card-dark rounded-2xl shadow-2xl shadow-gray-200/50 dark:shadow-xl dark:shadow-black/50 overflow-hidden transition-colors duration-500 border border-gray-100 dark:border-border-dark">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-gray-100 dark:bg-border-dark text-left">
+                                <tr>
+                                    <th
+                                        class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">
+                                        Date</th>
+                                    <th
+                                        class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">
+                                        Coach</th>
+                                    <th
+                                        class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">
+                                        Employee</th>
+                                    <th
+                                        class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">
+                                        Focus Area</th>
+                                    <th
+                                        class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">
+                                        Signed Form</th>
+                                    <th
+                                        class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider px-6 py-4">
+                                        Acknowledge</th>
+                                    <th
+                                        class="font-semibold text-gray-600 dark:text-text-dark uppercase tracking-wider text-center px-6 py-4">
+                                        Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sessionsTable" class="divide-y divide-gray-200 dark:divide-border-dark">
+                                <tr class="text-center">
+                                    <td colspan="7" class="p-8 text-gray-500 dark:text-gray-400">
+                                        Loading data...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ir-nte-log" class="tab-content hidden">
+
+                <div
+                    class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 mt-2">
+
+                    <div class="relative w-full md:w-1/3">
+                        <input type="text" id="irnteSearch" placeholder="Search by Employee, Code, or Campaign..."
+                            class="w-full p-3 pl-10 border border-gray-300 rounded-full focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition shadow-md"
+                            onkeyup="handleSearch()">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">search</span>
+                    </div>
+
+                    <button id="openCreateModal" onclick="openIRModal()"
+                        class="inline-flex items-center bg-brand-accent hover:bg-brand-dark text-bg-dark px-6 py-3 rounded-full shadow-lg font-bold transition duration-300 transform hover:scale-[1.03] text-lg">
+                        <i class="fas fa-plus-circle mr-3"></i>File New IR / NTE
+                    </button>
+                </div>
+
+                <div id="tableContainer"
+                    class="mt-6 bg-white dark:bg-card-dark rounded-2xl shadow-2xl shadow-gray-200/50 dark:shadow-xl dark:shadow-black/50 overflow-hidden transition-colors duration-500 border border-gray-100 dark:border-border-dark relative">
+
+                    <div id="loadingSpinner"
+                        class="absolute inset-0 bg-white/80 dark:bg-card-dark/80 backdrop-blur-sm flex justify-center items-center z-40 rounded-xl hidden">
+                        <div class="flex flex-col items-center">
+                            <div class="relative flex items-center justify-center">
+                                <div
+                                    class="w-16 h-16 border-4 border-gray-300 dark:border-border-dark border-t-brand-accent rounded-full animate-spin">
+                                </div>
+                                <div
+                                    class="absolute w-10 h-10 border-4 border-gray-200 dark:border-gray-700 border-b-brand-dark rounded-full animate-spin-slow">
+                                </div>
+                            </div>
+                            <p id="irNteLoadingText" class="mt-4 text-brand-accent text-lg font-semibold">Loading
+                                data...</p>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto no-scrollbar max-h-[70vh]">
+                        <table class="min-w-full text-sm">
+                            <thead
+                                class="bg-gray-100 dark:bg-border-dark text-left sticky top-0 z-10 text-gray-700 dark:text-text-dark">
+                                <tr>
+                                    <th class="font-semibold uppercase tracking-wider px-6 py-4">ID</th>
+                                    <th class="font-semibold uppercase tracking-wider px-6 py-4">Date Filed</th>
+                                    <th class="font-semibold uppercase tracking-wider px-6 py-4">Employee Name</th>
+                                    <th class="font-semibold uppercase tracking-wider px-6 py-4">NTE/IR Code</th>
+                                    <th class="font-semibold uppercase tracking-wider px-6 py-4">Category</th>
+                                    <th class="font-semibold uppercase tracking-wider px-6 py-4">Decision (HR)</th>
+                                    <th class="font-semibold uppercase tracking-wider text-center px-6 py-4">NTE Docs
+                                    </th>
+                                    <th class="font-semibold uppercase tracking-wider text-center px-6 py-4">NOD Docs
+                                    </th>
+                                    <th class="font-semibold uppercase tracking-wider text-center px-6 py-4">Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="irnteSessionsTable" class="divide-y divide-gray-200 dark:divide-border-dark">
+                                <tr>
+                                    <td colspan="9" class="text-center py-6 text-gray-500 dark:text-gray-400">Loading
+                                        IR/NTE
+                                        data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+
+
+
+
+
+            <div id="summary" class="tab-content">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div
+                        class="kpi-card bg-white dark:bg-card-dark shadow-lg rounded-xl p-6 flex flex-col border-t-4 border-google-blue dark:border-blue-700">
+                        <span class="material-symbols-outlined text-4xl text-google-blue mb-3">groups</span>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total
+                            Headcount</p>
+                        <p class="text-3xl font-bold mt-1 text-gray-900 dark:text-text-dark">91</p>
+                    </div>
+                    <div
+                        class="kpi-card bg-white dark:bg-card-dark shadow-lg rounded-xl p-6 flex flex-col border-t-4 border-google-green dark:border-green-700">
+                        <span class="material-symbols-outlined text-4xl text-google-green mb-3">person_check</span>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Active
+                            Agents</p>
+                        <p class="text-3xl font-bold mt-1 text-gray-900 dark:text-text-dark">74</p>
+                    </div>
+                    <div
+                        class="kpi-card bg-white dark:bg-card-dark shadow-lg rounded-xl p-6 flex flex-col border-t-4 border-google-red dark:border-red-700">
+                        <span class="material-symbols-outlined text-4xl text-google-red mb-3">schedule</span>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Lost
+                            Hours</p>
+                        <p class="text-3xl font-bold mt-1 text-gray-900 dark:text-text-dark">124</p>
+                    </div>
+                    <div
+                        class="kpi-card bg-white dark:bg-card-dark shadow-lg rounded-xl p-6 flex flex-col border-t-4 border-google-yellow dark:border-yellow-700">
+                        <span class="material-symbols-outlined text-4xl text-google-yellow mb-3">work_history</span>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Billed
+                            Hours</p>
+                        <p class="text-3xl font-bold mt-1 text-gray-900 dark:text-text-dark">1,680</p>
+                    </div>
+                </div>
+
+                <div
+                    class="mt-12 bg-white dark:bg-card-dark shadow-lg rounded-xl overflow-hidden transition-colors duration-500">
+                    <h3
+                        class="text-xl font-semibold p-6 border-b text-gray-700 dark:text-gray-300 dark:border-border-dark">
+                        Campaign Performance Snapshot</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm text-left">
+                            <thead
+                                class="bg-gray-50 dark:bg-border-dark text-gray-600 dark:text-text-dark uppercase text-xs border-b dark:border-border-dark">
+                                <tr>
+                                    <th class="px-6 py-3 font-medium">Campaign</th>
+                                    <th class="px-6 py-3 font-medium">LOB</th>
+                                    <th class="px-6 py-3 font-medium">Headcount</th>
+                                    <th class="px-6 py-3 font-medium">CSAT %</th>
+                                    <th class="px-6 py-3 font-medium">AHT (s)</th>
+                                    <th class="px-6 py-3 font-medium">Conversion Rate</th>
+                                    <th class="px-6 py-3 font-medium">Open Rate</th>
+                                    <th class="px-6 py-3 font-medium">FCR</th>
+                                    <th class="px-6 py-3 font-medium">Utilization %</th>
+                                    <th class="px-6 py-3 font-medium">SLA %</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-border-dark">
+                                <tr
+                                    class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition duration-150 ease-in-out text-gray-700 dark:text-gray-300">
+                                    <td class="px-6 py-4 font-semibold text-gray-800 dark:text-text-dark">Alpha</td>
+                                    <td class="px-6 py-4">Sales</td>
+                                    <td class="px-6 py-4">35</td>
+                                    <td class="px-6 py-4 text-google-green">89%</td>
+                                    <td class="px-6 py-4">540</td>
+                                    <td class="px-6 py-4 text-google-green font-semibold flex items-center gap-1">15.2%
+                                        <span class="material-symbols-outlined text-base">arrow_upward</span></td>
+                                    <td class="px-6 py-4 text-gray-400">N/A</td>
+                                    <td class="px-6 py-4 text-gray-400">N/A</td>
+                                    <td class="px-6 py-4">92%</td>
+                                    <td class="px-6 py-4 text-google-green">95%</td>
+                                </tr>
+                                <tr
+                                    class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition duration-150 ease-in-out text-gray-700 dark:text-gray-300">
+                                    <td class="px-6 py-4 font-semibold text-gray-800 dark:text-text-dark">Bravo</td>
+                                    <td class="px-6 py-4">Sales</td>
+                                    <td class="px-6 py-4">20</td>
+                                    <td class="px-6 py-4 text-google-green">91%</td>
+                                    <td class="px-6 py-4">480</td>
+                                    <td class="px-6 py-4 text-google-green font-semibold flex items-center gap-1">18.5%
+                                        <span class="material-symbols-outlined text-base">arrow_upward</span></td>
+                                    <td class="px-6 py-4 text-gray-400">N/A</td>
+                                    <td class="px-6 py-4 text-gray-400">N/A</td>
+                                    <td class="px-6 py-4">90%</td>
+                                    <td class="px-6 py-4 text-google-green">98%</td>
+                                </tr>
+                                <tr
+                                    class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition duration-150 ease-in-out text-gray-700 dark:text-gray-300">
+                                    <td class="px-6 py-4 font-semibold text-gray-800 dark:text-text-dark">Admin</td>
+                                    <td class="px-6 py-4">Sales</td>
+                                    <td class="px-6 py-4">40</td>
+                                    <td class="px-6 py-4 text-google-red">85%</td>
+                                    <td class="px-6 py-4">610</td>
+                                    <td class="px-6 py-4 text-google-red font-semibold flex items-center gap-1">10.1%
+                                        <span class="material-symbols-outlined text-base">arrow_downward</span></td>
+                                    <td class="px-6 py-4 text-gray-400">N/A</td>
+                                    <td class="px-6 py-4 text-gray-400">N/A</td>
+                                    <td class="px-6 py-4">88%</td>
+                                    <td class="px-6 py-4">90%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+
+
+<!-- KPI Dashboard -->
+<div id="kpi-dashboard" class="tab-content">
+
+  <!-- Tabs -->
+  <div class="flex items-center justify-start space-x-3 mb-4 border-b dark:border-border-dark">
+    <button id="mainTab"
+      class="tab-btn px-4 py-2 text-sm font-semibold border-b-2 border-google-blue text-google-blue dark:text-blue-400">
+      Overview
+    </button>
+    <button id="campaignTab"
+      class="tab-btn px-4 py-2 text-sm font-semibold text-gray-500 hover:text-google-blue dark:text-gray-400 dark:hover:text-blue-400">
+      Campaigns
+    </button>
+    <button id="lookerTab"
+      class="tab-btn px-4 py-2 text-sm font-semibold text-gray-500 hover:text-google-blue dark:text-gray-400 dark:hover:text-blue-400">
+      Looker Studio
+    </button>
+  </div>
+
+
+
+<!-- === MAIN TAB === -->
+<div id="mainContent">
+  <!-- KPI CARDS -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-2">
+    <div
+      class="bg-white dark:bg-card-dark border border-gray-100 dark:border-border-dark rounded-xl shadow-md p-6 text-left transition hover:shadow-lg">
+      <span class="material-symbols-outlined text-4xl text-google-blue mb-2">groups</span>
+      <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">Total Headcount</h3>
+      <p class="text-3xl font-bold text-gray-900 dark:text-text-dark mt-1">74</p>
+    </div>
+
+    <div
+      class="bg-white dark:bg-card-dark border border-gray-100 dark:border-border-dark rounded-xl shadow-md p-6 text-left transition hover:shadow-lg">
+      <span class="material-symbols-outlined text-4xl text-google-green mb-2">checklist</span>
+      <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">No. of KPIs</h3>
+      <p class="text-3xl font-bold text-gray-900 dark:text-text-dark mt-1">42</p>
+    </div>
+
+    <div
+      class="bg-white dark:bg-card-dark border border-gray-100 dark:border-border-dark rounded-xl shadow-md p-6 text-left transition hover:shadow-lg">
+      <span class="material-symbols-outlined text-4xl text-google-yellow mb-2">verified</span>
+      <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">Passed KPIs</h3>
+      <p class="text-3xl font-bold text-google-green mt-1">36</p>
+    </div>
+
+    <div
+      class="bg-white dark:bg-card-dark border border-gray-100 dark:border-border-dark rounded-xl shadow-md p-6 text-left transition hover:shadow-lg">
+      <span class="material-symbols-outlined text-4xl text-google-red mb-2">cancel</span>
+      <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase">Failed KPIs</h3>
+      <p class="text-3xl font-bold text-google-red mt-1">6</p>
+    </div>
+  </div>
+
+  <!-- === CAMPAIGN / REPORT / DRIVE TABLE === -->
+  <div class="mt-8 overflow-x-auto">
+    <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Campaign Reports & Drive Links</h2>
+    <table class="min-w-full border border-gray-200 dark:border-border-dark rounded-lg overflow-hidden">
+      <thead class="bg-gray-100 dark:bg-border-dark">
+        <tr>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Campaign</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Report</th>
+          <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Google Drive Link</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white dark:bg-card-dark divide-y divide-gray-200 dark:divide-border-dark">
+        <tr class="hover:bg-gray-50 dark:hover:bg-border-dark">
+          <td class="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">Network Capital</td>
+          <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">August 2025</td>
+          <td class="px-4 py-3 text-sm">
+            <a href="https://drive.google.com/file/d/1ICbWEuMseUlRzLQm3jem9Q4_GF9zMx7A/view?usp=drive_link" target="_blank"
+               class="text-blue-600 dark:text-blue-400 hover:underline">Open Link</a>
+          </td>
+        </tr>
+        <tr class="hover:bg-gray-50 dark:hover:bg-border-dark">
+          <td class="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">Network Capital</td>
+          <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">September 2025</td>
+          <td class="px-4 py-3 text-sm">
+            <a href="https://drive.google.com/file/d/1SAcDVWJvLI1YDDvk3mTuHnILXrZsxkXp/view?usp=drive_link" target="_blank"
+               class="text-blue-600 dark:text-blue-400 hover:underline">Open Link</a>
+          </td>
+        </tr>
+        <tr class="hover:bg-gray-50 dark:hover:bg-border-dark">
+          <td class="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">Campaign Gamma</td>
+          <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">KPI Summary</td>
+          <td class="px-4 py-3 text-sm">
+            <a href="https://drive.google.com/example3" target="_blank"
+               class="text-blue-600 dark:text-blue-400 hover:underline">Open Link</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+
+  <!-- === CAMPAIGN TAB === -->
+<div id="campaignContent" class="hidden mt-6">
+  <div
+    class="mt-6 bg-white dark:bg-card-dark shadow-xl rounded-2xl overflow-hidden border border-gray-200 dark:border-border-dark transition-colors duration-500">
+    
+    <h3 class="text-lg md:text-xl font-bold px-6 py-4 border-b border-gray-200 dark:border-border-dark text-gray-700 dark:text-gray-200">
+      Campaign KPI Performance – 2025 Overview
+    </h3>
+
+    <div class="overflow-x-auto max-h-[620px] custom-scrollbar-hide scroll-smooth">
+      <table class="min-w-full text-xs sm:text-sm text-left border-collapse">
+        <thead
+          class="sticky top-0 bg-gray-100 dark:bg-border-dark text-gray-800 dark:text-gray-200 uppercase text-[11px] font-semibold border-b dark:border-border-dark shadow-sm z-10">
+          <tr>
+            <th class="px-4 py-3 whitespace-nowrap">Campaign</th>
+            <th class="px-4 py-3 whitespace-nowrap">KPI</th>
+            <th class="px-3 py-3 text-center">Target</th>
+            <th class="px-3 py-3 text-center">Threshold</th>
+            <th class="px-3 py-3 text-center">Jan</th>
+            <th class="px-3 py-3 text-center">Feb</th>
+            <th class="px-3 py-3 text-center">Mar</th>
+            <th class="px-3 py-3 text-center">Apr</th>
+            <th class="px-3 py-3 text-center">May</th>
+            <th class="px-3 py-3 text-center">Jun</th>
+            <th class="px-3 py-3 text-center">Jul</th>
+            <th class="px-3 py-3 text-center">Aug</th>
+            <th class="px-3 py-3 text-center">Sep</th>
+            <th class="px-3 py-3 text-center">Oct</th>
+            <th class="px-3 py-3 text-center">Nov</th>
+            <th class="px-3 py-3 text-center">Dec</th>
+          </tr>
+        </thead>
+
+        <tbody
+          class="divide-y divide-gray-200 dark:divide-border-dark text-gray-700 dark:text-gray-300">
+
+
+        <!-- Network Capital -->
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+          <td class="px-4 py-3 font-semibold">Network Capital</td>
+          <td class="px-4 py-3">Transfer</td>
+          <td class="px-3 py-3 text-center">10</td>
+          <td class="px-3 py-3 text-center">8</td>
+          <td class="px-3 py-3 text-google-red text-center">3</td>
+          <td class="px-3 py-3 text-google-red text-center">5</td>
+          <td class="px-3 py-3 text-google-red text-center">8</td>
+          <td class="px-3 py-3 text-google-red text-center">3</td>
+          <td class="px-3 py-3 text-google-red text-center">7</td>
+          <td class="px-3 py-3 text-google-red text-center">5</td>
+          <td class="px-3 py-3 text-google-red text-center">6</td>
+          <td class="px-3 py-3 text-google-red text-center">5</td>
+          <td class="px-3 py-3 text-google-red text-center">3</td>
+          <td class="px-3 py-3 text-google-red text-center">7</td>
+          <td class="px-3 py-3 text-google-red text-center">3</td>
+          <td class="px-3 py-3 text-google-red text-center">7</td>
+        </tr>
+
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+  <td class="px-4 py-3 font-semibold">Network Capital</td>
+  <td class="px-4 py-3">Conversion %</td>
+  <td class="px-3 py-3 text-center">8%</td>
+  <td class="px-3 py-3 text-center">6%</td>
+  <td class="px-3 py-3 text-google-red text-center">13.2</td>
+  <td class="px-3 py-3 text-google-green text-center">15.7</td>
+  <td class="px-3 py-3 text-google-red text-center">12.8</td>
+  <td class="px-3 py-3 text-google-green text-center">16.4</td>
+  <td class="px-3 py-3 text-google-green text-center">14.9</td>
+  <td class="px-3 py-3 text-google-red text-center">13.5</td>
+  <td class="px-3 py-3 text-google-green text-center">15.3</td>
+  <td class="px-3 py-3 text-google-red text-center">12.6</td>
+  <td class="px-3 py-3 text-google-green text-center">15.8</td>
+  <td class="px-3 py-3 text-google-green text-center">14.4</td>
+  <td class="px-3 py-3 text-google-red text-center">13.0</td>
+  <td class="px-3 py-3 text-google-green text-center">15.9</td>
+</tr>
+
+
+        <!-- American Range Walls -->
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+          <td class="px-4 py-3 font-semibold">American Range Walls</td>
+          <td class="px-4 py-3">Customer Service QA Score</td>
+          <td class="px-3 py-3 text-center">90%</td>
+          <td class="px-3 py-3 text-center">85%</td>
+          <td class="px-3 py-3 text-google-red text-center">87</td>
+          <td class="px-3 py-3 text-google-green text-center">91</td>
+          <td class="px-3 py-3 text-google-green text-center">90</td>
+          <td class="px-3 py-3 text-google-red text-center">84</td>
+          <td class="px-3 py-3 text-google-green text-center">88</td>
+          <td class="px-3 py-3 text-google-green text-center">90</td>
+          <td class="px-3 py-3 text-google-red text-center">87</td>
+          <td class="px-3 py-3 text-google-green text-center">91</td>
+          <td class="px-3 py-3 text-google-red text-center">88</td>
+          <td class="px-3 py-3 text-google-green text-center">90</td>
+          <td class="px-3 py-3 text-google-green text-center">91</td>
+          <td class="px-3 py-3 text-google-green text-center">90</td>
+        </tr>
+
+        <!-- Bag Borrow or Steal -->
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+          <td class="px-4 py-3 font-semibold">Bag Borrow or Steal</td>
+          <td class="px-4 py-3">Error Rate ≤ 5%</td>
+          <td class="px-3 py-3 text-center">≤5%</td>
+          <td class="px-3 py-3 text-center">≤7%</td>
+          <td class="px-3 py-3 text-google-green text-center">4.7</td>
+          <td class="px-3 py-3 text-google-green text-center">4.1</td>
+          <td class="px-3 py-3 text-google-red text-center">5.2</td>
+          <td class="px-3 py-3 text-google-green text-center">3.9</td>
+          <td class="px-3 py-3 text-google-green text-center">4.5</td>
+          <td class="px-3 py-3 text-google-green text-center">4.4</td>
+          <td class="px-3 py-3 text-google-green text-center">4.7</td>
+          <td class="px-3 py-3 text-google-green text-center">3.9</td>
+          <td class="px-3 py-3 text-google-red text-center">5.2</td>
+          <td class="px-3 py-3 text-google-green text-center">4.8</td>
+          <td class="px-3 py-3 text-google-green text-center">4.3</td>
+          <td class="px-3 py-3 text-google-green text-center">4.6</td>
+        </tr>
+
+        <!-- Add other campaigns with consistent structure -->
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+          <td class="px-4 py-3 font-semibold">Social Boosting</td>
+          <td class="px-4 py-3">Conversion Rate</td>
+          <td class="px-3 py-3 text-center">16%</td>
+          <td class="px-3 py-3 text-center">13%</td>
+          <td class="px-3 py-3 text-google-green text-center">15.4</td>
+          <td class="px-3 py-3 text-google-green text-center">16.2</td>
+          <td class="px-3 py-3 text-google-green text-center">15.8</td>
+          <td class="px-3 py-3 text-google-red text-center">14.9</td>
+          <td class="px-3 py-3 text-google-green text-center">15.6</td>
+          <td class="px-3 py-3 text-google-green text-center">15.7</td>
+          <td class="px-3 py-3 text-google-green text-center">16.2</td>
+          <td class="px-3 py-3 text-google-green text-center">15.9</td>
+          <td class="px-3 py-3 text-google-green text-center">16.0</td>
+          <td class="px-3 py-3 text-google-green text-center">15.5</td>
+          <td class="px-3 py-3 text-google-green text-center">16.3</td>
+          <td class="px-3 py-3 text-google-green text-center">16.1</td>
+        </tr>
+
+
+
+        <!-- === ZAPAKA === -->
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+          <td class="px-4 py-3 font-semibold">Zapaka</td>
+          <td class="px-4 py-3">Conversion Rate</td>
+          <td class="px-3 py-3 text-center">15%</td>
+          <td class="px-3 py-3 text-center">12%</td>
+          <td class="px-3 py-3 text-google-green text-center">15.2</td>
+          <td class="px-3 py-3 text-google-green text-center">15.5</td>
+          <td class="px-3 py-3 text-google-green text-center">15.1</td>
+          <td class="px-3 py-3 text-google-red text-center">13.8</td>
+          <td class="px-3 py-3 text-google-green text-center">15.4</td>
+          <td class="px-3 py-3 text-google-green text-center">15.8</td>
+          <td class="px-3 py-3 text-google-green text-center">16.0</td>
+          <td class="px-3 py-3 text-google-green text-center">15.7</td>
+          <td class="px-3 py-3 text-google-green text-center">15.9</td>
+          <td class="px-3 py-3 text-google-green text-center">16.1</td>
+          <td class="px-3 py-3 text-google-green text-center">15.6</td>
+          <td class="px-3 py-3 text-google-green text-center">15.8</td>
+        </tr>
+
+        <!-- === CITY SAFE PARTNERS === -->
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+          <td class="px-4 py-3 font-semibold">City Safe Partners</td>
+          <td class="px-4 py-3">CSAT %</td>
+          <td class="px-3 py-3 text-center">90%</td>
+          <td class="px-3 py-3 text-center">85%</td>
+          <td class="px-3 py-3 text-google-green text-center">91</td>
+          <td class="px-3 py-3 text-google-green text-center">89</td>
+          <td class="px-3 py-3 text-google-green text-center">92</td>
+          <td class="px-3 py-3 text-google-green text-center">90</td>
+          <td class="px-3 py-3 text-google-red text-center">84</td>
+          <td class="px-3 py-3 text-google-green text-center">89</td>
+          <td class="px-3 py-3 text-google-green text-center">92</td>
+          <td class="px-3 py-3 text-google-green text-center">91</td>
+          <td class="px-3 py-3 text-google-green text-center">93</td>
+          <td class="px-3 py-3 text-google-green text-center">90</td>
+          <td class="px-3 py-3 text-google-green text-center">92</td>
+          <td class="px-3 py-3 text-google-green text-center">91</td>
+        </tr>
+
+        <!-- === LTS NATIONWIDE === -->
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+          <td class="px-4 py-3 font-semibold">LTS Nationwide</td>
+          <td class="px-4 py-3">Conversion Rate</td>
+          <td class="px-3 py-3 text-center">14%</td>
+          <td class="px-3 py-3 text-center">11%</td>
+          <td class="px-3 py-3 text-google-green text-center">14.5</td>
+          <td class="px-3 py-3 text-google-green text-center">14.9</td>
+          <td class="px-3 py-3 text-google-green text-center">15.2</td>
+          <td class="px-3 py-3 text-google-red text-center">13.8</td>
+          <td class="px-3 py-3 text-google-green text-center">15.4</td>
+          <td class="px-3 py-3 text-google-green text-center">15.0</td>
+          <td class="px-3 py-3 text-google-green text-center">14.8</td>
+          <td class="px-3 py-3 text-google-green text-center">15.5</td>
+          <td class="px-3 py-3 text-google-green text-center">15.1</td>
+          <td class="px-3 py-3 text-google-green text-center">14.9</td>
+          <td class="px-3 py-3 text-google-green text-center">15.6</td>
+          <td class="px-3 py-3 text-google-green text-center">15.4</td>
+        </tr>
+
+        <!-- === RUNA === -->
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+          <td class="px-4 py-3 font-semibold">Runa</td>
+          <td class="px-4 py-3">Conversion Rate</td>
+          <td class="px-3 py-3 text-center">18%</td>
+          <td class="px-3 py-3 text-center">15%</td>
+          <td class="px-3 py-3 text-google-green text-center">18.5</td>
+          <td class="px-3 py-3 text-google-green text-center">18.9</td>
+          <td class="px-3 py-3 text-google-green text-center">19.1</td>
+          <td class="px-3 py-3 text-google-green text-center">18.2</td>
+          <td class="px-3 py-3 text-google-green text-center">18.8</td>
+          <td class="px-3 py-3 text-google-green text-center">19.0</td>
+          <td class="px-3 py-3 text-google-green text-center">18.9</td>
+          <td class="px-3 py-3 text-google-green text-center">19.3</td>
+          <td class="px-3 py-3 text-google-green text-center">18.7</td>
+          <td class="px-3 py-3 text-google-green text-center">18.5</td>
+          <td class="px-3 py-3 text-google-green text-center">19.1</td>
+          <td class="px-3 py-3 text-google-green text-center">19.0</td>
+        </tr>
+
+<!-- === NIGHT CAFE === -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+  <td class="px-4 py-3 font-semibold">Night Cafe</td>
+  <td class="px-4 py-3">Conversion Rate</td>
+  <td class="px-3 py-3 text-center">22%</td>
+  <td class="px-3 py-3 text-center">19%</td>
+  <td class="px-3 py-3 text-google-green text-center">21.5</td>
+  <td class="px-3 py-3 text-google-green text-center">22.1</td>
+  <td class="px-3 py-3 text-google-green text-center">22.4</td>
+  <td class="px-3 py-3 text-google-green text-center">21.8</td>
+  <td class="px-3 py-3 text-google-green text-center">22.0</td>
+  <td class="px-3 py-3 text-google-green text-center">22.3</td>
+  <td class="px-3 py-3 text-google-green text-center">21.9</td>
+  <td class="px-3 py-3 text-google-green text-center">22.2</td>
+  <td class="px-3 py-3 text-google-green text-center">21.7</td>
+  <td class="px-3 py-3 text-google-green text-center">21.5</td>
+  <td class="px-3 py-3 text-google-green text-center">22.0</td>
+  <td class="px-3 py-3 text-google-green text-center">22.1</td>
+</tr>
+
+<!-- === BLUECHECK === -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+  <td class="px-4 py-3 font-semibold">Bluecheck</td>
+  <td class="px-4 py-3">Conversion Rate</td>
+  <td class="px-3 py-3 text-center">12%</td>
+  <td class="px-3 py-3 text-center">10%</td>
+  <td class="px-3 py-3 text-google-green text-center">11.5</td>
+  <td class="px-3 py-3 text-google-green text-center">12.0</td>
+  <td class="px-3 py-3 text-google-green text-center">12.3</td>
+  <td class="px-3 py-3 text-google-green text-center">11.8</td>
+  <td class="px-3 py-3 text-google-green text-center">12.1</td>
+  <td class="px-3 py-3 text-google-green text-center">12.4</td>
+  <td class="px-3 py-3 text-google-green text-center">12.0</td>
+  <td class="px-3 py-3 text-google-green text-center">12.2</td>
+  <td class="px-3 py-3 text-google-green text-center">11.9</td>
+  <td class="px-3 py-3 text-google-green text-center">11.7</td>
+  <td class="px-3 py-3 text-google-green text-center">12.3</td>
+  <td class="px-3 py-3 text-google-green text-center">12.1</td>
+</tr>
+
+<!-- === INUI === -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+  <td class="px-4 py-3 font-semibold">INUI</td>
+  <td class="px-4 py-3">Conversion Rate</td>
+  <td class="px-3 py-3 text-center">25%</td>
+  <td class="px-3 py-3 text-center">20%</td>
+  <td class="px-3 py-3 text-google-green text-center">24.5</td>
+  <td class="px-3 py-3 text-google-green text-center">25.0</td>
+  <td class="px-3 py-3 text-google-green text-center">25.3</td>
+  <td class="px-3 py-3 text-google-green text-center">24.8</td>
+  <td class="px-3 py-3 text-google-green text-center">25.1</td>
+  <td class="px-3 py-3 text-google-green text-center">25.4</td>
+  <td class="px-3 py-3 text-google-green text-center">25.0</td>
+  <td class="px-3 py-3 text-google-green text-center">25.2</td>
+  <td class="px-3 py-3 text-google-green text-center">24.9</td>
+  <td class="px-3 py-3 text-google-green text-center">24.7</td>
+  <td class="px-3 py-3 text-google-green text-center">25.3</td>
+  <td class="px-3 py-3 text-google-green text-center">25.1</td>
+</tr>
+
+<!-- === KOUPON === -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+  <td class="px-4 py-3 font-semibold">Koupon</td>
+  <td class="px-4 py-3">Conversion Rate</td>
+  <td class="px-3 py-3 text-center">16%</td>
+  <td class="px-3 py-3 text-center">14%</td>
+  <td class="px-3 py-3 text-google-green text-center">15.5</td>
+  <td class="px-3 py-3 text-google-green text-center">16.0</td>
+  <td class="px-3 py-3 text-google-green text-center">16.3</td>
+  <td class="px-3 py-3 text-google-green text-center">15.8</td>
+  <td class="px-3 py-3 text-google-green text-center">16.1</td>
+  <td class="px-3 py-3 text-google-green text-center">16.4</td>
+  <td class="px-3 py-3 text-google-green text-center">16.0</td>
+  <td class="px-3 py-3 text-google-green text-center">16.2</td>
+  <td class="px-3 py-3 text-google-green text-center">15.9</td>
+  <td class="px-3 py-3 text-google-green text-center">15.7</td>
+  <td class="px-3 py-3 text-google-green text-center">16.3</td>
+  <td class="px-3 py-3 text-google-green text-center">16.1</td>
+</tr>
+
+<!-- === HYTERA === -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+  <td class="px-4 py-3 font-semibold">Hytera</td>
+  <td class="px-4 py-3">Conversion Rate</td>
+  <td class="px-3 py-3 text-center">20%</td>
+  <td class="px-3 py-3 text-center">17%</td>
+  <td class="px-3 py-3 text-google-green text-center">19.5</td>
+  <td class="px-3 py-3 text-google-green text-center">20.0</td>
+  <td class="px-3 py-3 text-google-green text-center">20.3</td>
+  <td class="px-3 py-3 text-google-green text-center">19.8</td>
+  <td class="px-3 py-3 text-google-green text-center">20.1</td>
+  <td class="px-3 py-3 text-google-green text-center">20.4</td>
+  <td class="px-3 py-3 text-google-green text-center">20.0</td>
+  <td class="px-3 py-3 text-google-green text-center">20.2</td>
+  <td class="px-3 py-3 text-google-green text-center">19.9</td>
+  <td class="px-3 py-3 text-google-green text-center">19.7</td>
+  <td class="px-3 py-3 text-google-green text-center">20.3</td>
+  <td class="px-3 py-3 text-google-green text-center">20.1</td>
+</tr>
+
+<!-- === TAHOE ELITE SERVICE === -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+  <td class="px-4 py-3 font-semibold">Tahoe Elite Service</td>
+  <td class="px-4 py-3">Conversion Rate</td>
+  <td class="px-3 py-3 text-center">14%</td>
+  <td class="px-3 py-3 text-center">12%</td>
+  <td class="px-3 py-3 text-google-green text-center">13.5</td>
+  <td class="px-3 py-3 text-google-green text-center">14.0</td>
+  <td class="px-3 py-3 text-google-green text-center">14.2</td>
+  <td class="px-3 py-3 text-google-green text-center">13.8</td>
+  <td class="px-3 py-3 text-google-green text-center">14.1</td>
+  <td class="px-3 py-3 text-google-green text-center">14.3</td>
+  <td class="px-3 py-3 text-google-green text-center">14.0</td>
+  <td class="px-3 py-3 text-google-green text-center">14.2</td>
+  <td class="px-3 py-3 text-google-green text-center">13.9</td>
+  <td class="px-3 py-3 text-google-green text-center">13.7</td>
+  <td class="px-3 py-3 text-google-green text-center">14.3</td>
+  <td class="px-3 py-3 text-google-green text-center">14.1</td>
+</tr>
+
+<!-- === BAG BROKER === -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+  <td class="px-4 py-3 font-semibold">Bag Broker</td>
+  <td class="px-4 py-3">Conversion Rate</td>
+  <td class="px-3 py-3 text-center">19%</td>
+  <td class="px-3 py-3 text-center">16%</td>
+  <td class="px-3 py-3 text-google-green text-center">18.5</td>
+  <td class="px-3 py-3 text-google-green text-center">19.0</td>
+  <td class="px-3 py-3 text-google-green text-center">19.3</td>
+  <td class="px-3 py-3 text-google-green text-center">18.8</td>
+  <td class="px-3 py-3 text-google-green text-center">19.1</td>
+  <td class="px-3 py-3 text-google-green text-center">19.4</td>
+  <td class="px-3 py-3 text-google-green text-center">19.0</td>
+  <td class="px-3 py-3 text-google-green text-center">19.2</td>
+  <td class="px-3 py-3 text-google-green text-center">18.9</td>
+  <td class="px-3 py-3 text-google-green text-center">18.7</td>
+  <td class="px-3 py-3 text-google-green text-center">19.3</td>
+  <td class="px-3 py-3 text-google-green text-center">19.1</td>
+</tr>
+
+<!-- === HYPER RING === -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+  <td class="px-4 py-3 font-semibold">Hyper Ring</td>
+  <td class="px-4 py-3">Conversion Rate</td>
+  <td class="px-3 py-3 text-center">17%</td>
+  <td class="px-3 py-3 text-center">14%</td>
+  <td class="px-3 py-3 text-google-green text-center">16.5</td>
+  <td class="px-3 py-3 text-google-green text-center">17.0</td>
+  <td class="px-3 py-3 text-google-green text-center">17.3</td>
+  <td class="px-3 py-3 text-google-green text-center">16.8</td>
+  <td class="px-3 py-3 text-google-green text-center">17.1</td>
+  <td class="px-3 py-3 text-google-green text-center">17.4</td>
+  <td class="px-3 py-3 text-google-green text-center">17.0</td>
+  <td class="px-3 py-3 text-google-green text-center">17.2</td>
+  <td class="px-3 py-3 text-google-green text-center">16.9</td>
+  <td class="px-3 py-3 text-google-green text-center">16.7</td>
+  <td class="px-3 py-3 text-google-green text-center">17.3</td>
+  <td class="px-3 py-3 text-google-green text-center">17.1</td>
+</tr>
+
+<!-- === KES LIGHTING === -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+  <td class="px-4 py-3 font-semibold">KES Lighting</td>
+  <td class="px-4 py-3">Conversion Rate</td>
+  <td class="px-3 py-3 text-center">21%</td>
+  <td class="px-3 py-3 text-center">18%</td>
+  <td class="px-3 py-3 text-google-green text-center">20.5</td>
+  <td class="px-3 py-3 text-google-green text-center">21.0</td>
+  <td class="px-3 py-3 text-google-green text-center">21.3</td>
+  <td class="px-3 py-3 text-google-green text-center">20.8</td>
+  <td class="px-3 py-3 text-google-green text-center">21.1</td>
+  <td class="px-3 py-3 text-google-green text-center">21.4</td>
+  <td class="px-3 py-3 text-google-green text-center">21.0</td>
+  <td class="px-3 py-3 text-google-green text-center">21.2</td>
+  <td class="px-3 py-3 text-google-green text-center">20.9</td>
+  <td class="px-3 py-3 text-google-green text-center">20.7</td>
+  <td class="px-3 py-3 text-google-green text-center">21.3</td>
+  <td class="px-3 py-3 text-google-green text-center">21.1</td>
+</tr>
+
+<!-- === BENJAMIN ONE === -->
+<tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+  <td class="px-4 py-3 font-semibold">Benjamin One</td>
+  <td class="px-4 py-3">Conversion Rate</td>
+  <td class="px-3 py-3 text-center">23%</td>
+  <td class="px-3 py-3 text-center">20%</td>
+  <td class="px-3 py-3 text-google-green text-center">22.5</td>
+  <td class="px-3 py-3 text-google-green text-center">23.0</td>
+  <td class="px-3 py-3 text-google-green text-center">23.3</td>
+  <td class="px-3 py-3 text-google-green text-center">22.8</td>
+  <td class="px-3 py-3 text-google-green text-center">23.1</td>
+  <td class="px-3 py-3 text-google-green text-center">23.4</td>
+  <td class="px-3 py-3 text-google-green text-center">23.0</td>
+  <td class="px-3 py-3 text-google-green text-center">23.2</td>
+  <td class="px-3 py-3 text-google-green text-center">22.9</td>
+  <td class="px-3 py-3 text-google-green text-center">22.7</td>
+  <td class="px-3 py-3 text-google-green text-center">23.3</td>
+  <td class="px-3 py-3 text-google-green text-center">23.1</td>
+</tr>
+
+
+      </tbody>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- === Hidden Scrollbar Styling === -->
+<style>
+  .custom-scrollbar-hide::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+  .custom-scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Optional: Subtle hover color in dark mode */
+  .dark .hover\:bg-gray-800\/50:hover {
+    background-color: rgba(31, 41, 55, 0.5);
+  }
+
+  /* Optional: Table shadow and subtle inner glow */
+  table {
+    transition: all 0.3s ease;
+  }
+</style>
+
+
+  <!-- === LOOKER STUDIO TAB === -->
+  <div id="lookerContent" class="hidden mt-6">
+    <div
+      class="bg-white dark:bg-card-dark border border-gray-100 dark:border-border-dark rounded-xl shadow-md overflow-hidden">
+<iframe width="100%" height="700" src="https://lookerstudio.google.com/embed/reporting/39311ca6-ede9-474f-bb9e-1b225f6b75ec/page/HXaaF" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
+    </div>
+  </div>
+</div>
+
+
+
+
+<!-- === TAB LOGIC (same structure as your original) === -->
+<script>
+  const mainTab = document.getElementById("mainTab");
+  const campaignTab = document.getElementById("campaignTab");
+  const lookerTab = document.getElementById("lookerTab");
+
+  const mainContent = document.getElementById("mainContent");
+  const campaignContent = document.getElementById("campaignContent");
+  const lookerContent = document.getElementById("lookerContent");
+
+  mainTab.addEventListener("click", () => {
+    mainContent.classList.remove("hidden");
+    campaignContent.classList.add("hidden");
+    lookerContent.classList.add("hidden");
+
+    mainTab.classList.add("border-b-2", "border-google-blue", "text-google-blue");
+    campaignTab.classList.remove("border-b-2", "border-google-blue", "text-google-blue");
+    lookerTab.classList.remove("border-b-2", "border-google-blue", "text-google-blue");
+  });
+
+  campaignTab.addEventListener("click", () => {
+    campaignContent.classList.remove("hidden");
+    mainContent.classList.add("hidden");
+    lookerContent.classList.add("hidden");
+
+    campaignTab.classList.add("border-b-2", "border-google-blue", "text-google-blue");
+    mainTab.classList.remove("border-b-2", "border-google-blue", "text-google-blue");
+    lookerTab.classList.remove("border-b-2", "border-google-blue", "text-google-blue");
+  });
+
+  lookerTab.addEventListener("click", () => {
+    lookerContent.classList.remove("hidden");
+    mainContent.classList.add("hidden");
+    campaignContent.classList.add("hidden");
+
+    lookerTab.classList.add("border-b-2", "border-google-blue", "text-google-blue");
+    mainTab.classList.remove("border-b-2", "border-google-blue", "text-google-blue");
+    campaignTab.classList.remove("border-b-2", "border-google-blue", "text-google-blue");
+  });
+</script>
+
+
+
+
+
+
+
+
+            <div id=""
+                class="tab-content hidden bg-white dark:bg-card-dark shadow-lg rounded-xl p-10 text-center text-gray-500 dark:text-gray-400 transition-colors duration-500">
+                <span class="material-symbols-outlined text-6xl text-google-green mb-4">trending_up</span>
+                <p class="text-xl font-medium">Top Performing Campaigns: Data coming soon...</p>
+            </div>
+
+
+
+
+
+
+
+            <div id="gainers"
+                class="tab-content hidden bg-white dark:bg-card-dark shadow-lg rounded-xl p-10 text-center text-gray-500 dark:text-gray-400 transition-colors duration-500">
+                <span class="material-symbols-outlined text-6xl text-google-green mb-4">trending_up</span>
+                <p class="text-xl font-medium">Top Performing Campaigns: Data coming soon...</p>
+            </div>
+
+            <div id="losers"
+                class="tab-content hidden bg-white dark:bg-card-dark shadow-lg rounded-xl p-10 text-center text-gray-500 dark:text-gray-400 transition-colors duration-500">
+                <span class="material-symbols-outlined text-6xl text-google-red mb-4">trending_down</span>
+                <p class="text-xl font-medium">Underperforming Campaigns: Data coming soon...</p>
+            </div>
+
+
+
+    </div>
+  </div>
+</div>
+
+
+            
+        </main>
+    </div>
+
+    <div id="modalBg"
+        class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-300">
+        <div class="bg-white dark:bg-card-dark rounded-xl shadow-3xl w-full max-w-4xl p-8 relative transition-all duration-500 transform scale-95 opacity-0"
+            id="modalContent">
+
+            <button id="printButton" onclick="printCoachingForm()"
+                class="absolute top-4 right-14 p-2 rounded-full text-gray-400 hover:text-brand-accent transition hidden"
+                title="Print Form">
+                <i class="fas fa-print fa-xl"></i>
+            </button>
+
+            <h3 id="modalTitle" class="text-3xl font-extrabold mb-6 text-brand-accent">Add Coaching Session</h3>
+            <button onclick="closeModal()"
+                class="absolute top-4 right-4 p-2 rounded-full text-gray-400 hover:text-brand-accent transition">
+                <i class="fas fa-times fa-xl"></i>
+            </button>
+
+            <form id="coachingForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <input type="hidden" name="id" />
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Employee Name</label>
+                    <input type="text" name="employee"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Coach Name</label>
+                    <input type="text" name="coach"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Employee
+                        Number</label>
+                    <input type="text" name="employeenumber"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Session Date</label>
+                    <input type="date" name="date"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Performance/Behavior
+                        Observed</label>
+                    <textarea name="performance" rows="3"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition"></textarea>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Coaching
+                        Provided</label>
+                    <textarea name="coachingprovided" rows="3"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition"></textarea>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Agreed Action
+                        Plan</label>
+                    <textarea name="actionplan" rows="3"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Signed Form Link
+                        (Google Drive URL)</label>
+                    <input type="url" name="SignedForm" placeholder="Optional Google Drive link..."
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Acknowledge</label>
+                    <select name="acknowledge"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                        <option value="Pending" selected>Pending</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+
+                <div
+                    class="md:col-span-2 flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-border-dark modal-actions">
+                    <button type="button" onclick="closeModal()"
+                        class="py-3 px-6 border border-gray-300 dark:border-border-dark rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-bg-dark transition font-semibold">Cancel</button>
+                    <button type="submit"
+                        class="py-3 px-6 bg-brand-accent hover:bg-brand-dark text-bg-dark font-bold rounded-full shadow-md transition transform hover:scale-[1.02]">Save
+                        Session</button>
+                </div>
+            </form>
+
+            <div id="modalContentPrintable" class="hidden">
+                <div
+                    class="border border-gray-300 dark:border-border-dark rounded-lg p-6 space-y-4 bg-white dark:bg-card-dark text-gray-800 dark:text-text-dark">
+                    <div class="text-center pb-4 border-b border-gray-200 dark:border-border-dark">
+                        <h4 class="text-2xl font-extrabold text-brand-accent">Coaching Session Form</h4>
+                        <p class="text-sm text-gray-500 dark:text-gray-400" id="viewSessionID"></p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="view-field">
+                            <p class="view-title text-sm">Date</p>
+                            <p class="view-value font-semibold" data-view="date"></p>
+                        </div>
+                        <div class="view-field">
+                            <p class="view-title text-sm">Coach Name</p>
+                            <p class="view-value font-semibold" data-view="coach"></p>
+                        </div>
+                        <div class="view-field">
+                            <p class="view-title text-sm">Employee Name</p>
+                            <p class="view-value font-semibold" data-view="employee"></p>
+                        </div>
+                        <div class="view-field">
+                            <p class="view-title text-sm">Employee Number</p>
+                            <p class="view-value" data-view="employeenumber"></p>
+                        </div>
+                        <div class="view-field col-span-1 md:col-span-2">
+                            <p class="view-title text-sm">Signed Form Link</p>
+                            <p class="view-value" id="viewSignedFormLink"></p>
+                        </div>
+                        <div class="view-field">
+                            <p class="view-title text-sm">Acknowledgement</p>
+                            <p class="view-value" data-view="acknowledge"></p>
+                        </div>
+                    </div>
+
+                    <div class="view-field">
+                        <p class="view-title mt-4">Performance/Behavior Observed</p>
+                        <p class="view-value whitespace-pre-wrap" data-view="performance"></p>
+                    </div>
+                    <div class="view-field">
+                        <p class="view-title mt-4">Coaching Provided</p>
+                        <p class="view-value whitespace-pre-wrap" data-view="coachingprovided"></p>
+                    </div>
+                    <div class="view-field">
+                        <p class="view-title mt-4">Agreed Action Plan</p>
+                        <p class="view-value whitespace-pre-wrap" data-view="actionplan"></p>
+                    </div>
+
+                    <div class="pt-6 border-t border-dashed border-gray-300 dark:border-border-dark">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Digital signature acknowledgment on file.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="deleteConfirmModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-300">
+        <div id="deleteModalContent"
+            class="bg-white dark:bg-card-dark rounded-xl shadow-3xl w-full max-w-sm p-6 relative transition-all duration-500 transform scale-95 opacity-0 text-center">
+
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/50">
+                <i class="fas fa-trash-alt text-danger fa-lg"></i>
+            </div>
+
+            <h3 class="text-xl font-bold mt-3 text-gray-800 dark:text-text-dark">Confirm Deletion</h3>
+            <p id="deleteMessage" class="text-sm text-gray-500 dark:text-gray-400 mt-2">Are you absolutely sure you want
+                to delete this session? This action cannot be undone.</p>
+
+            <div class="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
+                <button type="button" id="confirmDeleteButton"
+                    class="inline-flex w-full justify-center rounded-full border border-transparent bg-danger hover:bg-danger-dark px-4 py-2 text-base font-semibold text-white shadow-sm transition sm:ml-3 sm:w-auto sm:text-sm transform hover:scale-[1.02]">
+                    Delete
+                </button>
+                <button type="button" onclick="closeDeleteModal()"
+                    class="mt-3 inline-flex w-full justify-center rounded-full border border-gray-300 dark:border-border-dark bg-white dark:bg-card-dark px-4 py-2 text-base font-semibold text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-bg-dark transition sm:mt-0 sm:w-auto sm:text-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-70 flex flex-col justify-center items-center z-50">
+        <div class="relative flex items-center justify-center">
+            <div
+                class="w-16 h-16 border-4 border-gray-300 dark:border-border-dark border-t-brand-accent rounded-full animate-spin">
+            </div>
+            <div
+                class="absolute w-10 h-10 border-4 border-gray-200 dark:border-gray-700 border-b-brand-dark rounded-full animate-spin-slow">
+            </div>
+        </div>
+        <p id="loadingText" class="mt-4 text-brand-accent text-lg font-semibold">Loading...</p>
+    </div>
+
+    <div id="irNteCrudModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-300">
+        <div class="bg-white dark:bg-card-dark rounded-xl shadow-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-8 relative transition-all duration-500 transform scale-95 opacity-0"
+            id="irNteModalContent">
+
+            <h3 id="irNteModalTitle" class="text-3xl font-extrabold mb-6 text-brand-accent">New IR / NTE Record</h3>
+            <button onclick="closeIRModal()"
+                class="absolute top-4 right-4 p-2 rounded-full text-gray-400 hover:text-brand-accent transition">
+                <i class="fas fa-times fa-xl"></i>
+            </button>
+
+            <form id="irnteForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <input type="hidden" name="id" id="recordId">
+
+                <div class="col-span-1">
+                    <label for="employeeName"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name of
+                        Employee</label>
+                    <input type="text" name="employeeName" id="employeeName" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div class="col-span-1">
+                    <label for="employeeNumber"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Employee No.</label>
+                    <input type="text" name="employeeNumber" id="employeeNumber" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+
+                <div class="col-span-1">
+                    <label for="campaign"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Campaign/Account</label>
+                    <input type="text" name="campaign" id="campaign"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div class="col-span-1">
+                    <label for="codeNumber"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">NTE/IR Code
+                        Number</label>
+                    <input type="text" name="codeNumber" id="codeNumber"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+
+                <div class="col-span-1">
+                    <label for="dateFiled" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date
+                        Filed</label>
+                    <input type="date" name="dateFiled" id="dateFiled"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div class="col-span-1">
+                    <label for="dateReceived"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Received by
+                        Employee</label>
+                    <input type="date" name="dateReceived" id="dateReceived"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+
+                <div class="col-span-1">
+                    <label for="category"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                    <input type="text" name="category" id="category"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div class="col-span-1">
+                    <label for="subCategory" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sub
+                        Category</label>
+                    <input type="text" name="subCategory" id="subCategory"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="complaints"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Complaints/Allegations/Violations</label>
+                    <textarea name="complaints" id="complaints" rows="3"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition"></textarea>
+                </div>
+
+
+                <div class="col-span-1">
+                    <label for="dateSubmitted"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of NTE
+                        Submitted</label>
+                    <input type="date" name="dateSubmitted" id="dateSubmitted"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div class="col-span-1">
+                    <label for="nodRefNumber"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">NOD Reference
+                        Number</label>
+                    <input type="text" name="nodRefNumber" id="nodRefNumber"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div class="col-span-1">
+                    <label for="decisionHR"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Decision (HR)</label>
+                    <input type="text" name="decisionHR" id="decisionHR"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div class="col-span-1">
+                    <label for="dateFinality"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of
+                        Finality/Effectivity</label>
+                    <input type="date" name="dateFinality" id="dateFinality"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+
+                <div>
+                    <label for="withEL" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">With
+                        Explanation Letter?</label>
+                    <select name="withEL" id="withEL"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="withNOD" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">With
+                        NOD?</label>
+                    <select name="withNOD" id="withNOD"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+                <div class="col-span-2">
+                    <label for="receivedByEmployee"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Received by
+                        Employee?</label>
+                    <select name="receivedByEmployee" id="receivedByEmployee"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+
+                <div class="col-span-2">
+                    <label for="nteAttachment"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Attachment (NTE with EL)
+                        - Drive URL</label>
+                    <input type="url" name="nteAttachment" id="nteAttachment" placeholder="Google Drive Link for NTE/EL"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+                <div class="col-span-2">
+                    <label for="nodAttachment"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Attachment (NOD) - Drive
+                        URL</label>
+                    <input type="url" name="nodAttachment" id="nodAttachment" placeholder="Google Drive Link for NOD"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition">
+                </div>
+
+                <div class="col-span-2">
+                    <label for="remarks" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Remarks
+                        (Hidden from main table)</label>
+                    <textarea name="remarks" id="remarks" rows="2"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-brand-accent dark:bg-bg-dark dark:border-border-dark dark:text-text-dark transition"></textarea>
+                </div>
+
+                <div
+                    class="col-span-2 flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-border-dark modal-actions">
+                    <button type="button" id="irNteDeleteButton"
+                        onclick="openIRDeleteModal(form.dataset.editId, document.getElementById('employeeName').value)"
+                        class="hidden py-3 px-6 bg-danger hover:bg-danger-dark text-white font-bold rounded-full shadow-md transition transform hover:scale-[1.02]">
+                        <i class="fas fa-trash-alt mr-2"></i>Delete Record
+                    </button>
+                    <button type="submit" id="irNteSaveButton"
+                        class="py-3 px-6 bg-brand-accent hover:bg-brand-dark text-bg-dark font-bold rounded-full shadow-md transition transform hover:scale-[1.02]">
+                        <i class="fas fa-save mr-2"></i>Save Record
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="irNteDeleteConfirmModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-300">
+        <div id="irNteDeleteModalContent"
+            class="bg-white dark:bg-card-dark rounded-xl shadow-3xl w-full max-w-sm p-6 relative transition-all duration-500 transform scale-95 opacity-0 text-center">
+
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/50">
+                <i class="fas fa-trash-alt text-danger fa-lg"></i>
+            </div>
+
+            <h3 class="text-xl font-bold mt-3 text-text-light dark:text-text-dark">Confirm Deletion</h3>
+            <p id="irNteDeleteMessage" class="text-sm text-gray-500 dark:text-gray-400 mt-2">Are you absolutely sure you
+                want
+                to delete this session? This action cannot be undone.</p>
+
+            <div class="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
+                <button type="button" id="irNteConfirmDeleteButton"
+                    class="inline-flex w-full justify-center rounded-full border border-transparent bg-danger hover:bg-danger-dark px-4 py-2 text-base font-semibold text-white shadow-sm transition sm:ml-3 sm:w-auto sm:text-sm transform hover:scale-[1.02]">
+                    Delete
+                </button>
+                <button type="button" onclick="closeIRDeleteModal()"
+                    class="mt-3 inline-flex w-full justify-center rounded-full border border-gray-300 dark:border-border-dark bg-white dark:bg-card-dark px-4 py-2 text-base font-semibold text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-bg-dark transition sm:mt-0 sm:w-auto sm:text-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        feather.replace(); // Initialize feather icons for dark mode toggle
+
+        const drawer = document.getElementById('drawer');
+        const overlay = document.getElementById('overlay');
+        const menuBtn = document.getElementById('menuBtn');
+        const closeDrawer = document.getElementById('closeDrawer');
+
+        // Global Elements
+        const toggleBtn = document.getElementById('themeToggle');
+        const body = document.body;
+        const mainTitleContainer = document.getElementById('mainTitleContainer');
+        const loadingModal = document.getElementById('loadingModal');
+        const loadingText = document.getElementById('loadingText');
+
+
+
+        /* ------------------ SOP & TOOLS ELEMENTS & API ------------------ */
+const SOP_TOOLS_API_URL = "https://script.google.com/macros/s/AKfycbwn0GPogd4Cy3TiEPR462FId4nP1DTy2r8Aciqxp389JS6lopKgV5j9u1My_g1YyE7t/exec";
+
+// SOP Elements
+const sopSearchInput = document.getElementById("sopSearch"); // SOP search input
+const sopTableBody = document.getElementById("sopTable");
+let sopData = [];
+
+// Tools Elements
+const toolsSearchInput = document.getElementById("toolsSearch"); // Tools search input
+const toolsTableBody = document.getElementById("toolsTable");
+let toolsData = [];
+
+// IMPORTANT: these globals are used across the SOP/Tools render & filter functions.
+// They were referenced as `allSOPSessions` / `allToolsSessions` elsewhere in this file
+// but not declared, which caused reference errors when searching or rendering.
+let allSOPSessions = [];
+let allToolsSessions = [];
+
+
+        /* ------------------ COACHING LOG ELEMENTS & API ------------------ */
+        const COACHING_API_URL = "https://script.google.com/macros/s/AKfycbyn9CG1Lk3S5bXtfEEbvH5H-8GfBBOvY4OGSJPyIM5RZSDBCOf4fwkXVvnKjzZGvqUL/exec";
+        const form = document.getElementById("coachingForm");
+        const modalBg = document.getElementById('modalBg');
+        const modalContent = document.getElementById('modalContent');
+        const modalPrintable = document.getElementById('modalContentPrintable');
+        const printButton = document.getElementById('printButton');
+        const deleteModal = document.getElementById('deleteConfirmModal');
+        const deleteModalContent = document.getElementById('deleteModalContent');
+        const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+        const searchInput = document.getElementById('searchInput'); // Coaching Log search input
+        let sessionsData = [];
+        let sessionIdToDelete = null;
+
+        /* ------------------ IR / NTE LOG ELEMENTS & API (New) ------------------ */
+        const IRNTE_API_URL = "https://script.google.com/macros/s/AKfycbxKOgIbfCyvVYbcCvDhw4wbhSkS8H0Ua2cVw9VOVuXXQZTCbBiNwhl9bPyhfP9ecWDKjA/exec";
+        const irnteForm = document.getElementById('irnteForm');
+        const irNteCrudModal = document.getElementById('irNteCrudModal');
+        const irNteModalContent = document.getElementById('irNteModalContent');
+        const irNteModalTitle = document.getElementById('irNteModalTitle');
+        const irNteSaveButton = document.getElementById('irNteSaveButton');
+        const irNteDeleteButton = document.getElementById('irNteDeleteButton');
+        const irNteLoadingSpinner = document.getElementById('loadingSpinner'); // Spinner inside table
+        const irNteLoadingText = document.getElementById('irNteLoadingText'); // Text inside table spinner
+        const irnteDeleteModal = document.getElementById('irNteDeleteConfirmModal');
+        const irnteDeleteModalContent = document.getElementById('irNteDeleteModalContent');
+        const irNteConfirmDeleteButton = document.getElementById('irNteConfirmDeleteButton');
+        const irnteSearchInput = document.getElementById('irnteSearch');
+
+        let allIRNTESessions = [];
+        let irNteIdToDelete = null;
+
+        /* ------------------ GLOBAL UTILITY FUNCTIONS ------------------ */
+
+        function showGlobalLoading(message = "Loading...") {
+            loadingText.innerText = message;
+            loadingModal.classList.remove('hidden');
+        }
+        function hideGlobalLoading() {
+            loadingModal.classList.add('hidden');
+        }
+
+        function showLocalIRNteLoading(text) {
+            irNteLoadingText.textContent = text || "Processing...";
+            irNteLoadingSpinner.classList.remove('hidden');
+        }
+
+        function hideLocalIRNteLoading() {
+            irNteLoadingSpinner.classList.add('hidden');
+        }
+
+        /* ------------------ DARK MODE TOGGLE (Fixed for isolated scope) ------------------ */
+
+        function setTheme(isDark) {
+            if (isDark) {
+                body.classList.add("dark");
+                localStorage.setItem("theme", "dark");
+                toggleBtn.innerHTML = feather.icons.sun.toSvg();
+            } else {
+                body.classList.remove("dark");
+                localStorage.setItem("theme", "light");
+                toggleBtn.innerHTML = feather.icons.moon.toSvg();
+            }
+        }
+
+        // Set initial theme on load
+        if (localStorage.getItem("theme") === "dark" || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            setTheme(true);
+        } else {
+            setTheme(false);
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            const isDark = body.classList.contains('dark');
+            setTheme(!isDark);
+        });
+
+        /* ------------------ DRAWER & NAVIGATION FUNCTIONS (KPI Dashboard) ------------------ */
+
+        function toggleDrawer(open) {
+            if (open) {
+                drawer.classList.add('drawer-open');
+                overlay.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            } else {
+                drawer.classList.remove('drawer-open');
+                overlay.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        menuBtn.addEventListener('click', () => toggleDrawer(true));
+        closeDrawer.addEventListener('click', () => toggleDrawer(false));
+        overlay.addEventListener('click', () => toggleDrawer(false));
+
+        function showTab(tabId, event) {
+            toggleDrawer(false);
+
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.classList.remove('tab-active');
+            });
+
+            let targetButton;
+            if (event && event.currentTarget) {
+                targetButton = event.currentTarget;
+            } else {
+                targetButton = document.querySelector(`#drawer button[onclick*="${tabId}"]`);
+            }
+
+            if (targetButton) {
+                targetButton.classList.add('tab-active');
+
+                // Dynamic Header Update
+                const titleText = targetButton.dataset.tabTitle || 'KPI Dashboard';
+                // Applying the requested dynamic style to the main header
+                mainTitleContainer.innerHTML = `<span class="text-brand-accent">Digital</span> ${titleText}`;
+            }
+
+
+            // Logic to load data based on the selected tab
+            if (tabId === 'coaching-log') {
+                loadSessions();
+                searchInput.value = ""; // Reset search input
+            } else if (tabId === 'ir-nte-log') {
+                loadRecords();
+                irnteSearchInput.value = ""; // Reset search input
+            } else if (tabId === 'sop') {
+                // Load SOP documents when SOP tab is opened
+                loadSOP();
+                if (sopSearchInput) sopSearchInput.value = "";
+            } else if (tabId === 'tools') {
+                // Load Tools list when Tools tab is opened
+                loadTools();
+                if (toolsSearchInput) toolsSearchInput.value = "";
+            } else if (tabId === 'attendance') {
+                // Load attendance data when attendance tab is opened (SPA behavior)
+                try {
+                    if (typeof loadAll === 'function') {
+                        loadAll();
+                    } else if (typeof drawAttendance === 'function') {
+                        drawAttendance();
+                    }
+                } catch (e) {
+                    console.debug('attendance loader not ready', e);
+                }
+            }
+        }
+
+
+        /* ------------------ COACHING LOG FUNCTIONS ------------------ */
+
+        function getSessionById(id) {
+            const sessionId = String(id);
+            return sessionsData.find(session =>
+                String(session.ID) === sessionId || String(session.id) === sessionId
+            );
+        }
+
+        function openModal(editing = false, isView = false) {
+            form.classList.toggle('hidden', isView);
+            modalPrintable.classList.toggle('hidden', !isView);
+            printButton.classList.toggle('hidden', !isView);
+
+            if (!isView) {
+                [...form.elements].forEach(el => el.disabled = false);
+                form.querySelector('button[type="submit"]').classList.remove('hidden');
+            }
+
+            document.getElementById("modalTitle").innerText = isView
+                ? "View Coaching Session"
+                : editing
+                    ? "Edit Coaching Session"
+                    : "Add Coaching Session";
+
+            modalBg.classList.remove('hidden');
+            setTimeout(() => {
+                modalBg.classList.add('opacity-100');
+                modalContent.classList.remove('opacity-0', 'scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            modalBg.classList.remove('opacity-100');
+            modalContent.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                modalBg.classList.add('hidden');
+                form.reset();
+                delete form.dataset.editId;
+                [...form.elements].forEach(el => el.disabled = false);
+                form.querySelector('button[type="submit"]').classList.remove('hidden');
+            }, 300);
+        }
+
+        function openDeleteModal(id) {
+            sessionIdToDelete = id;
+            document.getElementById('deleteMessage').innerText = "Are you absolutely sure you want to delete this session? This action cannot be undone.";
+            deleteModal.classList.remove('hidden');
+            setTimeout(() => {
+                deleteModal.classList.add('opacity-100');
+                deleteModalContent.classList.remove('opacity-0', 'scale-95');
+            }, 10);
+        }
+
+        function closeDeleteModal() {
+            deleteModal.classList.remove('opacity-100');
+            deleteModalContent.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                deleteModal.classList.add('hidden');
+                sessionIdToDelete = null;
+            }, 300);
+        }
+
+        confirmDeleteButton.addEventListener('click', () => {
+            if (sessionIdToDelete !== null) {
+                executeDeleteSession(sessionIdToDelete);
+            }
+            closeDeleteModal();
+        });
+
+        function renderSessions(dataToDisplay) {
+            const table = document.getElementById("sessionsTable");
+            table.innerHTML = "";
+
+            if (dataToDisplay.length === 0) {
+                table.innerHTML = `
+                <tr class="text-center">
+                    <td colspan="7" class="p-8 text-gray-500 dark:text-gray-400">
+                        ${searchInput.value ? 'No sessions match your search criteria.' : 'No coaching sessions found. Click \'New Session\' to add one.'}
+                    </td>
+                </tr>
+            `;
+                return;
+            }
+
+            dataToDisplay.forEach(session => {
+                const acknowledgeStatus = session.acknowledge || "Pending";
+                const signedFormUrl = session.SignedForm || "";
+
+                let ackClass = "bg-gray-200 text-gray-700";
+                if (acknowledgeStatus === "Yes") {
+                    ackClass = "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300";
+                } else if (acknowledgeStatus === "No") {
+                    ackClass = "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300";
+                }
+
+                const signedFormDisplay = signedFormUrl
+                    ? `<a href="${signedFormUrl}" target="_blank" class="text-blue-500 hover:text-blue-400 font-semibold transition">View Link <i class="fas fa-external-link-alt ml-1 text-xs"></i></a>`
+                    : `<span class="text-gray-500 dark:text-gray-400">N/A</span>`;
+
+                const sessionId = session.ID || session.id;
+
+                table.innerHTML += `
+                <tr class="text-gray-700 dark:text-gray-300 border-b dark:border-border-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 transition duration-150">
+                    <td class="px-6 py-4 whitespace-nowrap">${session.date || session.Date || 'N/A'}</td>
+                    <td class="px-6 py-4">${session.coach || session.Coach || 'N/A'}</td>
+                    <td class="px-6 py-4 font-medium">${session.employee || session.Employee || 'N/A'}</td>
+                    <td class="px-6 py-4 max-w-xs truncate">${session.performance || session.Performance || 'N/A'}</td>
+                    <td class="px-6 py-4">${signedFormDisplay}</td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${ackClass}">
+                            ${acknowledgeStatus}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-center space-x-2 whitespace-nowrap">
+                        <button class="text-blue-500 hover:text-brand-accent transition text-sm font-semibold" onclick='viewSession("${sessionId}")'>View</button>
+                        <button class="text-green-500 hover:text-brand-accent transition text-sm font-semibold" onclick='editSession("${sessionId}")'>Edit</button>
+                        <button class="text-red-500 hover:text-brand-accent transition text-sm font-semibold" onclick='openDeleteModal("${sessionId}")'>Delete</button>
+                    </td>
+                </tr>
+            `;
+            });
+        }
+
+        function filterSessions() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+
+            if (searchTerm === "") {
+                renderSessions(sessionsData);
+                return;
+            }
+
+            const filteredData = sessionsData.filter(session => {
+                const employeeMatch = (session.employee || session.Employee || '').toLowerCase().includes(searchTerm);
+                const coachMatch = (session.coach || session.Coach || '').toLowerCase().includes(searchTerm);
+                const performanceMatch = (session.performance || session.Performance || '').toLowerCase().includes(searchTerm);
+
+                return employeeMatch || coachMatch || performanceMatch;
+            });
+
+            renderSessions(filteredData);
+        }
+
+        async function loadSessions() {
+            if (document.getElementById('coaching-log').classList.contains('hidden')) return;
+
+            showGlobalLoading("Fetching coaching sessions...");
+            try {
+                const res = await fetch(COACHING_API_URL);
+                if (!res.ok) throw new Error('Network response was not ok');
+                const fetchedSessions = await res.json();
+
+                sessionsData = fetchedSessions;
+
+                if (sessionsData.length > 0) {
+                    sessionsData.sort((a, b) => {
+                        const dateA = new Date(a.date || a.Date);
+                        const dateB = new Date(b.date || b.Date);
+                        if (isNaN(dateA)) return 1;
+                        if (isNaN(dateB)) return -1;
+                        return dateB - dateA;
+                    });
+                }
+
+                renderSessions(sessionsData);
+
+            } catch (error) {
+                console.error("Failed to load sessions:", error);
+                const table = document.getElementById("sessionsTable");
+                table.innerHTML = `
+                <tr class="text-center">
+                    <td colspan="7" class="p-8 text-red-500 dark:text-red-400">
+                        Failed to load data. Check the API URL or your network connection.
+                    </td>
+                </tr>
+            `;
+            } finally {
+                hideGlobalLoading();
+            }
+        }
+
+        function viewSession(id) {
+            const session = getSessionById(id);
+            if (!session) {
+                console.error("Session not found for ID:", id);
+                return;
+            }
+
+            openModal(false, true);
+
+            document.getElementById("modalTitle").innerText = `Session Details - ${session.employee || session.Employee}`;
+            document.getElementById("viewSessionID").innerText = `ID: ${session.ID || session.id}`;
+
+            const viewFields = [
+                'date', 'coach', 'employee', 'employeenumber',
+                'performance', 'coachingprovided', 'actionplan'
+            ];
+
+            viewFields.forEach(key => {
+                const el = document.querySelector(`#modalContentPrintable [data-view="${key}"]`);
+                const value = session[key] || session[key.charAt(0).toUpperCase() + key.slice(1)] || 'N/A';
+                if (el) {
+                    el.innerText = value;
+                }
+            });
+
+            const ackEl = document.querySelector(`#modalContentPrintable [data-view="acknowledge"]`);
+            if (ackEl) {
+                const status = session.acknowledge || 'Pending';
+                ackEl.innerHTML = `<span class="font-bold ${status === 'Yes' ? 'text-green-600' : status === 'No' ? 'text-red-600' : 'text-gray-500'}">${status}</span>`;
+            }
+
+            const signedFormUrl = session.SignedForm || '';
+            const signedLinkEl = document.getElementById("viewSignedFormLink");
+
+            if (signedFormUrl) {
+                signedLinkEl.innerHTML = `<a href="${signedFormUrl}" target="_blank" class="text-blue-600 hover:text-blue-500 font-medium break-all">${signedFormUrl}</a>`;
+            } else {
+                signedLinkEl.innerHTML = `<span class="text-gray-500 italic">No signed form link provided.</span>`;
+            }
+
+            [...form.elements].forEach(el => el.disabled = true);
+        }
+
+        function editSession(id) {
+            const session = getSessionById(id);
+            if (!session) {
+                console.error("Session not found for ID:", id);
+                return;
+            }
+
+            openModal(true, false);
+
+            const fields = ['id', 'employee', 'coach', 'employeenumber', 'date', 'performance', 'coachingprovided', 'actionplan', 'acknowledge', 'SignedForm'];
+            fields.forEach(key => {
+                const el = form.elements.namedItem(key);
+                const value = session[key] || session[key.charAt(0).toUpperCase() + key.slice(1)] || '';
+                if (el) el.value = value;
+            });
+
+            form.dataset.editId = session.ID || session.id;
+        }
+
+        function printCoachingForm() {
+            window.print();
+        }
+
+        async function executeDeleteSession(id) {
+            showGlobalLoading("Deleting session...");
+            try {
+                const res = await fetch(COACHING_API_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ _method: "DELETE", id })
+                });
+                if (!res.ok) throw new Error('Delete failed');
+            } catch (error) {
+                console.error("Error deleting session:", error);
+                alert("Failed to delete session. Check the console for details.");
+            }
+            await loadSessions();
+        }
+
+        form.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            showGlobalLoading(this.dataset.editId ? "Updating session..." : "Saving session...");
+            const formData = Object.fromEntries(new FormData(this).entries());
+
+            try {
+                if (this.dataset.editId) {
+                    const res = await fetch(COACHING_API_URL, {
+                        method: "POST",
+                        body: JSON.stringify({ _method: "PUT", id: this.dataset.editId, ...formData })
+                    });
+                    if (!res.ok) throw new Error('Update failed');
+                } else {
+                    const res = await fetch(COACHING_API_URL, {
+                        method: "POST",
+                        body: JSON.stringify(formData)
+                    });
+                    if (!res.ok) throw new Error('Save failed');
+                }
+                closeModal();
+                loadSessions();
+            } catch (error) {
+                console.error("Error saving session:", error);
+                hideGlobalLoading();
+                alert(`Failed to save session: ${error.message}. Check the console for details.`);
+            }
+        });
+
+        /* ------------------ IR / NTE LOG FUNCTIONS (New from ir.html, adapted) ------------------ */
+
+        function formatIRDate(dateString) {
+            if (!dateString) return "N/A";
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return dateString;
+                return `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${date.getFullYear()}`;
+            } catch (e) {
+                return dateString;
+            }
+        }
+
+        function openIRModal(session = null) {
+            irnteForm.reset();
+            irNteDeleteButton.classList.add('hidden');
+            delete irnteForm.dataset.editId;
+
+            if (session) {
+                irNteModalTitle.textContent = `Edit IR / NTE Record (ID: ${session.id})`;
+                irNteSaveButton.innerHTML = '<i class="fas fa-save mr-2"></i>Update Record';
+                irNteDeleteButton.classList.remove('hidden');
+                irnteForm.dataset.editId = session.id;
+
+                // Populate the form fields
+                document.getElementById('recordId').value = session.id || "";
+                document.getElementById('employeeName').value = session.employeeName || "";
+                document.getElementById('employeeNumber').value = session.employeeNumber || "";
+                document.getElementById('campaign').value = session.campaign || "";
+                document.getElementById('codeNumber').value = session.codeNumber || "";
+                document.getElementById('dateFiled').value = session.dateFiled || "";
+                document.getElementById('category').value = session.category || "";
+                document.getElementById('subCategory').value = session.subCategory || "";
+                document.getElementById('complaints').value = session.complaints || "";
+                document.getElementById('dateReceived').value = session.dateReceived || "";
+                document.getElementById('dateSubmitted').value = session.dateSubmitted || "";
+                document.getElementById('withEL').value = session.withEL || "No";
+                document.getElementById('withNOD').value = session.withNOD || "No";
+                document.getElementById('nodRefNumber').value = session.nodRefNumber || "";
+                document.getElementById('decisionHR').value = session.decisionHR || "";
+                document.getElementById('receivedByEmployee').value = session.receivedByEmployee || "No";
+                document.getElementById('dateFinality').value = session.dateFinality || "";
+                document.getElementById('nteAttachment').value = session.nteAttachment || "";
+                document.getElementById('nodAttachment').value = session.nodAttachment || "";
+                document.getElementById('remarks').value = session.remarks || "";
+
+            } else {
+                irNteModalTitle.textContent = "New IR / NTE Record";
+                irNteSaveButton.innerHTML = '<i class="fas fa-plus-circle mr-2"></i>Save Record';
+                document.getElementById('withEL').value = "No";
+                document.getElementById('withNOD').value = "No";
+                document.getElementById('receivedByEmployee').value = "No";
+            }
+
+            irNteCrudModal.classList.remove('hidden');
+            setTimeout(() => {
+                irNteCrudModal.classList.add('opacity-100');
+                irNteModalContent.classList.remove('opacity-0', 'scale-95');
+            }, 10);
+        }
+
+        function closeIRModal() {
+            irNteCrudModal.classList.remove('opacity-100');
+            irNteModalContent.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                irNteCrudModal.classList.add('hidden');
+                irnteForm.reset();
+                delete irnteForm.dataset.editId;
+            }, 300);
+        }
+
+        function openEditRecord(id) {
+            const session = allIRNTESessions.find(s => s.id == id);
+            if (session) {
+                openIRModal(session);
+            } else {
+                alert("Record not found.");
+            }
+        }
+
+        function openIRDeleteModal(id, employeeName) {
+            irNteIdToDelete = id;
+            document.getElementById('irNteDeleteMessage').innerText = `Are you absolutely sure you want to delete the record for ${employeeName} (ID: ${id})? This action cannot be undone.`;
+            irnteDeleteModal.classList.remove('hidden');
+            setTimeout(() => {
+                irnteDeleteModal.classList.add('opacity-100');
+                irnteDeleteModalContent.classList.remove('opacity-0', 'scale-95');
+            }, 10);
+        }
+
+        function closeIRDeleteModal() {
+            irnteDeleteModal.classList.remove('opacity-100');
+            irnteDeleteModalContent.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                irnteDeleteModal.classList.add('hidden');
+                irNteIdToDelete = null;
+            }, 300);
+        }
+
+        irNteConfirmDeleteButton.addEventListener('click', () => {
+            if (irNteIdToDelete !== null) {
+                executeDeleteRecord(irNteIdToDelete);
+            }
+            closeIRDeleteModal();
+        });
+
+        function renderTable(sessionsToRender) {
+            const table = document.getElementById("irnteSessionsTable");
+            table.innerHTML = "";
+
+            if (!Array.isArray(sessionsToRender) || sessionsToRender.length === 0) {
+                table.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-gray-500 dark:text-gray-400">No IR / NTE records match your criteria.</td></tr>`;
+                return;
+            }
+
+            sessionsToRender.sort((a, b) => new Date(b.dateFiled) - new Date(a.dateFiled));
+
+            sessionsToRender.forEach(session => {
+                const dateFiled = formatIRDate(session.dateFiled);
+                const nteUrl = session.nteAttachment && session.nteAttachment.length > 5 && session.nteAttachment !== '#' ? session.nteAttachment : "#";
+                const nodUrl = session.nodAttachment && session.nodAttachment.length > 5 && session.nodAttachment !== '#' ? session.nodAttachment : "#";
+
+                let decisionColor = "text-gray-500 dark:text-gray-400";
+                if (session.decisionHR && session.decisionHR.toLowerCase().includes('termination')) {
+                    decisionColor = "text-red-500 dark:text-red-400 font-semibold";
+                } else if (session.decisionHR && session.decisionHR.toLowerCase().includes('warning')) {
+                    decisionColor = "text-yellow-600 dark:text-yellow-500 font-semibold";
+                } else if (session.decisionHR && session.decisionHR.toLowerCase().includes('closure')) {
+                    decisionColor = "text-green-500 dark:text-green-400 font-semibold";
+                }
+
+                const renderUrlIcon = (url, title) => {
+                    const iconClass = url === '#' ? 'text-gray-400 cursor-default' : 'text-blue-500 hover:text-brand-accent';
+                    return `<a href="${url}" target="_blank" class="${iconClass}" title="${title}">
+                            <i class="fab fa-google-drive fa-lg"></i>
+                        </a>`;
+                };
+
+                table.innerHTML += `
+                <tr class="text-gray-700 dark:text-gray-300 border-b dark:border-border-dark hover:bg-gray-50 dark:hover:bg-gray-800/50 transition duration-150">
+                    <td class="px-6 py-4">${session.id || "N/A"}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${dateFiled}</td>
+                    <td class="px-6 py-4 font-medium">${session.employeeName || "N/A"}</td>
+                    <td class="px-6 py-4">${session.codeNumber || "N/A"}</td>
+                    <td class="px-6 py-4">${session.category || "N/A"}</td>
+                    <td class="px-6 py-4 ${decisionColor}">${session.decisionHR || "Pending"}</td>
+                    <td class="px-6 py-4 text-center">
+                        ${renderUrlIcon(nteUrl, nteUrl === '#' ? 'NTE document not available' : 'Open NTE Document')}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        ${renderUrlIcon(nodUrl, nodUrl === '#' ? 'NOD document not available' : 'Open NOD Document')}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <button onclick="openEditRecord(${session.id})" class="text-blue-500 hover:text-brand-accent transition text-sm font-semibold">Edit</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        async function loadRecords() {
+            if (document.getElementById('ir-nte-log').classList.contains('hidden')) return;
+
+            const table = document.getElementById("irnteSessionsTable");
+            table.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-gray-500 dark:text-gray-400">Loading IR/NTE data...</td></tr>`;
+            showLocalIRNteLoading("Fetching IR/NTE records...");
+
+            try {
+                const fetchUrl = IRNTE_API_URL + '?action=getIRNTE';
+                const res = await fetch(fetchUrl);
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}. Check Apps Script Deployment/URL.`);
+                }
+
+                allIRNTESessions = await res.json();
+
+                if (allIRNTESessions.error) {
+                    throw new Error(allIRNTESessions.error);
+                }
+
+                renderTable(allIRNTESessions);
+
+            } catch (error) {
+                console.error("Error loading IR/NTE records:", error);
+                const errorMessage = `Failed to load data. (Error: ${error.message})`;
+                table.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-red-500 dark:text-red-400 font-semibold">${errorMessage}</td></tr>`;
+            }
+            hideLocalIRNteLoading();
+        }
+
+        function handleSearch() {
+            const query = irnteSearchInput.value.toLowerCase().trim();
+
+            if (!query) {
+                renderTable(allIRNTESessions);
+                return;
+            }
+
+            const filteredSessions = allIRNTESessions.filter(session => {
+                return (session.employeeName && session.employeeName.toLowerCase().includes(query)) ||
+                    (session.employeeNumber && String(session.employeeNumber).toLowerCase().includes(query)) ||
+                    (session.campaign && session.campaign.toLowerCase().includes(query)) ||
+                    (session.codeNumber && String(session.codeNumber).toLowerCase().includes(query)) ||
+                    (session.category && session.category.toLowerCase().includes(query)) ||
+                    (session.decisionHR && session.decisionHR.toLowerCase().includes(query));
+            });
+
+            renderTable(filteredSessions);
+        }
+
+        irnteForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const isUpdate = irnteForm.dataset.editId;
+            showGlobalLoading(isUpdate ? "Updating record..." : "Saving new record...");
+            closeIRModal();
+
+            const formData = Object.fromEntries(new FormData(this).entries());
+            let payload = formData;
+            let method = "POST";
+
+            if (isUpdate) {
+                payload = { ...formData };
+                // Ensure ID is a number if it exists
+                if (payload.id) payload.id = parseInt(payload.id);
+            }
+
+            try {
+                const res = await fetch(IRNTE_API_URL, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    // Action determines if it's CREATE or UPDATE
+                    body: JSON.stringify({ action: isUpdate ? 'updateIRNTE' : 'createIRNTE', data: payload })
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({ error: 'Unknown server error' }));
+                    throw new Error(errorData.error || 'Server responded with an error.');
+                }
+
+                const result = await res.json();
+                if (result.status === 'ERROR') throw new Error(result.message);
+
+                hideGlobalLoading();
+                alert(`Record successfully ${isUpdate ? 'updated' : 'created'}!`);
+                await loadRecords();
+
+            } catch (error) {
+                console.error("Error saving record:", error);
+                hideGlobalLoading();
+                alert(`Failed to save record: ${error.message}. Check the console for details.`);
+            }
+        });
+
+        async function executeDeleteRecord(id) {
+            showGlobalLoading("Deleting record...");
+
+            try {
+                const res = await fetch(IRNTE_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'deleteIRNTE', id: parseInt(id) })
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({ error: 'Unknown server error' }));
+                    throw new Error(errorData.error || 'Server responded with an error.');
+                }
+
+                const result = await res.json();
+                if (result.status === 'ERROR') throw new Error(result.message);
+
+                hideGlobalLoading();
+                alert("Record successfully deleted!");
+                await loadRecords();
+
+            } catch (error) {
+                console.error("Error deleting record:", error);
+                hideGlobalLoading();
+                alert(`Failed to delete record: ${error.message}. Check the console for details.`);
+            }
+        }
+
+
+        <!-- Simple JS for Tabs -->
+        const buttons = document.querySelectorAll(".tab-button");
+        const tabs = document.querySelectorAll(".table-tab");
+
+        buttons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                buttons.forEach(b => b.classList.remove("active-tab"));
+                btn.classList.add("active-tab");
+
+                tabs.forEach(tab => tab.classList.remove("active-tab-content"));
+                const target = document.getElementById(btn.dataset.target);
+                if (target) target.classList.add("active-tab-content");
+            });
+        });
+
+
+
+
+
+
+        
+        // RENDER FUNCTION: SOP
+        function renderSOPTable(sessionsToRender) {
+            const table = document.getElementById("sopTable");
+            table.innerHTML = ""; 
+
+            if (!Array.isArray(sessionsToRender) || sessionsToRender.length === 0) {
+                table.innerHTML = `<tr><td colspan="5">No SOP documents match your criteria.</td></tr>`;
+                return;
+            }
+
+            sessionsToRender.forEach(session => {
+                const linkUrl = session.driveLink && session.driveLink.length > 5 && session.driveLink !== '#' ? session.driveLink : "#"; 
+                const descriptionText = session.description || "No description provided.";
+                
+                table.innerHTML += `
+                    <tr>
+                        <td>${session.id || "N/A"}</td>
+                        <td>${session.documentName || "N/A"}</td>
+                        <td>${session.campaign || "N/A"}</td> 
+                        <td>${descriptionText}</td>
+                        <td>
+                            <a href="${linkUrl}" target="_blank" 
+                                title="${linkUrl === '#' ? 'Document link not available' : 'Open SOP Document'}">
+                                <i class="fab fa-google-drive"></i>
+                            </a>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+
+        
+        // RENDER FUNCTION: Tools
+        function renderToolsTable(sessionsToRender) {
+            const table = document.getElementById("toolsTable");
+            table.innerHTML = ""; 
+
+            if (!Array.isArray(sessionsToRender) || sessionsToRender.length === 0) {
+                table.innerHTML = `<tr><td colspan="6">No Tools records match your criteria.</td></tr>`;
+                return;
+            }
+
+            sessionsToRender.forEach(session => {
+                const url = session.url && session.url.length > 5 && session.url !== '#' ? session.url : "#"; 
+                const wiLink = session.wiLink && session.wiLink.length > 5 && session.wiLink !== '#' ? session.wiLink : "#"; 
+                const descriptionText = session.description || "No description provided.";
+                
+                table.innerHTML += `
+                    <tr>
+                        <td>${session.id || "N/A"}</td>
+                        <td>${session.toolName || "N/A"}</td>
+                        <td>${session.campaign || "N/A"}</td> 
+                        <td>${descriptionText}</td>
+                        <td>
+                            <a href="${url}" target="_blank" 
+                                title="${url === '#' ? 'URL not available' : 'Open Tool Website'}">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="${wiLink}" target="_blank" 
+                                title="${wiLink === '#' ? 'Work Instruction not available' : 'Open Work Instruction'}">
+                                <i class="fab fa-google-drive"></i>
+                            </a>
+                        </td>
+                    </tr>`;
+            });
+        }
+        
+
+        
+
+
+                // SOP Documents Functions (Filter)
+        function handleSOPSearch() {
+            const query = document.getElementById('sopSearch').value.toLowerCase().trim();
+            
+            if (!query) {
+                renderSOPTable(allSOPSessions); 
+                return;
+            }
+
+            const filteredSessions = allSOPSessions.filter(session => {
+                return (session.documentName && session.documentName.toLowerCase().includes(query)) ||
+                       (session.description && session.description.toLowerCase().includes(query)) ||
+                       (session.campaign && session.campaign.toLowerCase().includes(query)) ||
+                       (session.id && String(session.id).toLowerCase().includes(query));
+            });
+
+            renderSOPTable(filteredSessions);
+        }
+
+        // SOP Documents Functions (Read)
+        async function loadSOP() {
+            const spinner = document.getElementById('sopLoadingSpinner');
+            const table = document.getElementById("sopTable");
+
+            table.innerHTML = `<tr><td colspan="5">Loading SOP data...</td></tr>`;
+            if (spinner) spinner.classList.remove('hidden');
+            
+            try {
+                const fetchUrl = SOP_TOOLS_API_URL + '?action=getSOP';
+                const res = await fetch(fetchUrl);
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}. Check SOP/Tools Apps Script URL.`);
+                }
+                
+                allSOPSessions = await res.json();
+                
+                if (allSOPSessions.error) {
+                    throw new Error(allSOPSessions.error);
+                }
+
+                renderSOPTable(allSOPSessions);
+
+            } catch (error) {
+                console.error("Error loading SOP records:", error);
+                
+                const errorMessage = `Failed to load SOP data. Check the SOP_TOOLS_API_URL and Apps Script deployment. (Error: ${error.message})`;
+
+                table.innerHTML = `<tr><td colspan="5">${errorMessage}</td></tr>`;
+            }
+            finally {
+                if (spinner) spinner.classList.add('hidden');
+            }
+        }
+
+        // Tools List Functions (Filter)
+        function handleToolsSearch() {
+            const query = document.getElementById('toolsSearch').value.toLowerCase().trim();
+            
+            if (!query) {
+                renderToolsTable(allToolsSessions); 
+                return;
+            }
+
+            const filteredSessions = allToolsSessions.filter(session => {
+                return (session.toolName && session.toolName.toLowerCase().includes(query)) ||
+                       (session.description && session.description.toLowerCase().includes(query)) ||
+                       (session.campaign && session.campaign.toLowerCase().includes(query)) ||
+                       (session.id && String(session.id).toLowerCase().includes(query));
+            });
+
+            renderToolsTable(filteredSessions);
+        }
+
+        // Tools List Functions (Read)
+        async function loadTools() {
+            const spinner = document.getElementById('toolsLoadingSpinner');
+            const table = document.getElementById("toolsTable");
+
+            table.innerHTML = `<tr><td colspan="6">Loading Tools data...</td></tr>`;
+            if (spinner) spinner.classList.remove('hidden');
+            
+            try {
+                const fetchUrl = SOP_TOOLS_API_URL + '?action=getTools';
+                const res = await fetch(fetchUrl);
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}. Check SOP/Tools Apps Script URL.`);
+                }
+                
+                allToolsSessions = await res.json();
+                
+                if (allToolsSessions.error) {
+                    throw new Error(allToolsSessions.error);
+                }
+
+                renderToolsTable(allToolsSessions);
+
+            } catch (error) {
+                console.error("Error loading Tools records:", error);
+                const errorMessage = `Failed to load Tools data. Check the SOP_TOOLS_API_URL and Apps Script deployment. (Error: ${error.message})`;
+
+                table.innerHTML = `<tr><td colspan="6">${errorMessage}</td></tr>`;
+            } finally {
+                if (spinner) spinner.classList.add('hidden');
+            }
+        }
+
+
+
+
+
+        /* ------------------ INIT ------------------ */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Show the initial tab (Summary) and set the initial header title
+            showTab('summary');
+        });
+
+        /* ------------------ ATTENDANCE (backend logic extracted from attnew.html) ------------------ */
+        (function(){
+            const BASE_URL = "https://script.google.com/macros/s/AKfycbxrwq6w72om22yz5zkHyDO-fhPxqlPBzlUsIjExrI3ZOB1J__Um1NlRJbih-_wFwihAhg/exec";
+
+            const statusColors = {
+                P: "bg-[#38761D]", A: "bg-[#EF4444]", Off: "bg-[#9CA3AF]",
+                L: "bg-[#F59E0B]", VL: "bg-[#0000FF]", T: "bg-[#8E7CC3]",
+                SUS: "bg-[#00FFFF]", HD: "bg-[#00FF00]", L15: "bg-[#FACC15]",
+                L30: "bg-[#FB923C]", L45: "bg-[#F97316]", L60: "bg-[#EA580C]",
+                SL: "bg-[#6FA8DC]", NA: ""
+            };
+
+            // spinner helpers (ref-counted so nested fetches don't flicker)
+            let _loadingCount = 0;
+            function showLoading(text) {
+                _loadingCount++;
+                // global overlay spinner
+                const spinner = document.getElementById('loading-spinner');
+                if (spinner) {
+                    const txt = spinner.querySelector('.text-sm');
+                    if (txt && text) txt.textContent = text;
+                    spinner.style.display = 'flex';
+                }
+                // local attendance card spinner (table-spinner)
+                const attSpinner = document.getElementById('attendanceLoadingSpinner');
+                if (attSpinner) {
+                    const txt = attSpinner.querySelector('.spinner-text');
+                    if (txt && text) txt.textContent = text;
+                    attSpinner.classList.remove('hidden');
+                }
+            }
+
+            function hideLoading() {
+                _loadingCount = Math.max(0, _loadingCount - 1);
+                if (_loadingCount > 0) return;
+                const spinner = document.getElementById('loading-spinner');
+                if (spinner) spinner.style.display = 'none';
+                const attSpinner = document.getElementById('attendanceLoadingSpinner');
+                if (attSpinner) attSpinner.classList.add('hidden');
+            }
+
+            async function loadClusters(){
+                showLoading('Loading teams...');
+                try{
+                    const res = await fetch(BASE_URL + "?api=clusters");
+                    const clusters = await res.json();
+                    const select = document.getElementById("rosterSelector");
+                    if (!select) return;
+                    select.innerHTML = `<option value="">All Teams</option>`;
+                    clusters.forEach(c => {
+                        const opt = document.createElement("option"); opt.value = c; opt.textContent = c; select.appendChild(opt);
+                    });
+                }catch(err){ console.error('Failed to load clusters', err); }
+                finally{ hideLoading(); }
+            }
+
+            async function loadAll(){
+                showLoading('Loading attendance data…');
+
+                const monthVal = document.getElementById('monthSelector') ? document.getElementById('monthSelector').value : '';
+                const clusterVal = document.getElementById('rosterSelector') ? document.getElementById('rosterSelector').value : '';
+
+                try{
+                    const params = new URLSearchParams({ api:'summary', month:monthVal, cluster:clusterVal });
+                    const summary = await (await fetch(BASE_URL + '?' + params.toString())).json();
+
+                    renderKPIs(summary);
+                    renderCampaignSummary(summary);
+
+                    const calParams = new URLSearchParams({ api:'calendars', month:monthVal, cluster:clusterVal });
+                    const calData = await (await fetch(BASE_URL + '?' + calParams.toString())).json();
+                    renderCalendars(calData);
+                }catch(err){ console.error('Attendance loadAll error', err); }
+                finally{ hideLoading(); }
+            }
+
+            function renderKPIs(summary){
+                const present = summary.overall.P || 0;
+                const absent = summary.overall.A || 0;
+                const halfDay = summary.overall.HD || 0;
+                const late = (summary.overall.L || 0) + (summary.overall.L15 || 0) + (summary.overall.L30 || 0) + (summary.overall.L45 || 0) + (summary.overall.L60 || 0);
+                const vacation = summary.overall.VL || 0;
+                const total = present + absent + halfDay + late + vacation;
+                const kpiPresent = document.getElementById('kpi-present'); if (kpiPresent) kpiPresent.textContent = present;
+                const kpiAbsent = document.getElementById('kpi-absent'); if (kpiAbsent) kpiAbsent.textContent = absent;
+                const kpiTardy = document.getElementById('kpi-tardy'); if (kpiTardy) kpiTardy.textContent = late;
+                const kpiLeave = document.getElementById('kpi-leave'); if (kpiLeave) kpiLeave.textContent = vacation;
+                const kpiScore = document.getElementById('kpi-score'); if (kpiScore) kpiScore.textContent = (total > 0 ? ((present/total)*100).toFixed(1) : 0) + '%';
+            }
+
+                        function renderCampaignSummary(summary){
+                                const tbody = document.getElementById('campaign-summary-body'); if (!tbody) return; tbody.innerHTML = '';
+                                const campaigns = summary.campaigns || {};
+
+                                // Build array with numeric scores for sorting
+                                const rows = Object.entries(campaigns).map(([campaign, stats]) => {
+                                        const total = (stats.P||0)+(stats.A||0)+(stats.HD||0)+(stats.L||0)+(stats.L15||0)+(stats.L30||0)+(stats.L45||0)+(stats.L60||0);
+                                        const scoreNum = total>0 ? (stats.P/total)*100 : 0;
+                                        return { campaign, stats, scoreNum };
+                                });
+
+                                // sort lowest to highest
+                                rows.sort((a,b) => a.scoreNum - b.scoreNum);
+
+                                rows.forEach(({campaign, stats, scoreNum}) => {
+                                        const score = scoreNum.toFixed(1) + '%';
+                                        // color score red if below 95%
+                                        const scoreClass = scoreNum < 95 ? 'text-red-600 dark:text-red-400 font-bold' : 'text-gray-900 dark:text-text-dark font-bold';
+
+                                        const row = `
+                                            <tr>
+                                                <td class="px-4 py-2 font-medium text-gray-800 dark:text-text-dark">${campaign}</td>
+                                                <td class="px-4 py-2 text-center text-green-600 dark:text-green-400">${stats.P||0}</td>
+                                                <td class="px-4 py-2 text-center text-yellow-600 dark:text-yellow-400">${(stats.L||0)+(stats.L15||0)+(stats.L30||0)+(stats.L45||0)+(stats.L60||0)}</td>
+                                                <td class="px-4 py-2 text-center text-blue-600 dark:text-blue-400">${stats.HD||0}</td>
+                                                <td class="px-4 py-2 text-center text-red-600 dark:text-red-400">${stats.A||0}</td>
+                                                <td class="px-4 py-2 text-center ${scoreClass}">${score}</td>
+                                            </tr>`;
+                                        tbody.insertAdjacentHTML('beforeend', row);
+                                });
+                        }
+
+            function renderCalendars(data){
+                const feed = document.getElementById('campaign-feed'); if (!feed) return; feed.innerHTML = '';
+
+                Object.entries(data).forEach(([campaign, employees]) => {
+                    // determine how many day columns are needed (max length among employees)
+                    const lengths = Object.values(employees || {}).map(arr => Array.isArray(arr) ? arr.length : 0);
+                    const maxDays = lengths.length ? Math.max(...lengths) : 0;
+                    // clamp between 1 and 31
+                    const daysCount = Math.min(Math.max(maxDays, 1), 31);
+
+                    // compute per-campaign aggregates: Present, Absent, Late (L*), VL
+                    let cntP = 0, cntA = 0, cntHD = 0, cntVL = 0, cntL = 0;
+                    Object.values(employees || {}).forEach(arr => {
+                        if (!Array.isArray(arr)) return;
+                        arr.forEach(s => {
+                            if (!s || s === null) return;
+                            if (s === 'NA') return; // NA doesn't count toward totals
+                            if (s === 'P') cntP++;
+                            else if (s === 'A') cntA++;
+                            else if (s === 'HD') cntHD++;
+                            else if (s === 'VL') cntVL++;
+                            else if (/^L/.test(s)) cntL++;
+                        });
+                    });
+
+                    const totalCount = cntP + cntA + cntHD + cntL + cntVL;
+                    const scoreNum = totalCount > 0 ? (cntP / totalCount) * 100 : 0;
+                    const score = scoreNum.toFixed(1) + '%';
+                    const scoreClass = scoreNum < 95 ? 'text-red-600 dark:text-red-400 font-bold' : 'text-gray-900 dark:text-text-dark font-bold';
+
+                    let table = `
+                        <div class="bg-white dark:bg-card-dark border border-gray-100 dark:border-border-dark rounded-2xl shadow-sm overflow-x-auto">
+                            <div class="p-4 border-b border-gray-100 dark:border-border-dark flex justify-between items-center">
+                                <h3 class="text-xl font-semibold text-gray-700 mb-4">${campaign}</h3>
+                            </div>
+                            <div class="p-4">
+                              <div class="flex flex-col md:flex-row md:items-start md:space-x-6">
+                                <div class="flex-1 overflow-x-auto">
+                                  <table class="table-fixed border-collapse w-auto text-xs">
+                                    <thead class="bg-gray-100">
+                                      <tr>
+                                        <th class="border px-2 py-1 text-left w-40">Employee</th>`;
+                    for (let d = 1; d <= daysCount; d++) table += `<th class='border px-1 py-1 w-6 text-center'>${d}</th>`;
+                    table += `</tr></thead><tbody>`;
+
+                    Object.entries(employees).forEach(([name, statuses]) => {
+                        table += `<tr><td class="border px-2 py-1 font-medium text-gray-700">${name}</td>`;
+                        for (let i = 0; i < daysCount; i++){
+                            const s = (Array.isArray(statuses) && typeof statuses[i] !== 'undefined') ? statuses[i] : null;
+                            if (s === null || s === '') {
+                                // no data for this day: render empty bordered square (blank)
+                                table += `<td class="border w-6 h-6"></td>`;
+                            } else if (s === 'NA') {
+                                // explicit NA: repeating-gradient pattern
+                                table += `<td class="border w-6 h-6" style="background:repeating-linear-gradient(45deg,#E5E7EB 0px,#E5E7EB 2px,#D1D5DB 2px,#D1D5DB 4px);"></td>`;
+                            } else {
+                                const c = statusColors[s] || '';
+                                table += `<td class="border w-6 h-6 ${c}" title="${s}"></td>`;
+                            }
+                        }
+                        table += `</tr>`;
+                    });
+                    table += `</tbody></table>
+                                </div>
+                                <div class="w-44 mt-4 md:mt-0">
+                                  <table class="w-full text-sm">
+                                    <tbody>
+                                      <tr><td class="py-2 font-medium text-gray-700">Present</td><td class="py-2 text-right text-green-600 font-semibold">${cntP}</td></tr>
+                                      <tr><td class="py-2 font-medium text-gray-700">Absent</td><td class="py-2 text-right text-red-600 font-semibold">${cntA}</td></tr>
+                                      <tr><td class="py-2 font-medium text-gray-700">Late</td><td class="py-2 text-right text-yellow-600 font-semibold">${cntL}</td></tr>
+                                      <tr><td class="py-2 font-medium text-gray-700">VL</td><td class="py-2 text-right text-blue-600 font-semibold">${cntVL}</td></tr>
+                                      <tr class="border-t"><td class="py-2 font-medium text-gray-700">Score</td><td class="py-2 text-right ${scoreClass}">${score}</td></tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
+                        </div>`;
+                    feed.insertAdjacentHTML('beforeend', table);
+                });
+            }
+
+            // default filter
+            function setDefaultFilters(){
+                const now = new Date();
+                const month = now.getMonth() + 1;
+                const monthSelector = document.getElementById('monthSelector'); if (monthSelector) monthSelector.value = month;
+                const rosterSelector = document.getElementById('rosterSelector'); if (rosterSelector) rosterSelector.value = 'Admin';
+            }
+
+            // bind controls
+            const refreshBtn = document.getElementById('refreshBtn'); if (refreshBtn) refreshBtn.addEventListener('click', loadAll);
+            const monthSel = document.getElementById('monthSelector'); if (monthSel) monthSel.addEventListener('change', loadAll);
+            const rosterSel = document.getElementById('rosterSelector'); if (rosterSel) rosterSel.addEventListener('change', loadAll);
+
+            // initialization
+            window.addEventListener('DOMContentLoaded', async function(){
+                await loadClusters();
+                setDefaultFilters();
+                loadAll();
+            });
+        })();
+    </script>
+</body>
+
+</html>

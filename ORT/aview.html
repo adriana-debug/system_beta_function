@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en" class="dark"> <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alexandria Vane | Agent Profile</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class', 
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                    },
+                    colors: {
+                        'brand-accent': '#CBEB33',
+                        'brand-dark': '#A6B91A',
+                        'bg-dark': '#0f172a',      // Primary dark background
+                        'card-dark': '#1e293b',    // Card background in dark mode
+                        'border-dark': '#334155',  // Border color in dark mode
+                        'text-dark': '#e2e8f0',     // Primary text for dark mode
+                        'text-muted-dark': '#94a3b8', // Muted text for dark mode
+                        'bg-light': '#f1f5f9',     // Primary light background
+                        'text-light': '#0f172a',    // Primary text for light mode
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        .campaign-banner {
+            background: linear-gradient(135deg, rgba(203, 235, 51, 0.7), rgba(181, 209, 47, 0.9)), url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        /* Custom scrollbar for a modern look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background-color: theme('colors.bg-dark');
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: theme('colors.border-dark');
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: theme('colors.brand-dark');
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-bg-light dark:bg-bg-dark text-text-light dark:text-text-dark font-sans transition-colors duration-300">
+
+    <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+
+        <header class="mb-8">
+            <div class="relative h-48 md:h-56 rounded-2xl overflow-hidden shadow-lg campaign-banner">
+                 <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+            </div>
+
+            <div class="relative px-4 sm:px-8 -mt-16">
+                <div class="flex flex-col sm:flex-row items-center sm:items-end gap-6">
+                    <img src="https://i.pravatar.cc/150?u=alexandriavane" alt="Profile of Alexandria Vane"
+                         class="w-32 h-32 rounded-full border-4 border-white dark:border-card-dark object-cover shadow-xl transform hover:scale-105 transition-transform duration-300">
+
+                    <div class="flex-1 text-center sm:text-left mb-2">
+                        <h1 class="text-3xl lg:text-4xl font-extrabold text-black dark:text-white">Alexandria Vane</h1>
+                        <p class="text-md text-brand-accent font-semibold mt-1">Tier 2 Customer Support Specialist</p>
+                        <p class="text-sm text-gray-700 dark:text-text-muted-dark mt-1">
+                            Campaign: <strong>Global Tech Solutions</strong> | Team Lead: <strong>J. Smith</strong>
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap justify-center sm:justify-end gap-3 text-sm">
+                        <button class="px-5 py-2.5 rounded-full bg-brand-accent text-gray-900 hover:bg-brand-dark font-bold transition shadow-lg transform hover:-translate-y-0.5">
+                            <i class="fas fa-hands-helping mr-2"></i> Request Coaching
+                        </button>
+                        <button class="px-5 py-2.5 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-border-dark dark:hover:bg-card-dark text-black dark:text-white font-medium transition shadow-md">
+                            <i class="fas fa-calendar-alt mr-2"></i> My Schedule
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <div class="lg:col-span-2 space-y-8">
+                
+                <section class="bg-white dark:bg-card-dark rounded-2xl shadow-lg p-6 border dark:border-border-dark">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <i class="fas fa-tachometer-alt text-brand-accent"></i> My Performance Highlights
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-text-muted-dark">Last QA Score</p>
+                            <p class="text-4xl font-extrabold text-green-400">94.5%</p>
+                            <p class="text-xs text-gray-400">on 2025-10-12</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-text-muted-dark">Avg. Handling Time</p>
+                            <p class="text-4xl font-extrabold text-yellow-400">6:45</p>
+                             <p class="text-xs text-gray-400">Target: 5:30</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-text-muted-dark">Current Status</p>
+                            <p class="text-4xl font-extrabold text-blue-400">Active</p>
+                            <p class="text-xs text-gray-400">2-year tenure</p>
+                        </div>
+                    </div>
+                </section>
+
+
+                <section>
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <i class="fas fa-stream text-brand-accent"></i> My Activity
+                    </h2>
+
+                    <div class="bg-white dark:bg-card-dark rounded-2xl shadow-lg p-4 mb-6 border dark:border-border-dark flex items-center gap-4">
+                        <img src="https://i.pravatar.cc/150?u=alexandriavane" alt="Profile" class="w-10 h-10 rounded-full object-cover">
+                        <input type="text" placeholder="Share a win or ask a question..." class="w-full bg-gray-100 dark:bg-bg-dark rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-brand-accent">
+                        <button class="px-4 py-2 rounded-full bg-brand-accent text-gray-900 hover:bg-brand-dark font-bold transition">Post</button>
+                    </div>
+
+                    <article class="bg-white dark:bg-card-dark rounded-2xl shadow-lg p-6 mb-6 border dark:border-border-dark">
+                        <div class="flex items-start gap-4">
+                            <img src="https://i.pravatar.cc/150?u=alexandriavane" alt="Profile" class="w-12 h-12 rounded-full object-cover">
+                            <div>
+                                <p class="font-bold">Alexandria Vane <span class="font-normal text-sm text-gray-500 dark:text-text-muted-dark">· 2 days ago</span></p>
+                                <p class="mt-2">Happy to see my latest QA score! It feels great when hard work pays off. Big shoutout to the team for the support. Now, let's work on getting that AHT down! #Goals #CustomerSupport</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t dark:border-border-dark flex justify-around text-gray-600 dark:text-text-muted-dark">
+                            <button class="flex items-center gap-2 hover:text-brand-accent transition"><i class="fas fa-heart"></i> 8 Likes</button>
+                            <button class="flex items-center gap-2 hover:text-brand-accent transition"><i class="fas fa-comment-alt"></i> 2 Comments</button>
+                            <button class="flex items-center gap-2 hover:text-brand-accent transition"><i class="fas fa-share"></i> Share</button>
+                        </div>
+                    </article>
+
+                    <article class="bg-white dark:bg-card-dark rounded-2xl shadow-lg p-6 border dark:border-border-dark">
+                        <div class="flex items-start gap-4">
+                            <img src="https://i.pravatar.cc/150?u=alexandriavane" alt="Profile" class="w-12 h-12 rounded-full object-cover">
+                            <div>
+                                <p class="font-bold">Alexandria Vane <span class="font-normal text-sm text-gray-500 dark:text-text-muted-dark">· 5 days ago</span></p>
+                                <p class="mt-2">Just handled a really complex technical issue for a customer. It was a tough one, but we got it resolved! Moments like these make the job so rewarding.</p>
+                            </div>
+                        </div>
+                         <div class="mt-4 pt-4 border-t dark:border-border-dark flex justify-around text-gray-600 dark:text-text-muted-dark">
+                            <button class="flex items-center gap-2 hover:text-brand-accent transition"><i class="fas fa-heart"></i> 15 Likes</button>
+                            <button class="flex items-center gap-2 hover:text-brand-accent transition"><i class="fas fa-comment-alt"></i> 4 Comments</button>
+                            <button class="flex items-center gap-2 hover:text-brand-accent transition"><i class="fas fa-share"></i> Share</button>
+                        </div>
+                    </article>
+                </section>
+            </div>
+
+            <aside class="space-y-8">
+                
+                <section class="bg-white dark:bg-card-dark rounded-2xl shadow-lg p-6 border dark:border-border-dark">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-users text-brand-accent"></i> My Team</h2>
+                    <ul class="space-y-4">
+                        <li class="flex items-center gap-4">
+                            <img src="https://i.pravatar.cc/150?u=jsmith" alt="J. Smith" class="w-10 h-10 rounded-full object-cover">
+                            <div>
+                                <p class="font-semibold">J. Smith</p>
+                                <p class="text-sm text-gray-500 dark:text-text-muted-dark">Team Lead</p>
+                            </div>
+                        </li>
+                         <li class="flex items-center gap-4">
+                            <img src="https://i.pravatar.cc/150?u=adoe" alt="A. Doe" class="w-10 h-10 rounded-full object-cover">
+                            <div>
+                                <p class="font-semibold">A. Doe</p>
+                                <p class="text-sm text-gray-500 dark:text-text-muted-dark">Tier 2 Specialist</p>
+                            </div>
+                        </li>
+                         <li class="flex items-center gap-4">
+                            <img src="https://i.pravatar.cc/150?u=rwilliams" alt="R. Williams" class="w-10 h-10 rounded-full object-cover">
+                            <div>
+                                <p class="font-semibold">R. Williams</p>
+                                <p class="text-sm text-gray-500 dark:text-text-muted-dark">Tier 2 Specialist</p>
+                            </div>
+                        </li>
+                    </ul>
+                </section>
+
+                <section class="bg-white dark:bg-card-dark rounded-2xl shadow-lg p-6 border dark:border-border-dark">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-star text-brand-accent"></i> My Skills</h2>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="bg-gray-200 dark:bg-border-dark px-3 py-1 rounded-full text-sm font-medium">Technical Troubleshooting</span>
+                        <span class="bg-gray-200 dark:bg-border-dark px-3 py-1 rounded-full text-sm font-medium">Customer Empathy</span>
+                        <span class="bg-gray-200 dark:bg-border-dark px-3 py-1 rounded-full text-sm font-medium">CRM Software</span>
+                        <span class="bg-gray-200 dark:bg-border-dark px-3 py-1 rounded-full text-sm font-medium">Conflict Resolution</span>
+                    </div>
+                </section>
+                
+                <section class="bg-white dark:bg-card-dark rounded-2xl shadow-lg p-6 border dark:border-border-dark">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-link text-brand-accent"></i> Quick Links</h2>
+                    <div class="flex flex-col space-y-3">
+                         <button class="w-full text-left px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-border-dark dark:hover:bg-opacity-75 font-medium transition">
+                            <i class="fas fa-chart-line mr-2 w-4 text-center"></i> View KPI
+                        </button>
+                        <button class="w-full text-left px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-border-dark dark:hover:bg-opacity-75 font-medium transition">
+                            <i class="fas fa-comments mr-2 w-4 text-center"></i> Coaching Logs
+                        </button>
+                        <button class="w-full text-left px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-border-dark dark:hover:bg-opacity-75 font-medium transition">
+                            <i class="fas fa-file-alt mr-2 w-4 text-center"></i> Attendance
+                        </button>
+                    </div>
+                </section>
+
+            </aside>
+        </main>
+    </div>
+
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="themeToggle" class="p-3 rounded-full text-gray-800 dark:text-text-dark bg-white dark:bg-card-dark hover:bg-brand-accent hover:text-bg-dark transition-all duration-300 transform hover:scale-110 shadow-lg border dark:border-border-dark" aria-label="Toggle Dark Mode"></button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            feather.replace();
+
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+
+            const applyTheme = (isDark) => {
+                if (isDark) {
+                    body.classList.add("dark");
+                    localStorage.setItem("theme", "dark");
+                    themeToggle.innerHTML = feather.icons.sun.toSvg({ 'aria-hidden': 'true' });
+                } else {
+                    body.classList.remove("dark");
+                    localStorage.setItem("theme", "light");
+                    themeToggle.innerHTML = feather.icons.moon.toSvg({ 'aria-hidden': 'true' });
+                }
+            };
+            
+            themeToggle.addEventListener('click', () => {
+                applyTheme(!body.classList.contains('dark'));
+            });
+
+            // Initialize theme based on saved preference or system setting
+            const savedTheme = localStorage.getItem("theme");
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            // Default to dark as per initial request
+            applyTheme(savedTheme ? savedTheme === "dark" : true);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Minds Dashboard</title>
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Charts -->
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Roboto', 'sans-serif'] },
+          colors: {
+            'brand-accent': '#CBEB33',
+            'brand-dark': '#B5D12F',
+            'bg-dark': '#0f172a',
+            'text-dark': '#f1f5f9',
+            'card-dark': '#1e293b',
+            'border-dark': '#334155',
+            'bg-light': '#ffffff',
+            'text-light': '#1e293b',
+            'google-primary': '#1A73E8',
+            'google-green': '#34A853',
+            'google-red': '#EA4335',
+            'google-yellow': '#FBBC05',
+            'danger': '#ef4444',
+            'brandPrimary': '#4285F4',
+            'brandSuccess': '#34A853',
+            'brandDanger': '#EA4335',
+            'brandWarning': '#FBBC05'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Drawer animation */
+    .drawer {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: translateX(-100%);
+    }
+    .drawer-open {
+      transform: translateX(0);
+    }
+
+    /* Navigation styles */
+    .tab-active {
+      background-color: #CBEB33;
+      color: #000 !important;
+      font-weight: 700;
+      border-radius: 0.75rem;
+    }
+    .nav-item {
+      transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      border-radius: 0.75rem;
+      color: inherit;
+    }
+    .nav-item:hover {
+      transform: translateY(-1px) scale(1.01);
+      box-shadow: 0 4px 15px rgba(203, 235, 51, 0.4);
+      background-color: #CBEB33;
+      color: #000 !important;
+    }
+
+    /* Overlay styles - force light mode */
+    #landingOverlay .overlay-panel {
+      background: linear-gradient(135deg, #CBEB33 5%, #ffffff 90%) !important;
+      color: #111827 !important;
+    }
+    #landingOverlay .overlay-card {
+      background: #ffffff !important;
+      color: #111827 !important;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+
+    /* Table styles */
+    .data-table th, .data-table td {
+      white-space: nowrap;
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    .data-table th { font-size: 0.75rem; }
+    .data-table td { font-size: 0.875rem; }
+    .data-table thead { position: sticky; top: 0; z-index: 10; }
+
+    .table-wrapper { overflow-x: auto; overflow-y: visible; margin-top: 0; }
+
+    .sortable-header { 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      user-select: none; 
+      justify-content: flex-end; 
+    }
+    .sortable-header[data-column="Campaign"], 
+    .sortable-header[data-column="Cluster"] { 
+      justify-content: flex-start; 
+    }
+    .sortable-header[data-column="Risk"] { 
+      justify-content: center; 
+    }
+
+    .sort-icon { 
+      font-size: 1.1rem; 
+      margin-left: 0.25rem; 
+      color: #94a3b8; 
+      opacity: 0.7; 
+      transition: opacity 0.2s; 
+    }
+    .active-sort .sort-icon { 
+      opacity: 1; 
+      color: #1A73E8; 
+    }
+
+    /* Loader */
+    .loader { 
+      width: 64px; 
+      height: 64px; 
+      position: relative; 
+      animation: rotate 1.5s ease-in infinite alternate; 
+    }
+    .loader::before { 
+      content: ''; 
+      position: absolute; 
+      left: 0; 
+      bottom: 0; 
+      background: currentColor; 
+      width: 64px; 
+      height: 32px; 
+      border-radius: 0 0 50px 50px; 
+    }
+    .loader::after { 
+      content: ''; 
+      position: absolute; 
+      left: 50%; 
+      top: 10%; 
+      background: #FFF; 
+      width: 8px; 
+      height: 64px; 
+      animation: rotate 1.2s linear infinite alternate-reverse; 
+    }
+    @keyframes rotate { 
+      100% { transform: rotate(360deg) } 
+    }
+
+    .hidden-important { display: none !important; }
+
+    #landingOverlay { z-index: 100; }
+    aside#drawer { z-index: 90; }
+
+    /* KPI Dashboard specific styles */
+    .kpi-tab-btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .kpi-tab-btn.active {
+      border-bottom-color: #4285F4;
+      color: #4285F4;
+    }
+
+    #kpi-table th, #kpi-table td {
+      padding: 0.4rem 0.6rem;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
+    #kpi-table thead th {
+      position: sticky;
+      top: 0;
+      background-color: #f1f1f1;
+      z-index: 10;
+    }
+
+    #kpi-table tr:hover {
+      background-color: rgba(0,0,0,0.03);
+      cursor: pointer;
+    }
+
+    @media (max-width: 640px) {
+      #landingOverlay .overlay-card { 
+        padding: 2rem !important; 
+        margin: 1rem; 
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen font-sans transition-colors duration-500 bg-white text-gray-900">
+
+  <!-- Landing Overlay -->
+  <div id="landingOverlay"
+       class="fixed inset-0 flex items-center justify-center transition-opacity"
+       aria-hidden="false">
+    <div class="max-w-4xl w-full mx-6 p-12 rounded-2xl shadow-2xl overlay-panel">
+      <div class="overlay-card max-w-4xl w-full mx-auto p-12 rounded-2xl shadow-2xl text-center space-y-8">
+        <img src="https://digitalmindsbpo.com/storage/2021/11/cropped-Digital_Minds_Logo_Original.png"
+             alt="Logo" class="mx-auto h-16 mb-2" />
+        <h1 class="text-3xl font-extrabold mb-2">Welcome — Let's Get Started</h1>
+        <p class="text-md text-gray-600 mb-6 max-w-2xl mx-auto">
+          This space brings our work, ideas, and data together in one place. Explore insights, share progress, and
+          collaborate to make everyday decisions smoother and more meaningful.
+        </p>
+
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3">
+          <button id="enterDashboardBtn"
+                  class="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-accent hover:bg-brand-dark text-gray-900 font-semibold shadow-lg transition-all duration-300 hover:scale-[1.03]">
+            <span class="material-symbols-rounded text-xl mr-2" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
+            Enter Workspace
+          </button>
+        </div>
+
+        <p class="mt-4 text-xs text-gray-500">Shared insights. Smarter teamwork. Better outcomes.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drawer Sidebar -->
+  <aside id="drawer" class="drawer fixed top-0 left-0 h-full w-64 bg-white shadow-2xl">
+    <div class="flex items-center justify-between p-4 pt-5 border-b sticky top-0 bg-white z-10">
+      <img src="https://assets-global.website-files.com/6597f55c5106e2395f1a56e9/6597f55c5106e2395f1a5814_DigitalMinds-Logos-01-p-500.png"
+           alt="Logo" class="h-10 object-contain" />
+      <button id="closeDrawerBtn" class="text-gray-500 p-2 rounded-full hover:bg-gray-100 transition">
+        <span class="material-symbols-rounded text-2xl">close</span>
+      </button>
+    </div>
+
+    <nav class="p-3 text-sm font-normal text-gray-700">
+      <ul class="space-y-1">
+        <li>
+          <button class="nav-item flex items-center gap-3 p-3 w-full text-left tab-active" data-page="exec_summary">
+            <span class="material-symbols-rounded text-xl">dashboard</span>
+            <span>Executive Summary</span>
+          </button>
+        </li>
+
+        <li>
+          <button class="nav-item flex items-center gap-3 p-3 w-full text-left" data-page="kpi">
+            <span class="material-symbols-rounded text-xl">article</span>
+            <span>KPI</span>
+          </button>
+        </li>
+
+        <li>
+          <button class="nav-item flex items-center gap-3 p-3 w-full text-left" data-page="sop">
+            <span class="material-symbols-rounded text-xl">description</span>
+            <span>SOP Documents</span>
+          </button>
+        </li>
+
+        <li>
+          <button class="nav-item flex items-center gap-3 p-3 w-full text-left" data-page="attendance">
+            <span class="material-symbols-rounded text-xl">today</span>
+            <span>Attendance</span>
+          </button>
+        </li>
+
+        <li>
+          <button class="nav-item flex items-center gap-3 p-3 w-full text-left" data-page="coaching">
+            <span class="material-symbols-rounded text-xl">psychology_alt</span>
+            <span>Coaching Logs</span>
+          </button>
+        </li>
+
+        <li>
+          <button class="nav-item flex items-center gap-3 p-3 w-full text-left" data-page="nte">
+            <span class="material-symbols-rounded text-xl">gavel</span>
+            <span>NTE Form</span>
+          </button>
+        </li>
+
+        <li>
+          <button class="nav-item flex items-center gap-3 p-3 w-full text-left" data-page="ir">
+            <span class="material-symbols-rounded text-xl">rule</span>
+            <span>IR / NTE Logs</span>
+          </button>
+        </li>
+
+        <li>
+          <button class="nav-item flex items-center gap-3 p-3 w-full text-left" data-page="assessment">
+            <span class="material-symbols-rounded text-xl">rate_review</span>
+            <span>Assessment Tracker</span>
+          </button>
+        </li>
+
+        <li>
+          <button class="nav-item flex items-center gap-3 p-3 w-full text-left" data-page="client_intake">
+            <span class="material-symbols-rounded text-xl">handshake</span>
+            <span>Client Intake</span>
+          </button>
+        </li>
+
+        <li>
+          <button class="nav-item flex items-center gap-3 p-3 w-full text-left" data-page="applicant_intake">
+            <span class="material-symbols-rounded text-xl">person_add</span>
+            <span>Applicant Intake Form</span>
+          </button>
+        </li>
+
+        <li>
+          <button class="nav-item flex items-center gap-3 p-3 w-full text-left" data-page="rms">
+            <span class="material-symbols-rounded text-xl">shield</span>
+            <span>Risk Management System</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Overlay to dim page when drawer open -->
+  <div id="overlay" class="fixed inset-0 bg-black bg-opacity-30 hidden z-40 transition-opacity duration-300"></div>
+
+  <!-- Page Content -->
+  <div id="page-content" class="opacity-0 transition-opacity duration-500">
+    <!-- Header -->
+    <header class="flex items-center gap-4 bg-white p-4 shadow-md sticky top-0 z-30 transition-colors duration-500 border-b border-gray-100">
+      <button id="menuBtn" class="text-gray-600 p-2 rounded-full hover:bg-gray-100 transition">
+        <span class="material-symbols-rounded text-2xl">menu</span>
+      </button>
+
+      <h1 id="mainTitleContainer" class="text-2xl font-extrabold">Executive Summary</h1>
+
+      <!-- Filters (shown only on exec_summary page) -->
+      <div id="execFilters" class="ml-auto flex items-center gap-4">
+        <div class="flex items-center gap-2 text-sm">
+          <div class="relative">
+            <select id="monthFilter" class="py-2 pl-3 pr-8 rounded-lg border bg-white text-gray-900 focus:ring-2 focus:ring-brand-accent"></select>
+          </div>
+          <div class="relative">
+            <select id="yearFilter" class="py-2 pl-3 pr-8 rounded-lg border bg-white text-gray-900 focus:ring-2 focus:ring-brand-accent"></select>
+          </div>
+        </div>
+
+        <button id="themeToggle" class="ml-2 p-2 rounded-full text-gray-800 bg-gray-100 hover:bg-brand-accent hover:text-white transition-all duration-300" aria-label="Toggle Dark Mode"></button>
+      </div>
+
+      <!-- Theme toggle only (shown on other pages) -->
+      <div id="otherFilters" class="ml-auto hidden">
+        <button id="themeToggle2" class="p-2 rounded-full text-gray-800 bg-gray-100 hover:bg-brand-accent hover:text-white transition-all duration-300" aria-label="Toggle Dark Mode"></button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto p-6 lg:p-10 space-y-8">
+      
+      <!-- Executive Summary Page -->
+      <div id="page-exec_summary" class="page-section">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div class="kpi-card bg-white shadow-lg rounded-xl p-4 flex flex-col border-t-4 border-brand-accent">
+            <span class="material-symbols-outlined text-2xl text-brand-accent mb-1">groups</span>
+            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Headcount</p>
+            <p class="text-xl font-bold mt-1" data-kpi="headcount">—</p>
+          </div>
+
+          <div class="kpi-card bg-white shadow-lg rounded-xl p-4 flex flex-col border-t-4 border-green-500">
+            <span class="material-symbols-outlined text-2xl text-green-500 mb-1">person_check</span>
+            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Active Agents</p>
+            <p class="text-xl font-bold mt-1" data-kpi="active">—</p>
+          </div>
+
+          <div class="kpi-card bg-white shadow-lg rounded-xl p-4 flex flex-col border-t-4 border-yellow-400">
+            <span class="material-symbols-outlined text-2xl text-yellow-400 mb-1">trending_up</span>
+            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Utilization %</p>
+            <p class="text-xl font-bold mt-1" data-kpi="utilization">—</p>
+          </div>
+
+          <div class="kpi-card bg-white shadow-lg rounded-xl p-4 flex flex-col border-t-4 border-blue-500">
+            <span class="material-symbols-outlined text-2xl text-blue-500 mb-1">person_pin_circle</span>
+            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Attendance %</p>
+            <p class="text-xl font-bold mt-1" data-kpi="attendanceScore">—</p>
+          </div>
+
+          <div class="kpi-card bg-white shadow-lg rounded-xl p-4 flex flex-col border-t-4 border-red-500">
+            <span class="material-symbols-outlined text-2xl text-red-500 mb-1">schedule</span>
+            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Lost Hours</p>
+            <p class="text-xl font-bold mt-1" data-kpi="lostHours">—</p>
+          </div>
+
+          <div class="kpi-card bg-white shadow-lg rounded-xl p-4 flex flex-col border-t-4 border-green-500">
+            <span class="material-symbols-outlined text-2xl text-green-500 mb-1">work_history</span>
+            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Billed Hours</p>
+            <p class="text-xl font-bold mt-1" data-kpi="billedHours">—</p>
+          </div>
+        </div>
+
+        <div class="mt-8 bg-white shadow-lg rounded-xl">
+          <div class="flex flex-col sm:flex-row items-center justify-between p-4 border-b">
+            <h3 class="text-lg font-semibold mb-2 sm:mb-0">Core Metrics and Risk Signals</h3>
+            <div class="relative w-full sm:w-64">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">search</span>
+              <input type="text" id="searchBar" placeholder="Search Campaign or Cluster..." class="w-full py-2 pl-10 pr-4 rounded-lg border bg-white text-gray-900 text-sm">
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="data-table w-full table-auto text-sm text-left">
+              <thead class="bg-gray-100 uppercase text-xs border-b">
+                <tr id="tableHeaders">
+                  <th class="px-4 py-2 font-medium">
+                    <div class="sortable-header" data-column="Campaign" data-type="string">Campaign<span class="material-symbols-outlined sort-icon" data-icon-for="Campaign">unfold_more</span></div>
+                  </th>
+                  <th class="px-4 py-2 font-medium">
+                    <div class="sortable-header" data-column="Cluster" data-type="string">Cluster<span class="material-symbols-outlined sort-icon" data-icon-for="Cluster">unfold_more</span></div>
+                  </th>
+                  <th class="px-4 py-2 font-medium text-right">
+                    <div class="sortable-header justify-end" data-column="Headcount" data-type="number">HC<span class="material-symbols-outlined sort-icon" data-icon-for="Headcount">unfold_more</span></div>
+                  </th>
+                  <th class="px-4 py-2 font-medium text-right">
+                    <div class="sortable-header justify-end" data-column="Utilization" data-type="number">Util %<span class="material-symbols-outlined sort-icon" data-icon-for="Utilization">unfold_more</span></div>
+                  </th>
+                  <th class="px-4 py-2 font-medium text-right">
+                    <div class="sortable-header justify-end" data-column="AttendanceScore" data-type="number">Attend %<span class="material-symbols-outlined sort-icon" data-icon-for="AttendanceScore">unfold_more</span></div>
+                  </th>
+                  <th class="px-4 py-2 font-medium text-right">
+                    <div class="sortable-header justify-end" data-column="BilledHours" data-type="number">Billed (hrs)<span class="material-symbols-outlined sort-icon" data-icon-for="BilledHours">unfold_more</span></div>
+                  </th>
+                  <th class="px-4 py-2 font-medium text-right">
+                    <div class="sortable-header justify-end" data-column="LostHours" data-type="number">Lost (hrs)<span class="material-symbols-outlined sort-icon" data-icon-for="LostHours">unfold_more</span></div>
+                  </th>
+                  <th class="px-4 py-2 font-medium text-right">
+                    <div class="sortable-header justify-end" data-column="PTO" data-type="number">PTO (hrs)<span class="material-symbols-outlined sort-icon" data-icon-for="PTO">unfold_more</span></div>
+                  </th>
+                  <th class="px-4 py-2 font-medium text-right">
+                    <div class="sortable-header justify-end" data-column="Overtime" data-type="number">OT (hrs)<span class="material-symbols-outlined sort-icon" data-icon-for="Overtime">unfold_more</span></div>
+                  </th>
+                  <th class="px-4 py-2 font-medium text-right">
+                    <div class="sortable-header justify-end" data-column="TurnoverRate" data-type="number">T.O. %<span class="material-symbols-outlined sort-icon" data-icon-for="TurnoverRate">unfold_more</span></div>
+                  </th>
+                  <th class="px-4 py-2 font-medium text-center">
+                    <div class="sortable-header justify-center" data-column="Risk" data-type="number">Risk<span class="material-symbols-outlined sort-icon" data-icon-for="Risk">unfold_more</span></div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="metricsTableBody" class="divide-y divide-gray-100">
+                <tr><td colspan="11" class="text-center py-4 text-gray-500">Loading data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Dashboard Page -->
+      <div id="page-kpi" class="page-section hidden">
+        <!-- Tabs -->
+        <div class="border-b border-gray-300">
+          <nav class="flex space-x-4">
+            <button class="kpi-tab-btn active" data-kpi-tab="reports">Reports</button>
+            <button class="kpi-tab-btn" data-kpi-tab="campaigns">Campaigns</button>
+            <button class="kpi-tab-btn" data-kpi-tab="looker">Looker Studio</button>
+          </nav>
+        </div>
+
+        <!-- Reports Tab -->
+        <section id="kpi-tab-reports" class="kpi-tab-content">
+          <div class="bg-white rounded-xl shadow p-6 space-y-6">
+            <div>
+              <h2 class="text-xl font-semibold mb-4">WFM Performance Reports</h2>
+              <p class="text-gray-700 mb-4">Access or download client reports directly from Google Drive.</p>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr>
+                      <th class="text-left px-4 py-2">Campaign</th>
+                      <th class="text-left px-4 py-2">Report</th>
+                      <th class="text-left px-4 py-2">Description</th>
+                      <th class="text-left px-4 py-2">Google Drive Link</th>
+                      <th class="text-left px-4 py-2">Download</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reportsTableBody">
+                    <tr><td colspan="5" class="text-center p-4 text-gray-500">Loading reports...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Campaigns Tab -->
+        <section id="kpi-tab-campaigns" class="kpi-tab-content hidden">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="kpi-card bg-white shadow rounded-xl p-4 border-t-4 border-brandPrimary">
+              <span class="material-symbols-outlined text-2xl text-brandPrimary mb-1">group_work</span>
+              <p class="text-xs font-medium uppercase text-gray-500">Total Campaigns</p>
+              <p class="text-xl font-bold mt-1" id="cardCampaigns">—</p>
+            </div>
+
+            <div class="kpi-card bg-white shadow rounded-xl p-4 border-t-4 border-brandPrimary">
+              <span class="material-symbols-outlined text-2xl text-brandPrimary mb-1">checklist</span>
+              <p class="text-xs font-medium uppercase text-gray-500">Total KPIs</p>
+              <p class="text-xl font-bold mt-1" id="cardTotalKPI">—</p>
+            </div>
+
+            <div class="kpi-card bg-white shadow rounded-xl p-4 border-t-4 border-brandSuccess">
+              <span class="material-symbols-outlined text-2xl text-brandSuccess mb-1">task_alt</span>
+              <p class="text-xs font-medium uppercase text-gray-500">Passed</p>
+              <p class="text-xl font-bold mt-1 text-brandSuccess" id="cardPassed">—</p>
+            </div>
+
+            <div class="kpi-card bg-white shadow rounded-xl p-4 border-t-4 border-brandDanger">
+              <span class="material-symbols-outlined text-2xl text-brandDanger mb-1">cancel</span>
+              <p class="text-xs font-medium uppercase text-gray-500">Failed</p>
+              <p class="text-xl font-bold mt-1 text-brandDanger" id="cardFailed">—</p>
+            </div>
+          </div>
+
+          <div class="bg-white shadow rounded-xl overflow-x-auto mt-6">
+            <h3 class="p-4 text-lg font-semibold border-b border-gray-200">Campaign KPI Targets</h3>
+            <table id="kpi-table">
+              <thead>
+                <tr>
+                  <th>Campaign</th><th>KPI</th><th>Target</th><th>Threshold</th>
+                  <th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>May</th><th>Jun</th>
+                  <th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th>
+                  <th class="text-green-600">Months Passed</th>
+                  <th class="text-red-600">Months Failed</th>
+                </tr>
+              </thead>
+              <tbody id="kpiBody">
+                <tr><td colspan="18" class="text-center p-4 text-gray-500">Loading data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div id="chart-container" class="bg-white shadow rounded-xl p-4 mt-6">
+            <h3 class="text-lg font-semibold mb-4">Monthly KPI Trend</h3>
+            <div id="chart_div" style="height:400px;"></div>
+          </div>
+        </section>
+
+        <!-- Looker Studio Tab -->
+        <section id="kpi-tab-looker" class="kpi-tab-content hidden">
+          <div class="bg-white border border-gray-100 rounded-xl shadow-md overflow-hidden">
+            <iframe width="100%" height="700" src="https://lookerstudio.google.com/embed/reporting/39311ca6-ede9-474f-bb9e-1b225f6b75ec/page/HXaaF" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
+          </div>
+        </section>
+      </div>
+
+      <!-- Placeholder pages for other menu items -->
+      <div id="page-sop" class="page-section hidden">
+        <div class="bg-white rounded-xl shadow p-8 text-center">
+          <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">description</span>
+          <h2 class="text-2xl font-bold mb-2">SOP Documents</h2>
+          <p class="text-gray-500">This section is under development.</p>
+        </div>
+      </div>
+
+      <div id="page-attendance" class="page-section hidden">
+        <div class="bg-white rounded-xl shadow p-8 text-center">
+          <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">today</span>
+          <h2 class="text-2xl font-bold mb-2">Attendance</h2>
+          <p class="text-gray-500">This section is under development.</p>
+        </div>
+      </div>
+
+      <div id="page-coaching" class="page-section hidden">
+        <div class="bg-white rounded-xl shadow p-8 text-center">
+          <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">psychology_alt</span>
+          <h2 class="text-2xl font-bold mb-2">Coaching Logs</h2>
+          <p class="text-gray-500">This section is under development.</p>
+        </div>
+      </div>
+
+      <div id="page-nte" class="page-section hidden">
+        <div class="bg-white rounded-xl shadow p-8 text-center">
+          <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">gavel</span>
+          <h2 class="text-2xl font-bold mb-2">NTE Form</h2>
+          <p class="text-gray-500">This section is under development.</p>
+        </div>
+      </div>
+
+      <div id="page-ir" class="page-section hidden">
+        <div class="bg-white rounded-xl shadow p-8 text-center">
+          <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">rule</span>
+          <h2 class="text-2xl font-bold mb-2">IR / NTE Logs</h2>
+          <p class="text-gray-500">This section is under development.</p>
+        </div>
+      </div>
+
+      <div id="page-assessment" class="page-section hidden">
+        <div class="bg-white rounded-xl shadow p-8 text-center">
+          <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">rate_review</span>
+          <h2 class="text-2xl font-bold mb-2">Assessment Tracker</h2>
+          <p class="text-gray-500">This section is under development.</p>
+        </div>
+      </div>
+
+      <div id="page-client_intake" class="page-section hidden">
+        <div class="bg-white rounded-xl shadow p-8 text-center">
+          <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">handshake</span>
+          <h2 class="text-2xl font-bold mb-2">Client Intake</h2>
+          <p class="text-gray-500">This section is under development.</p>
+        </div>
+      </div>
+
+      <div id="page-applicant_intake" class="page-section hidden">
+        <div class="bg-white rounded-xl shadow p-8 text-center">
+          <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">person_add</span>
+          <h2 class="text-2xl font-bold mb-2">Applicant Intake Form</h2>
+          <p class="text-gray-500">This section is under development.</p>
+        </div>
+      </div>
+
+      <div id="page-rms" class="page-section hidden">
+        <div class="bg-white rounded-xl shadow p-8 text-center">
+          <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">shield</span>
+          <h2 class="text-2xl font-bold mb-2">Risk Management System</h2>
+          <p class="text-gray-500">This section is under development.</p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div id="loadingSpinner" class="fixed inset-0 bg-white/70 flex items-center justify-center z-[120] invisible opacity-0">
+    <span class="loader text-gray-900"></span>
+  </div>
+
+  <script>
+    // ========== CONFIGURATION ==========
+    const EXEC_SUMMARY_API = "https://script.google.com/macros/s/AKfycbxX3vGxleupt0QY43sC3eR_I-1eIVVi565xQWCYUR9PrRwe9pXSFnueOJJQ8kao4EyR/exec";
+    const KPI_API_URL = "https://script.google.com/macros/s/AKfycbzfwllapfajhXwJZ8gIYzlKq6mA6MRfBrm1LiiuY42QpTVAc0IL1vJ39Z59zP5Iy4Zx/exec";
+    const REPORTS_API_URL = "https://script.google.com/macros/s/AKfycbw1BomOL83xjwS_8gBFF7_GompKmLvCFqygs10jsJ1aENSDsHXgcti9bqG5yqsoOorhvg/exec";
+
+    // ========== STATE ==========
+    let allCampaignMetrics = [];
+    let filteredCampaignMetrics = [];
+    let currentSortColumn = { key: 'Campaign', direction: 'asc' };
+    let rawKPIData = {};
+    let googleLoaded = false;
+    let currentPage = 'exec_summary';
+
+    // ========== INIT GOOGLE CHARTS ==========
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(() => googleLoaded = true);
+
+    // ========== UI ELEMENTS ==========
+    const drawer = document.getElementById('drawer');
+    const pageOverlay = document.getElementById('overlay');
+    const menuBtn = document.getElementById('menuBtn');
+    const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+    const enterDashboardBtn = document.getElementById('enterDashboardBtn');
+    const landingOverlay = document.getElementById('landingOverlay');
+    const pageContent = document.getElementById('page-content');
+    const themeToggle = document.getElementById('themeToggle');
+    const themeToggle2 = document.getElementById('themeToggle2');
+    const spinner = document.getElementById('loadingSpinner');
+
+    // ========== DRAWER FUNCTIONS ==========
+    function toggleDrawer(open) {
+      if (open) {
+        drawer.classList.add('drawer-open');
+        pageOverlay.classList.remove('hidden');
+      } else {
+        drawer.classList.remove('drawer-open');
+        pageOverlay.classList.add('hidden');
+      }
+    }
+
+    menuBtn.addEventListener('click', () => toggleDrawer(true));
+    closeDrawerBtn.addEventListener('click', () => toggleDrawer(false));
+    pageOverlay.addEventListener('click', () => toggleDrawer(false));
+
+    enterDashboardBtn.addEventListener('click', () => {
+      landingOverlay.classList.add('opacity-0');
+      pageContent.classList.remove('opacity-0');
+      setTimeout(() => landingOverlay.classList.add('hidden-important'), 500);
+    });
+
+    // ========== THEME FUNCTIONS ==========
+    function updateThemeIcon(isDark) {
+      const icon = isDark 
+        ? '<span class="material-symbols-rounded">light_mode</span>'
+        : '<span class="material-symbols-rounded">dark_mode</span>';
+      themeToggle.innerHTML = icon;
+      themeToggle2.innerHTML = icon;
+    }
+
+    (function initTheme() {
+      const storedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const initialDark = storedTheme === 'dark' || (storedTheme === null && prefersDark);
+      if (initialDark) document.body.classList.add('dark');
+      updateThemeIcon(initialDark);
+    })();
+
+    function toggleTheme() {
+      const isDark = document.body.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      updateThemeIcon(isDark);
+    }
+
+    themeToggle.addEventListener('click', toggleTheme);
+    themeToggle2.addEventListener('click', toggleTheme);
+
+    // ========== SPINNER FUNCTIONS ==========
+    function showSpinner() {
+      spinner.classList.remove('invisible','opacity-0');
+      spinner.classList.add('visible','opacity-100');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function hideSpinner() {
+      spinner.classList.remove('visible','opacity-100');
+      spinner.classList.add('invisible','opacity-0');
+      document.body.style.overflow = '';
+    }
+
+    // ========== PAGE NAVIGATION ==========
+    function loadPage(page) {
+      currentPage = page;
+      
+      // Hide all pages
+      document.querySelectorAll('.page-section').forEach(p => p.classList.add('hidden'));
+      
+      // Show selected page
+      const pageEl = document.getElementById(`page-${page}`);
+      if (pageEl) pageEl.classList.remove('hidden');
+
+      // Update title
+      const titles = {
+        'exec_summary': 'Executive Summary',
+        'kpi': 'KPI Dashboard',
+        'sop': 'SOP Documents',
+        'attendance': 'Attendance',
+        'coaching': 'Coaching Logs',
+        'nte': 'NTE Form',
+        'ir': 'IR / NTE Logs',
+        'assessment': 'Assessment Tracker',
+        'client_intake': 'Client Intake',
+        'applicant_intake': 'Applicant Intake Form',
+        'rms': 'Risk Management System'
+      };
+      document.getElementById('mainTitleContainer').textContent = titles[page] || 'Dashboard';
+
+      // Show/hide filters
+      if (page === 'exec_summary') {
+        document.getElementById('execFilters').classList.remove('hidden');
+        document.getElementById('otherFilters').classList.add('hidden');
+      } else {
+        document.getElementById('execFilters').classList.add('hidden');
+        document.getElementById('otherFilters').classList.remove('hidden');
+      }
+
+      // Update active nav item
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('tab-active');
+        if (item.dataset.page === page) {
+          item.classList.add('tab-active');
+        }
+      });
+
+      // Load data if needed
+      if (page === 'kpi' && !rawKPIData.loaded) {
+        fetchKPIData();
+        fetchReportsData();
+        rawKPIData.loaded = true;
+      }
+
+      // Close drawer and scroll to top
+      toggleDrawer(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Attach navigation to sidebar buttons
+    document.querySelectorAll('.nav-item').forEach(btn => {
+      btn.addEventListener('click', () => loadPage(btn.dataset.page));
+    });
+
+    // ========== EXECUTIVE SUMMARY FUNCTIONS ==========
+    function parseValue(value) {
+      if (typeof value === 'number') return value;
+      if (typeof value === 'string') {
+        const cleaned = value.replace(/[^0-9.-]/g, '');
+        return cleaned ? parseFloat(cleaned) : 0;
+      }
+      return 0;
+    }
+
+    function updateKPIs(data) {
+      const formatHours = (val) => parseValue(val) > 0 ? parseValue(val).toFixed(1) + " hrs" : '—';
+      const formatPercent = (val) => val !== 'N/A' && parseValue(val) > 0 ? parseValue(val) + '%' : '—';
+      const formatNumber = (val) => parseValue(val).toLocaleString() || '—';
+
+      document.querySelector('[data-kpi="headcount"]').textContent = formatNumber(data.headcount);
+      document.querySelector('[data-kpi="active"]').textContent = formatNumber(data.active);
+      document.querySelector('[data-kpi="utilization"]').textContent = formatPercent(data.utilization);
+      document.querySelector('[data-kpi="attendanceScore"]').textContent = formatPercent(data.attendanceScore);
+      document.querySelector('[data-kpi="lostHours"]').textContent = formatHours(data.lostHours);
+      document.querySelector('[data-kpi="billedHours"]').textContent = formatHours(data.billedHours);
+    }
+
+    function recalculateKPIsFromFilteredData(filteredRows) {
+      let totalHeadcountInView = 0;
+      let activeAgentCount = 0;
+      let operationalLostHours = 0;
+      let operationalBilledHours = 0;
+      let operationalPotentialHours = 0;
+      let operationalAttendanceSum = 0;
+      let validOperationalAttendanceCount = 0;
+
+      filteredRows.forEach(r => {
+        const headcount = parseValue(r.Headcount);
+        totalHeadcountInView += headcount;
+
+        if (r.Cluster !== 'Admin') {
+          const billedHours = parseValue(r.BilledHours);
+          const utilization = parseValue(r.Utilization);
+          const attendanceScore = parseValue(r.AttendanceScore);
+
+          activeAgentCount += headcount;
+
+          let lostHours = 0;
+          if (utilization > 0 && billedHours > 0) {
+            const potential = billedHours / (utilization / 100);
+            lostHours = potential - billedHours;
+          }
+
+          operationalBilledHours += billedHours;
+          operationalLostHours += lostHours;
+          operationalPotentialHours += billedHours + lostHours;
+
+          if (attendanceScore > 0) {
+            operationalAttendanceSum += attendanceScore;
+            validOperationalAttendanceCount++;
+          }
+        }
+      });
+
+      const filteredUtilization = operationalPotentialHours > 0
+        ? ((operationalBilledHours / operationalPotentialHours) * 100).toFixed(1)
+        : 'N/A';
+
+      const filteredAttendance = validOperationalAttendanceCount > 0
+        ? (operationalAttendanceSum / validOperationalAttendanceCount).toFixed(1)
+        : 'N/A';
+
+      const calculatedKPIs = {
+        headcount: totalHeadcountInView,
+        active: activeAgentCount,
+        lostHours: operationalLostHours,
+        billedHours: operationalBilledHours,
+        utilization: filteredUtilization,
+        attendanceScore: filteredAttendance
+      };
+
+      updateKPIs(calculatedKPIs);
+    }
+
+    function filterAndSortData(query) {
+      if (!query) {
+        filteredCampaignMetrics = [...allCampaignMetrics];
+      } else {
+        const lowerQuery = query.toLowerCase();
+        filteredCampaignMetrics = allCampaignMetrics.filter(r =>
+          (r.Campaign || '').toLowerCase().includes(lowerQuery) ||
+          (r.Cluster || '').toLowerCase().includes(lowerQuery)
+        );
+      }
+
+      recalculateKPIsFromFilteredData(filteredCampaignMetrics);
+      applySort();
+    }
+
+    function applySort() {
+      const { key, direction } = currentSortColumn;
+      const activeHeader = document.querySelector(`[data-column="${key}"]`);
+      const dataType = activeHeader ? activeHeader.dataset.type : 'string';
+
+      filteredCampaignMetrics.sort((a, b) => {
+        let valA = a[key];
+        let valB = b[key];
+
+        if (dataType === 'number') {
+          valA = parseValue(valA);
+          valB = parseValue(valB);
+        } else {
+          valA = String(valA || '').toLowerCase();
+          valB = String(valB || '').toLowerCase();
+        }
+
+        let comparison = 0;
+        if (valA > valB) comparison = 1;
+        else if (valA < valB) comparison = -1;
+
+        return direction === 'asc' ? comparison : comparison * -1;
+      });
+
+      renderTable(filteredCampaignMetrics);
+    }
+
+    function updateSortIcons(activeKey, direction) {
+      document.querySelectorAll('.sortable-header').forEach(header => {
+        const icon = header.querySelector('.sort-icon');
+        header.classList.remove('active-sort');
+        if (icon) icon.textContent = 'unfold_more';
+      });
+
+      const activeHeader = document.querySelector(`[data-column="${activeKey}"]`);
+      if (activeHeader) {
+        const icon = activeHeader.querySelector('.sort-icon');
+        activeHeader.classList.add('active-sort');
+        if (icon) icon.textContent = direction === 'asc' ? 'arrow_upward' : 'arrow_downward';
+      }
+    }
+
+    function renderTable(rows) {
+      const tableBody = document.getElementById('metricsTableBody');
+      tableBody.innerHTML = '';
+
+      if(!rows || rows.length === 0){
+        tableBody.innerHTML = '<tr><td colspan="11" class="text-center py-4 text-gray-500">No campaigns match your filter criteria.</td></tr>';
+        return;
+      }
+
+      rows.forEach(r => {
+        const campaignLostHours = r.LostHours;
+        const billed = parseValue(r.BilledHours);
+        const ptoHours = parseValue(r.PTO);
+        const otHours = parseValue(r.Overtime);
+        const util = parseValue(r.Utilization);
+        const attend = parseValue(r.AttendanceScore);
+        const turnover = parseValue(r.TurnoverRate);
+
+        const isHighRisk = r.Risk === 1;
+
+        const riskIcon = isHighRisk ? 'warning' : 'check_circle';
+        const utilColor = (util > 0 && util < 90) ? 'text-red-500' : 'text-green-500';
+        const attendColor = (attend > 0 && attend < 95) ? 'text-yellow-400' : 'text-green-500';
+        const turnoverColor = (turnover > 5) ? 'text-red-500' : 'text-green-500';
+        const riskColor = isHighRisk ? 'text-red-500' : 'text-green-500';
+
+        const formatNum = (val) => val !== 'N/A' && parseValue(val) > 0 ? parseValue(val).toFixed(1) : '—';
+        const formatPercent = (val) => val !== 'N/A' && parseValue(val) > 0 ? parseValue(val).toFixed(1) + '%' : '—';
+        const formatTurnover = (val) => val !== 'N/A' && parseValue(val) > 0 ? parseValue(val).toFixed(1) + '%' : '—';
+
+        tableBody.innerHTML += `
+          <tr class="hover:bg-gray-50 text-gray-900">
+            <td class="px-4 py-2 font-semibold">${r.Campaign || 'N/A'}</td>
+            <td class="px-4 py-2 text-gray-500">${r.Cluster || '—'}</td>
+            <td class="px-4 py-2 text-right">${r.Headcount || '0'}</td>
+            <td class="px-4 py-2 text-right ${utilColor}">${formatPercent(r.Utilization)}</td>
+            <td class="px-4 py-2 text-right ${attendColor}">${formatPercent(r.AttendanceScore)}</td>
+            <td class="px-4 py-2 text-right">${billed > 0 ? formatNum(billed) : '—'}</td>
+            <td class="px-4 py-2 text-right">${campaignLostHours > 0 ? formatNum(campaignLostHours) : '—'}</td>
+            <td class="px-4 py-2 text-right">${ptoHours > 0 ? formatNum(ptoHours) : '—'}</td>
+            <td class="px-4 py-2 text-right">${otHours > 0 ? formatNum(otHours) : '—'}</td>
+            <td class="px-4 py-2 text-right ${turnoverColor}">${formatTurnover(r.TurnoverRate)}</td>
+            <td class="px-4 py-2 text-center">
+              <span class="material-symbols-outlined text-xl ${riskColor}" title="${isHighRisk ? 'Risk Detected' : 'OK'}">${riskIcon}</span>
+            </td>
+          </tr>`;
+      });
+
+      updateSortIcons(currentSortColumn.key, currentSortColumn.direction);
+    }
+
+    async function fetchAttendanceData() {
+      showSpinner();
+
+      const month = document.getElementById('monthFilter').value;
+      const year = document.getElementById('yearFilter').value;
+      const tableBody = document.getElementById('metricsTableBody');
+
+      tableBody.innerHTML = '<tr><td colspan="11" class="text-center py-4 text-gray-500">Fetching metrics...</td></tr>';
+
+      try {
+        const res = await fetch(`${EXEC_SUMMARY_API}?month=${month}&year=${year}`);
+        const data = await res.json();
+
+        if(data.error){
+          tableBody.innerHTML = `<tr class="text-center"><td colspan="11" class="py-4 text-red-500">${data.error}</td></tr>`;
+          updateKPIs({ headcount: 0, active: 0, lostHours: 0, billedHours: 0, utilization: 'N/A', attendanceScore: 'N/A' });
+          return;
+        }
+
+        allCampaignMetrics = data.rows || [];
+
+        allCampaignMetrics.forEach(r => {
+          const util = parseValue(r.Utilization);
+          const billed = parseValue(r.BilledHours);
+          const attend = parseValue(r.AttendanceScore);
+          const turnover = parseValue(r.TurnoverRate);
+
+          let lostHours = 0;
+          if (util > 0 && billed > 0) {
+            const potential = billed / (util / 100);
+            lostHours = parseValue((potential - billed).toFixed(1));
+          }
+          r.LostHours = lostHours;
+
+          const isLowUtil = util > 0 && util < 90.0;
+          const isLowAttend = attend > 0 && attend < 95.0;
+          const isHighTurnover = turnover > 5.0;
+          r.Risk = (isLowUtil || isLowAttend || isHighTurnover) ? 1 : 0;
+        });
+
+        filterAndSortData(document.getElementById('searchBar').value);
+
+      } catch(err){
+        console.error('Network or Parsing Error:', err);
+        tableBody.innerHTML = '<tr><td colspan="11" class="text-center py-4 text-red-500">Failed to load data. Check console for error details.</td></tr>';
+        updateKPIs({ headcount: 0, active: 0, lostHours: 0, billedHours: 0, utilization: 'N/A', attendanceScore: 'N/A' });
+      } finally {
+        hideSpinner();
+      }
+    }
+
+    function setupFilters() {
+      const today = new Date();
+      const currentMonth = today.getMonth() + 1;
+      const currentYear = today.getFullYear();
+      const monthFilter = document.getElementById('monthFilter');
+      const yearFilter = document.getElementById('yearFilter');
+
+      const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+      monthFilter.innerHTML = monthNames.map((name, index) =>
+        `<option value="${index + 1}" ${index + 1 === currentMonth ? 'selected' : ''}>${name}</option>`
+      ).join('');
+
+      const startYear = currentYear - 2;
+      const endYear = currentYear + 2;
+      yearFilter.innerHTML = '';
+      for (let year = startYear; year <= endYear; year++) {
+        yearFilter.innerHTML += `<option value="${year}" ${year === currentYear ? 'selected' : ''}>${year}</option>`;
+      }
+    }
+
+    // ========== KPI DASHBOARD FUNCTIONS ==========
+    function formatNum(v){ 
+      const n=parseFloat(v); 
+      return isNaN(n)?'—':n.toFixed(1);
+    }
+    
+    function colorize(v,t){ 
+      const n=parseFloat(v),tgt=parseFloat(t); 
+      if(isNaN(n)||isNaN(tgt))return v||'—'; 
+      return n>=tgt?`<span class='text-green-600 font-semibold'>${n.toFixed(1)}</span>`:`<span class='text-red-600 font-semibold'>${n.toFixed(1)}</span>`;
+    }
+
+    function drawChart(kpi){
+      if(!googleLoaded||!kpi)return;
+      const data=new google.visualization.DataTable();
+      data.addColumn('string','Month');
+      data.addColumn('number',kpi.name);
+      data.addColumn('number','Target');
+      data.addColumn('number','Threshold');
+      const m=Object.keys(kpi.monthly);
+      const vals=Object.values(kpi.monthly).map(x=>parseFloat(x)||0);
+      const target=parseFloat(kpi.target)||0;
+      const thresh=parseFloat(kpi.threshold)||0;
+      data.addRows(m.map((x,i)=>[x,vals[i],target,thresh]));
+      const options={
+        height:400,
+        curveType:'function',
+        legend:{position:'bottom'},
+        backgroundColor:'transparent',
+        hAxis:{title:'Month'},
+        vAxis:{title:'Value',minValue:0},
+        colors:['#4285F4','#34A853','#FBBC05'],
+        series:{1:{lineDashStyle:[5,5]},2:{lineDashStyle:[2,4]}}
+      };
+      const chart=new google.visualization.LineChart(document.getElementById('chart_div'));
+      chart.draw(data,options);
+    }
+
+    async function fetchKPIData(){
+      const body=document.getElementById('kpiBody');
+      body.innerHTML='<tr><td colspan="18" class="text-center p-4 text-gray-500">Fetching data...</td></tr>';
+      try{
+        const res=await fetch(KPI_API_URL);
+        const data=await res.json();
+        rawKPIData=data;
+        renderKPITable(data);
+      }catch(e){
+        body.innerHTML='<tr><td colspan="18" class="text-center p-4 text-red-500">Error fetching data</td></tr>';
+        console.error(e);
+      }
+    }
+
+    async function fetchReportsData(){
+      const tableBody = document.getElementById('reportsTableBody');
+      tableBody.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-gray-500">Loading reports...</td></tr>`;
+
+      try {
+        const res = await fetch(REPORTS_API_URL);
+        const data = await res.json();
+
+        if (!Array.isArray(data) || data.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-gray-500">No reports available.</td></tr>`;
+          return;
+        }
+
+        tableBody.innerHTML = '';
+
+        data.forEach(report => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td class="px-4 py-2">${report.campaign || '—'}</td>
+            <td class="px-4 py-2">${report.month} ${report.year}</td>
+            <td class="px-4 py-2">${report.description || '—'}</td>
+            <td class="px-4 py-2">
+              ${report.link ? `
+                <a href="${report.link}" target="_blank" title="Open in Google Drive">
+                  <span class="material-symbols-outlined" style="color:#4285F4; font-size:20px;">drive_file_move</span>
+                </a>` : `
+                <span class="material-symbols-outlined" style="color:gray; font-size:20px; opacity:0.4;">drive_file_move</span>`
+              }
+            </td>
+            <td class="px-4 py-2">
+              ${report.link ? `
+                <a href="${report.link}" target="_blank" class="text-brandPrimary hover:underline inline-flex items-center gap-1">
+                  <span class="material-symbols-outlined text-base">download</span>
+                  Download
+                </a>` : '—'}
+            </td>
+          `;
+          tableBody.appendChild(row);
+        });
+      } catch (error) {
+        console.error("Error fetching reports:", error);
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-red-500">Error loading reports.</td></tr>`;
+      }
+    }
+
+    function renderKPITable(data){
+      const body=document.getElementById('kpiBody');
+      body.innerHTML='';
+      let total=0,passCount=0,failCount=0;
+      Object.entries(data).forEach(([camp,kpis])=>{
+        kpis.forEach(kpi=>{
+          total++;
+          const months=Object.keys(kpi.monthly);
+          let passed=0,failed=0;
+          const row=document.createElement('tr');
+          let html=`<td>${camp}</td><td>${kpi.name}</td><td class='text-right'>${formatNum(kpi.target)}</td><td class='text-right'>${formatNum(kpi.threshold)}</td>`;
+          months.forEach(m=>{
+            const val=kpi.monthly[m],num=parseFloat(val),tgt=parseFloat(kpi.target);
+            if(!isNaN(num)&&!isNaN(tgt)){num>=tgt?passed++:failed++;}
+            html+=`<td class='text-right'>${colorize(val,kpi.target)}</td>`;
+          });
+          html+=`<td class='text-right text-green-600 font-semibold'>${passed}</td>`;
+          html+=`<td class='text-right text-red-600 font-semibold'>${failed}</td>`;
+          if(passed>failed)passCount++;else failCount++;
+          row.innerHTML=html;
+          row.addEventListener('click',()=>drawChart(kpi));
+          body.appendChild(row);
+        });
+      });
+      document.getElementById('cardCampaigns').textContent=Object.keys(data).length;
+      document.getElementById('cardTotalKPI').textContent=total;
+      document.getElementById('cardPassed').textContent=passCount;
+      document.getElementById('cardFailed').textContent=failCount;
+    }
+
+    // KPI Dashboard Tabs
+    document.querySelectorAll('.kpi-tab-btn').forEach(b=>{
+      b.addEventListener('click',()=>{
+        document.querySelectorAll('.kpi-tab-btn').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+        const t=b.dataset.kpiTab;
+        document.querySelectorAll('.kpi-tab-content').forEach(c=>c.classList.add('hidden'));
+        document.getElementById(`kpi-tab-${t}`).classList.remove('hidden');
+      });
+    });
+
+    // ========== INITIALIZATION ==========
+    document.addEventListener('DOMContentLoaded', () => {
+      setupFilters();
+
+      // Executive Summary listeners
+      document.getElementById('monthFilter').addEventListener('change', fetchAttendanceData);
+      document.getElementById('yearFilter').addEventListener('change', fetchAttendanceData);
+      document.getElementById('searchBar').addEventListener('input', (e) => filterAndSortData(e.target.value));
+
+      // Sort header clicks
+      document.querySelectorAll('.sortable-header').forEach(header => {
+        header.addEventListener('click', () => {
+          const columnKey = header.dataset.column;
+          const isSameColumn = currentSortColumn.key === columnKey;
+          let direction = 'asc';
+          if (isSameColumn) direction = currentSortColumn.direction === 'asc' ? 'desc' : 'asc';
+          currentSortColumn = { key: columnKey, direction: direction };
+          applySort();
+        });
+      });
+
+      // Initial data fetch
+      fetchAttendanceData();
+
+      // Show page content after short delay
+      setTimeout(() => pageContent.classList.remove('opacity-0'), 350);
+    });
+  </script>
+</body>
+</html>
