@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Attendance Dashboard - Employee Calendar</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <script src="https://unpkg.com/feather-icons"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Roboto', 'sans-serif'] },
+          colors: {
+            // Updated brand and dark mode colors
+            'brand-accent': '#CBEB33', 
+            'bg-dark': '#0f172a',      
+            'text-dark': '#f1f5f9',    
+            'card-dark': '#1e293b',    
+            'border-dark': '#334155',  
+            'danger': '#ef4444',
+            'bg-light': '#f8fafc',
+            'text-light': '#1e293b',
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+        @apply dark;
+    }
+    @media (min-width: 1280px) { .max-w-9xl { max-width: 1440px; } }
+    
+    .material-symbols-outlined { 
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48; 
+    }
+
+    /* --- Styles for Attendance Calendar Cells (From your provided code) --- */
+    /* Employee calendar table styling */
+    .table-fixed { table-layout: fixed; }
+    .table-fixed th, .table-fixed td { min-width: 1rem; } 
+    .table-fixed td { height: 1rem; line-height: 1; font-size: 0.75rem; }
+
+    /* Attendance status colors */
+    .status-p { background-color: #38761D; } /* Dark Green */
+    .status-a { background-color: #EF4444; } /* Red */
+    .status-off { background-color: #9CA3AF; } /* Gray */
+    .status-l { background-color: #F59E0B; } /* Orange */
+    .status-vl { background-color: #0000FF; } /* Blue */
+    .status-t { background-color: #8E7CC3; } /* Purple */
+    .status-sus { background-color: #00FFFF; } /* Cyan */
+    .status-hd { background-color: #00FF00; } /* Bright Green */
+    .status-l15 { background-color: #FACC15; } /* Amber */
+    .status-l30 { background-color: #FB923C; } /* Darker Orange */
+    .status-l45 { background-color: #F97316; } 
+    .status-l60 { background-color: #EA580C; } 
+    .status-sl { background-color: #6FA8DC; } /* Light Blue */
+  </style>
+</head>
+
+<body class="min-h-screen bg-bg-light dark:bg-bg-dark text-text-light dark:text-text-dark font-sans transition-colors duration-500">
+
+  <header class="flex flex-col md:flex-row items-start md:items-center gap-4 bg-white dark:bg-card-dark p-4 shadow sticky top-0 z-30 border-b border-gray-200 dark:border-border-dark">
+    
+    <div class="flex items-center gap-3 w-full md:w-auto pb-2 md:pb-0 border-b md:border-b-0 border-gray-100 dark:border-border-dark">
+      <img src="https://digitalmindsbpo.com/storage/2018/11/cropped-dm-favicon.png" alt="Logo" class="w-8 h-8 rounded-full object-cover shadow-sm">
+      <h1 id="pageTitle" class="text-xl font-extrabold text-gray-900 dark:text-text-dark">Employee Attendance Calendar</h1>
+    </div>
+
+    <div class="hidden md:block ml-auto">
+      <button id="themeToggleDesktop" aria-label="Toggle dark mode" class="p-2 rounded-full bg-gray-100 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark transition-all duration-200 border border-transparent dark:border-white/10 shadow-sm dark:shadow-[0_0_4px_rgba(255,255,255,0.1)]">
+        <span id="themeIconDesktop" class="material-symbols-outlined text-xl text-gray-700 dark:text-gray-200">light_mode</span>
+      </button>
+    </div>
+  </header>
+
+
+  <main class="max-w-9xl mx-auto px-4 md:px-6 py-6 space-y-8">
+
+    <div class="flex flex-wrap items-center justify-between gap-4">
+
+      <div class="flex items-center gap-3 flex-wrap">
+        <div class="relative">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-base">calendar_month</span>
+          <select id="monthSelector" class="pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-border-dark shadow-sm bg-white dark:bg-card-dark dark:text-text-dark text-sm focus:ring-2 focus:ring-brand-accent transition-colors duration-300">
+            <option value="" disabled selected>Select Month</option>
+            <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+            <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+            <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+            <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+          </select>
+        </div>
+
+        <div class="relative">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-base">groups</span>
+          <select id="rosterSelector" class="pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-border-dark shadow-sm bg-white dark:bg-card-dark dark:text-text-dark text-sm focus:ring-2 focus:ring-brand-accent transition-colors duration-300">
+            <option value="">All Teams</option>
+          </select>
+        </div>
+
+        <button id="refreshBtn" class="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-300 shadow-md">
+            <span class="material-symbols-outlined text-base">refresh</span>
+        </button>
+      </div>
+
+      <div id="attendanceLoadingSpinner" class="hidden flex items-center gap-2 text-brand-accent font-semibold">
+          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-brand-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          Loading Data...
+      </div>
+    </div>
+    
+    <section>
+        <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-text-dark">Employee Calendar View</h2>
+        <div id="campaign-feed" class="space-y-6">
+            <p class="text-center py-12 text-gray-500 dark:text-gray-400">Select a Month and Roster to load the attendance calendars.</p>
+        </div>
+    </section>
+  </main>
+  
+
+  <script>
+    // === THEME TOGGLE LOGIC ===
+    const toggleMobile = document.getElementById("themeToggle");
+    const toggleDesktop = document.getElementById("themeToggleDesktop");
+    const iconMobile = document.getElementById("themeIcon");
+    const iconDesktop = document.getElementById("themeIconDesktop");
+
+    function updateThemeIcon(isDark) {
+      const iconName = isDark ? "dark_mode" : "light_mode";
+      if (iconMobile) iconMobile.textContent = iconName;
+      if (iconDesktop) iconDesktop.textContent = iconName;
+    }
+
+    function toggleTheme() {
+      const isDark = document.body.classList.toggle("dark");
+      updateThemeIcon(isDark);
+      localStorage.setItem("theme", isDark ? "dark" : "light");
+    }
+    
+    if (toggleMobile) toggleMobile.addEventListener("click", toggleTheme);
+    if (toggleDesktop) toggleDesktop.addEventListener("click", toggleTheme);
+
+    document.body.classList.add("dark");
+    updateThemeIcon(true);
+
+
+    // === ATTENDANCE CALENDAR CORE LOGIC (From your provided code) ===
+    
+    // The Google Apps Script URL for Attendance (assumed from your functions' use)
+    const ATTENDANCE_API_URL = "https://script.google.com/macros/s/AKfycbxrwq6w72om22yz5zkHyDO-fhPxqlPBzlUsIjExrI3ZOB1J__Um1NlRJbih-_wFwihAhg/exec"; 
+
+    // Status Colors (Required by renderCalendars)
+    const statusColors = {
+      P: "status-p", A: "status-a", Off: "status-off",
+      L: "status-l", VL: "status-vl", T: "status-t",
+      SUS: "status-sus", HD: "status-hd", L15: "status-l15",
+      L30: "status-l30", L45: "status-l45", L60: "status-l60",
+      SL: "status-sl", NA: ""
+    };
+
+    let _loadingCount = 0;
+    function showLoading() {
+      _loadingCount++;
+      const attSpinner = document.getElementById('attendanceLoadingSpinner');
+      if (attSpinner) attSpinner.classList.remove('hidden');
+    }
+
+    function hideLoading() {
+      _loadingCount = Math.max(0, _loadingCount - 1);
+      if (_loadingCount > 0) return;
+      const attSpinner = document.getElementById('attendanceLoadingSpinner');
+      if (attSpinner) attSpinner.classList.add('hidden');
+    }
+
+    async function loadClusters(){
+      showLoading();
+      try{
+        // Fetches list of Clusters/Teams
+        const res = await fetch(ATTENDANCE_API_URL + "?api=clusters");
+        const clusters = await res.json();
+        const select = document.getElementById("rosterSelector");
+        if (!select) return;
+        select.innerHTML = `<option value="">All Teams</option>`;
+        clusters.forEach(c => {
+          const opt = document.createElement("option"); opt.value = c; opt.textContent = c; select.appendChild(opt);
+        });
+      }catch(err){ console.error('Failed to load clusters', err); }
+      finally{ hideLoading(); }
+    }
+
+    async function loadAll(){
+      showLoading();
+
+      const monthVal = document.getElementById('monthSelector') ? document.getElementById('monthSelector').value : '';
+      const clusterVal = document.getElementById('rosterSelector') ? document.getElementById('rosterSelector').value : '';
+
+      try{
+        // NOTE: The original code loaded 'summary' and then 'calendars'.
+        // Since we only focus on the calendar, we'll only fetch calendar data here.
+        const calParams = new URLSearchParams({ api:'calendars', month:monthVal, cluster:clusterVal });
+        const calData = await (await fetch(ATTENDANCE_API_URL + '?' + calParams.toString())).json();
+        renderCalendars(calData);
+      }catch(err){ console.error('Attendance loadAll error', err); }
+      finally{ hideLoading(); }
+    }
+
+    function renderCalendars(data){
+      const feed = document.getElementById('campaign-feed'); 
+      if (!feed) return; 
+      feed.innerHTML = '';
+      
+      if (!data || Object.keys(data).length === 0) {
+        feed.innerHTML = '<p class="text-center py-12 text-red-500 dark:text-red-400">No attendance data found for the selected filter(s).</p>';
+        return;
+      }
+
+      Object.entries(data).forEach(([campaign, employees]) => {
+        const lengths = Object.values(employees || {}).map(arr => Array.isArray(arr) ? arr.length : 0);
+        const maxDays = lengths.length ? Math.max(...lengths) : 0;
+        const daysCount = Math.min(Math.max(maxDays, 1), 31); // Ensure day count is logical
+
+        // STATS CALCULATION (Kept for the summary box)
+        let cntP = 0, cntA = 0, cntHD = 0, cntVL = 0, cntL = 0;
+        Object.values(employees || {}).forEach(arr => {
+          if (!Array.isArray(arr)) return;
+          arr.forEach(s => {
+            if (!s || s === null || s === 'NA') return;
+            if (s === 'P') cntP++;
+            else if (s === 'A') cntA++;
+            else if (s === 'HD') cntHD++;
+            else if (s === 'VL') cntVL++;
+            else if (/^L/.test(s)) cntL++;
+          });
+        });
+
+        const totalCount = cntP + cntA + cntHD + cntL + cntVL;
+        const scoreNum = totalCount > 0 ? (cntP / totalCount) * 100 : 0;
+        const score = scoreNum.toFixed(1) + '%';
+        const scoreClass = scoreNum < 95 ? 'text-red-600 dark:text-red-400 font-bold' : 'text-gray-900 dark:text-text-dark font-bold';
+
+        let table = `
+          <div class="bg-white dark:bg-card-dark border border-gray-100 dark:border-border-dark rounded-2xl shadow-sm">
+            <div class="p-4 border-b border-gray-100 dark:border-border-dark flex justify-between items-center">
+              <h3 class="text-xl font-semibold text-gray-700 dark:text-text-dark">${campaign} Attendance Calendar</h3>
+            </div>
+            <div class="p-4">
+              <div class="flex flex-col md:flex-row md:items-start md:space-x-6">
+                <div class="flex-1 overflow-x-auto overflow-y-auto max-h-[70vh]">
+                  <table class="table-fixed border-collapse w-full text-xs">
+                    <thead class="bg-gray-100 dark:bg-border-dark sticky top-0 z-10">
+                      <tr>
+                        <th class="border px-2 py-1 text-left w-40 sticky left-0 bg-gray-100 dark:bg-border-dark shadow-md">Employee</th>`;
+        for (let d = 1; d <= daysCount; d++) table += `<th class='border px-1 py-1 w-6 text-center'>${d}</th>`;
+        table += `</tr></thead><tbody>`;
+
+        Object.entries(employees).forEach(([name, statuses]) => {
+          table += `<tr><td class="border px-2 py-1 font-medium text-gray-700 dark:text-gray-300 sticky left-0 bg-white dark:bg-card-dark z-[5]">${name}</td>`;
+          
+          for (let i = 0; i < daysCount; i++){
+            const s = (Array.isArray(statuses) && typeof statuses[i] !== 'undefined') ? statuses[i] : null;
+            if (s === null || s === '') {
+              // Empty cell
+              table += `<td class="border w-6 h-6"></td>`;
+            } else if (s === 'NA') {
+              // Not Applicable (striped background)
+              table += `<td class="border w-6 h-6" style="background:repeating-linear-gradient(45deg,#E5E7EB 0px,#E5E7EB 2px,#D1D5DB 2px,#D1D5DB 4px);"></td>`;
+            } else {
+              // Status color code
+              const c = statusColors[s] || '';
+              table += `<td class="border w-6 h-6 ${c}" title="${s}"></td>`;
+            }
+          }
+          table += `</tr>`;
+        });
+        table += `</tbody></table>
+                </div>
+                <div class="w-44 mt-4 md:mt-0 flex-shrink-0">
+                  <h4 class="text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Monthly Summary</h4>
+                  <table class="w-full text-sm border dark:border-border-dark rounded-md">
+                    <tbody>
+                      <tr><td class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Present</td><td class="py-2 px-2 text-right text-green-600 font-semibold">${cntP}</td></tr>
+                      <tr><td class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Absent</td><td class="py-2 px-2 text-right text-red-600 font-semibold">${cntA}</td></tr>
+                      <tr><td class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Late</td><td class="py-2 px-2 text-right text-yellow-600 font-semibold">${cntL}</td></tr>
+                      <tr><td class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">VL/HD</td><td class="py-2 px-2 text-right text-blue-600 font-semibold">${cntVL + cntHD}</td></tr>
+                      <tr class="border-t dark:border-border-dark"><td class="py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Score</td><td class="py-2 px-2 text-right ${scoreClass}">${score}</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>`;
+        feed.insertAdjacentHTML('beforeend', table);
+      });
+    }
+
+    function setDefaultFilters(){
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const monthSelector = document.getElementById('monthSelector'); if (monthSelector) monthSelector.value = month;
+      const rosterSelector = document.getElementById('rosterSelector'); if (rosterSelector) rosterSelector.value = '';
+    }
+
+    // === Event Listeners and Initialization ===
+
+    // Set listeners on existing filter elements
+    const refreshBtn = document.getElementById('refreshBtn'); if (refreshBtn) refreshBtn.addEventListener('click', loadAll);
+    const monthSel = document.getElementById('monthSelector'); if (monthSel) monthSel.addEventListener('change', loadAll);
+    const rosterSel = document.getElementById('rosterSelector'); if (rosterSel) rosterSel.addEventListener('change', loadAll);
+
+    // Initial load sequence
+    window.addEventListener('DOMContentLoaded', () => {
+        loadClusters().then(() => {
+            setDefaultFilters();
+            loadAll();
+        });
+    });
+  </script>
+</body>
+</html>

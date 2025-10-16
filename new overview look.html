@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Call Center Attendance Dashboard</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        // === Tailwind Configuration ===
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        'brand-accent': '#CBEB33',
+                        'brand-dark': '#B5D12F',
+                        'bg-dark': '#0f172a',
+                        'text-dark': '#f1f5f9',
+                        'card-dark': '#1e293b',
+                        'border-dark': '#334155',
+                        'danger': '#ef4444',
+                        'bg-light': '#f8fafc',
+                    },
+                },
+            },
+        };
+
+        // Global variables for Firebase access (required by Canvas environment)
+        const __app_id = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const __firebase_config = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
+        const __initial_auth_token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : undefined;
+    </script>
+    <style>
+        /* Custom styles for the heatmap grid */
+        #calendar-heatmap {
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .calendar-header {
+            text-align: center;
+            font-weight: 500;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            background-color: #f1f5f9; /* Tailwind gray-100 */
+            color: #1e293b; /* Tailwind slate-800 */
+            font-size: 0.875rem; /* sm */
+        }
+
+        .dark .calendar-header {
+            background-color: #334155; /* Tailwind slate-700 */
+            color: #f1f5f9; /* Tailwind slate-50 */
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1 / 1; /* Ensures cells are square */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.375rem; /* rounded-md */
+            font-weight: 500;
+            transition: all 0.3s ease-in-out;
+            cursor: default;
+            position: relative;
+            user-select: none;
+        }
+
+        .heatmap-cell .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            top: -30px; /* Position above the cell */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #1e293b;
+            color: #f1f5f9;
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            font-size: 0.75rem;
+            z-index: 10;
+            transition: opacity 0.3s;
+        }
+
+        .heatmap-cell:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body class="bg-bg-light dark:bg-bg-dark text-gray-900 dark:text-text-dark transition-colors duration-300 font-sans min-h-screen p-4 sm:p-8">
+
+    <!-- GLOBAL LOADING SPINNER WITH BACKGROUND (New Implementation) -->
+    <div id="loading-spinner" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 dark:bg-bg-dark/70 hidden transition-opacity duration-300">
+        <!-- Modern Spinner: Spin animation, rounded, thick border, brand color -->
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-brand-accent"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8 pb-4 border-b dark:border-border-dark">
+            <h1 class="text-3xl font-bold text-brand-accent">Attendance Dashboard</h1>
+            <div class="flex items-center space-x-4">
+                <!-- Status Indicator -->
+                <div class="flex items-center space-x-2">
+                    <span id="status-ping" class="relative flex h-3 w-3 hidden">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+                        <span id="status-dot" class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                    </span>
+                    <span id="status-dot" class="relative inline-flex rounded-full h-3 w-3 bg-gray-400"></span>
+                    <span id="status-text" class="text-xs text-gray-500">Not Loaded</span>
+                </div>
+
+                <!-- Dark/Light Mode Toggle -->
+                <button id="toggleDesktop" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-card-dark transition-colors">
+                    <span id="theme-icon" class="material-symbols-outlined">dark_mode</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Filters Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="p-4 bg-white dark:bg-card-dark rounded-xl shadow-lg">
+                <label for="monthSelector" class="block text-sm font-medium mb-2">Month</label>
+                <select id="monthSelector" class="w-full p-2 border dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent"></select>
+            </div>
+            <div class="p-4 bg-white dark:bg-card-dark rounded-xl shadow-lg">
+                <label for="rosterSelector" class="block text-sm font-medium mb-2">Year</label>
+                <select id="rosterSelector" class="w-full p-2 border dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent"></select>
+            </div>
+            <div class="p-4 bg-white dark:bg-card-dark rounded-xl shadow-lg">
+                <label for="clusterSelector" class="block text-sm font-medium mb-2">Cluster</label>
+                <select id="clusterSelector" class="w-full p-2 border dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent">
+                    <option value="All">All Clusters</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
+            <!-- KPI 1: Headcount -->
+            <div class="p-4 bg-white dark:bg-card-dark rounded-xl shadow-lg text-center border-t-4 border-blue-500">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Headcount</p>
+                <p id="kpi-headcount" class="text-3xl font-bold mt-1 text-blue-500">--</p>
+            </div>
+            <!-- KPI 2: Active Agents -->
+            <div class="p-4 bg-white dark:bg-card-dark rounded-xl shadow-lg text-center border-t-4 border-indigo-500">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Active Agents</p>
+                <p id="kpi-active" class="text-3xl font-bold mt-1 text-indigo-500">--</p>
+            </div>
+            <!-- KPI 3: Lost Hours -->
+            <div class="p-4 bg-white dark:bg-card-dark rounded-xl shadow-lg text-center border-t-4 border-red-500">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Lost Hrs</p>
+                <p id="kpi-lostHours" class="text-3xl font-bold mt-1 text-red-500">--</p>
+            </div>
+            <!-- KPI 4: Billed Hours -->
+            <div class="p-4 bg-white dark:bg-card-dark rounded-xl shadow-lg text-center border-t-4 border-green-500">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Billed Hours</p>
+                <p id="kpi-billedHours" class="text-3xl font-bold mt-1 text-green-500">--</p>
+            </div>
+            <!-- KPI 5: Utilization -->
+            <div class="p-4 bg-white dark:bg-card-dark rounded-xl shadow-lg text-center border-t-4 border-yellow-500">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Utilization %</p>
+                <p id="kpi-utilization" class="text-3xl font-bold mt-1 text-yellow-500">--</p>
+            </div>
+            <!-- KPI 6: Overall Attendance Score (Conditional Formatting Target) -->
+            <div class="p-4 bg-white dark:bg-card-dark rounded-xl shadow-lg text-center border-t-4 border-brand-accent">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Attendance Score %</p>
+                <p id="kpi-attendanceScore" class="text-3xl font-bold mt-1 text-brand-accent">--</p>
+            </div>
+            <!-- KPI 7: Overtime -->
+            <div class="p-4 bg-white dark:bg-card-dark rounded-xl shadow-lg text-center border-t-4 border-cyan-500">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Overtime</p>
+                <p id="kpi-overtime" class="text-3xl font-bold mt-1 text-cyan-500">--</p>
+            </div>
+            <!-- KPI 8: Turnover Rate -->
+            <div class="p-4 bg-white dark:bg-card-dark rounded-xl shadow-lg text-center border-t-4 border-pink-500">
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Turnover Rate %</p>
+                <p id="kpi-turnoverRate" class="text-3xl font-bold mt-1 text-pink-500">--</p>
+            </div>
+        </div>
+
+        <!-- Heatmap Section -->
+        <div class="mb-8">
+            <div id="heatmap-container" class="bg-white dark:bg-card-dark p-6 rounded-xl shadow-lg">
+                <h2 class="text-xl font-bold mb-4">Daily Attendance Heatmap</h2>
+
+                <!-- Heatmap Legend -->
+                <div class="flex flex-wrap items-center gap-x-6 gap-y-3 mb-6 text-sm">
+                    <span class="font-medium text-gray-500 dark:text-gray-400">Legend:</span>
+                    <div class="flex items-center space-x-2">
+                        <span class="h-4 w-4 rounded-sm bg-red-500"></span>
+                        <span class="text-red-500 font-semibold">< 90% (Low)</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="h-4 w-4 rounded-sm bg-yellow-400"></span>
+                        <span>90% - 94.9% (Medium)</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="h-4 w-4 rounded-sm bg-green-400"></span>
+                        <span>95% - 97.9% (Good)</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="h-4 w-4 rounded-sm bg-green-600"></span>
+                        <span class="text-green-600 font-semibold">>= 98% (Excellent)</span>
+                    </div>
+                </div>
+
+                <div id="calendar-heatmap" class="grid gap-1">
+                    <!-- Day headers -->
+                    <div class="calendar-header">Sun</div>
+                    <div class="calendar-header">Mon</div>
+                    <div class="calendar-header">Tue</div>
+                    <div class="calendar-header">Wed</div>
+                    <div class="calendar-header">Thu</div>
+                    <div class="calendar-header">Fri</div>
+                    <div class="calendar-header">Sat</div>
+                    <!-- Heatmap cells will be rendered here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Table -->
+        <div class="bg-white dark:bg-card-dark p-6 rounded-xl shadow-lg">
+            <h2 class="text-xl font-bold mb-4">Campaign Performance Summary</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-border-dark">
+                    <thead class="bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider rounded-tl-lg">Campaign</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Cluster(s)</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Headcount</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Utilization %</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Att. Score %</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Billed Hrs</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">PTO Hrs</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">OT Hrs</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider rounded-tr-lg">Turnover %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table-body" class="bg-white dark:bg-card-dark divide-y divide-gray-200 dark:divide-border-dark">
+                        <!-- Data rows will be inserted here -->
+                        <tr>
+                            <td colspan="9" class="p-4 text-center text-gray-500 dark:text-gray-400">Select month and year to load data.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase imports (required structure for Canvas environment)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables for Firebase and authentication
+        let app, db, auth;
+        let userId = 'anonymous'; // Default ID
+        let isAuthReady = false;
+
+        // Configuration
+        const BASE_URL = 'https://script.google.com/macros/s/AKfycbxJSZpVpcdhTSO7FFwomRxVMwevkovxenU9c6j4MKUXEjk525chO2MALoaleGM8E_pRKQ/exec'; // *** Update this with your actual script URL ***
+
+        // --- SPINNER UTILITY FUNCTIONS ---
+        function showSpinner() {
+            document.getElementById('loading-spinner').classList.remove('hidden');
+        }
+
+        function hideSpinner() {
+            document.getElementById('loading-spinner').classList.add('hidden');
+        }
+
+        // --- FIREBASE INITIALIZATION ---
+        async function initializeFirebase() {
+            try {
+                const firebaseConfig = JSON.parse(__firebase_config);
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Authenticate user
+                if (__initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                userId = auth.currentUser?.uid || crypto.randomUUID();
+                isAuthReady = true;
+                console.log("Firebase initialized. User ID:", userId);
+
+            } catch (error) {
+                console.error("Firebase initialization or sign-in failed:", error);
+            }
+        }
+
+        // --- DASHBOARD DATA LOADING ---
+
+        /**
+         * Fetches data from the Google Apps Script API.
+         */
+        async function loadData(month, year) {
+            if (!BASE_URL.startsWith('http')) {
+                console.error("Please replace BASE_URL with your Google Apps Script Deployment URL.");
+                document.getElementById('data-table-body').innerHTML = `<tr><td colspan="9" class="p-4 text-center text-red-500">ERROR: Update BASE_URL in the script with your deployment URL.</td></tr>`;
+                return null;
+            }
+
+            const url = `${BASE_URL}?month=${month}&year=${year}`;
+
+            try {
+                // Implementing exponential backoff for API calls
+                let response = null;
+                const maxRetries = 3;
+                let delay = 1000;
+
+                for (let i = 0; i < maxRetries; i++) {
+                    response = await fetch(url);
+                    if (response.ok) {
+                        break;
+                    }
+                    if (i < maxRetries - 1) {
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2; // Double the delay
+                    } else {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                }
+
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                return data;
+            } catch (error) {
+                console.error("Error loading data:", error.message);
+                document.getElementById('data-table-body').innerHTML = `<tr><td colspan="9" class="p-4 text-center text-red-500">Error: ${error.message}</td></tr>`;
+                return null;
+            }
+        }
+
+        /**
+         * Main function to load all data and update the dashboard components.
+         */
+        async function loadAll() {
+            showSpinner();
+            activateLiveStatus(false); // Set status to loading
+            clearDashboard();
+
+            const month = document.getElementById('monthSelector').value;
+            const year = document.getElementById('rosterSelector').value;
+            const clusterFilter = document.getElementById('clusterSelector').value;
+
+            if (!month || !year) {
+                hideSpinner();
+                return;
+            }
+
+            const data = await loadData(month, year);
+
+            if (data) {
+                const filteredRows = clusterFilter === 'All'
+                    ? data.rows
+                    : data.rows.filter(row => row.Cluster.includes(clusterFilter));
+
+                updateKPIs(data);
+                createTableRows(filteredRows);
+                renderHeatmap(data.heatmap, parseInt(month), parseInt(year));
+                activateLiveStatus(true); // Set status to updated
+            } else {
+                activateLiveStatus(false, 'Error');
+            }
+
+            hideSpinner();
+        }
+
+        // --- DASHBOARD RENDERING FUNCTIONS ---
+
+        /**
+         * Clears all dashboard elements before a new load.
+         */
+        function clearDashboard() {
+            const tableBody = document.getElementById('data-table-body');
+            tableBody.innerHTML = '<tr><td colspan="9" class="p-4 text-center text-gray-500 dark:text-gray-400">Loading data...</td></tr>';
+            // Resetting the heatmap grid while keeping the day headers
+            document.getElementById('calendar-heatmap').innerHTML = `
+                <div class="calendar-header">Sun</div>
+                <div class="calendar-header">Mon</div>
+                <div class="calendar-header">Tue</div>
+                <div class="calendar-header">Wed</div>
+                <div class="calendar-header">Thu</div>
+                <div class="calendar-header">Fri</div>
+                <div class="calendar-header">Sat</div>
+            `;
+        }
+
+        /**
+         * Updates the main KPI cards with fetched data.
+         * Implements Conditional Formatting on Attendance Score KPI.
+         * @param {Object} data The API response object.
+         */
+        function updateKPIs(data) {
+            document.getElementById('kpi-headcount').textContent = data.headcount;
+            document.getElementById('kpi-active').textContent = data.active;
+            document.getElementById('kpi-lostHours').textContent = data.lostHours.toFixed(1);
+            document.getElementById('kpi-billedHours').textContent = data.billedHours.toFixed(1);
+            document.getElementById('kpi-utilization').textContent = data.utilization + '%';
+            document.getElementById('kpi-overtime').textContent = data.overtime;
+            document.getElementById('kpi-turnoverRate').textContent = data.turnoverRate + '%';
+
+            const scoreElement = document.getElementById('kpi-attendanceScore');
+            const score = parseFloat(data.attendanceScore);
+
+            scoreElement.textContent = data.attendanceScore + '%';
+
+            // CONDITIONAL FORMATTING: Attendance Score < 95.0% = Red Text
+            scoreElement.classList.remove('text-brand-accent', 'text-red-500');
+            if (isNaN(score) || score < 95.0) {
+                scoreElement.classList.add('text-red-500');
+            } else {
+                scoreElement.classList.add('text-brand-accent');
+            }
+        }
+
+        /**
+         * Generates table rows for campaign data.
+         * Implements Conditional Formatting on the Attendance Score column.
+         * @param {Array<Object>} rows Array of campaign metric objects.
+         */
+        function createTableRows(rows) {
+            const tableBody = document.getElementById('data-table-body');
+            tableBody.innerHTML = ''; // Clear previous rows
+
+            if (rows.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-gray-500 dark:text-gray-400">No campaigns found for this period/filter.</td></tr>`;
+                return;
+            }
+
+            rows.forEach(row => {
+                const attendanceScore = parseFloat(row.AttendanceScore);
+                let scoreClass = 'text-gray-900 dark:text-text-dark';
+
+                // CONDITIONAL FORMATTING: Attendance Score < 95.0% = Red Text
+                if (!isNaN(attendanceScore) && attendanceScore < 95.0) {
+                    scoreClass = 'text-red-500 font-semibold';
+                }
+
+                const newRow = tableBody.insertRow();
+                newRow.classList.add('hover:bg-gray-50', 'dark:hover:bg-gray-700', 'transition-colors');
+                
+                newRow.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">${row.Campaign}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">${row.Cluster}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right">${row.Headcount}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right">${row.Utilization}%</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right ${scoreClass}">${row.AttendanceScore}%</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right">${row.BilledHours.toFixed(1)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right">${row.PTO.toFixed(1)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right">${row.Overtime}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right">${row.TurnoverRate}%</td>
+                `;
+            });
+        }
+
+        /**
+         * Renders the calendar heatmap visualization using the defined legend color scheme.
+         * This logic ensures the colors match the legend based on the daily aggregate score.
+         * @param {Array<Object>} heatmapData Array of {date: string, score: number} objects.
+         * @param {number} month The selected month (1-12).
+         * @param {number} year The selected year.
+         */
+        function renderHeatmap(heatmapData, month, year) {
+            const container = document.getElementById('calendar-heatmap');
+            // Retain the header row
+            const headerHtml = container.innerHTML; 
+            container.innerHTML = headerHtml; 
+
+            const dateMap = new Map(heatmapData.map(d => [d.date, d.score]));
+
+            const firstDayOfMonth = new Date(year, month - 1, 1);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const startDayOfWeek = firstDayOfMonth.getDay(); // 0 for Sunday, 6 for Saturday
+
+            // 1. Add offset cells for the start of the month
+            for (let i = 0; i < startDayOfWeek; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.classList.add('heatmap-cell', 'bg-gray-100', 'dark:bg-gray-800', 'cursor-default');
+                container.appendChild(emptyCell);
+            }
+
+            // 2. Add day cells
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const score = dateMap.get(dateString);
+
+                const cell = document.createElement('div');
+                cell.classList.add('heatmap-cell');
+
+                let colorClass = 'bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+                let scoreText = 'N/A';
+                
+                if (score !== undefined) {
+                    scoreText = score.toFixed(1);
+                    
+                    // --- APPLYING LEGEND COLOR CODING BASED ON SCORE TIERS ---
+                    if (score >= 98.0) {
+                        // Excellent: >= 98% -> Green-600
+                        colorClass = 'bg-green-600 text-white';
+                    } else if (score >= 95.0) {
+                        // Good: 95% - 97.9% -> Green-400
+                        colorClass = 'bg-green-400 text-gray-800';
+                    } else if (score >= 90.0) {
+                        // Medium: 90% - 94.9% -> Yellow-400
+                        colorClass = 'bg-yellow-400 text-gray-800';
+                    } else { 
+                        // Low: < 90% -> Red-500
+                        colorClass = 'bg-red-500 text-white';
+                    }
+                }
+
+                cell.classList.add(colorClass);
+                cell.innerHTML = `
+                    <span class="text-xs font-light">${day}</span>
+                    <span class="text-lg">${scoreText}</span>
+                    <span class="tooltip">${scoreText}% Attendance</span>
+                `;
+                container.appendChild(cell);
+            }
+        }
+
+
+        // --- UTILITY/SETUP FUNCTIONS ---
+
+        /**
+         * Populates month and year selectors with default values.
+         */
+        function setDefaultFilters() {
+            const monthSelector = document.getElementById('monthSelector');
+            const yearSelector = document.getElementById('rosterSelector'); // Renamed from roster to year in use
+
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1; // 1-indexed
+            const currentYear = now.getFullYear();
+
+            // Populate Months
+            const monthNames = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            for (let i = 1; i <= 12; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = monthNames[i];
+                if (i === currentMonth) {
+                    option.selected = true;
+                }
+                monthSelector.appendChild(option);
+            }
+
+            // Populate Years (Current Year and one year before)
+            for (let y = currentYear; y >= currentYear - 1; y--) {
+                const option = document.createElement('option');
+                option.value = y;
+                option.textContent = y;
+                if (y === currentYear) {
+                    option.selected = true;
+                }
+                yearSelector.appendChild(option);
+            }
+        }
+
+        /**
+         * Simulates loading clusters (In a real app, this would be an API call).
+         */
+        async function loadClusters() {
+            // Simulated list of available clusters
+            const mockClusters = ['Sales', 'Support', 'Admin', 'Retention', 'Billing'];
+            const clusterSelector = document.getElementById('clusterSelector');
+
+            mockClusters.sort().forEach(cluster => {
+                const option = document.createElement('option');
+                option.value = cluster;
+                option.textContent = cluster;
+                clusterSelector.appendChild(option);
+            });
+        }
+
+        /**
+         * Updates the status indicator to reflect loading or completion state.
+         * @param {boolean} isLive True if data is loaded, false if loading/error.
+         * @param {string} [message] Custom message if not live (e.g., 'Error').
+         */
+        function activateLiveStatus(isLive, message = 'Loading...') {
+            const dot = document.getElementById("status-dot");
+            const ping = document.getElementById("status-ping");
+            const text = document.getElementById("status-text");
+
+            dot.classList.remove("bg-gray-400", "bg-green-500", "bg-red-500");
+            ping.classList.remove("hidden");
+            text.classList.remove("text-gray-500", "text-green-500", "text-red-500");
+
+            if (isLive) {
+                dot.classList.add("bg-green-500");
+                ping.classList.remove("hidden");
+                text.textContent = "Updated Live";
+                text.classList.add("text-green-500");
+            } else {
+                dot.classList.add(message === 'Error' ? "bg-red-500" : "bg-gray-400");
+                ping.classList.add("hidden");
+                text.textContent = message;
+                text.classList.add(message === 'Error' ? "text-red-500" : "text-gray-500");
+            }
+        }
+
+        // --- THEME TOGGLE LOGIC ---
+
+        function updateThemeIcon(isDark) {
+            const icon = document.getElementById('theme-icon');
+            icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+        }
+
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle('dark');
+            updateThemeIcon(isDark);
+        }
+
+        // === Event Listeners and Initialization ===
+
+        document.getElementById("monthSelector").addEventListener("change", loadAll);
+        document.getElementById("rosterSelector").addEventListener("change", loadAll);
+        document.getElementById("clusterSelector").addEventListener("change", loadAll);
+        document.getElementById("toggleDesktop").addEventListener("click", toggleTheme);
+
+        // Initial theme setup (set to dark by default)
+        document.body.classList.add("dark");
+        updateThemeIcon(true);
+        
+        // Initialize on load
+        window.addEventListener("DOMContentLoaded", async () => {
+            await initializeFirebase(); // Initialize Firebase first
+            await loadClusters(); // Load mock clusters
+            setDefaultFilters(); // Set default month/year
+            loadAll(); // Load initial data
+        });
+
+    </script>
+</body>
+</html>

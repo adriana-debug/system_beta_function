@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Call Center Attendance Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    <h2 class="text-center text-2xl font-bold text-gray-800 mb-6">
+      Call Center Attendance Dashboard
+    </h2>
+
+    <!-- Filters -->
+    <div class="flex flex-wrap justify-center gap-4 mb-6">
+      <!-- Month Filter -->
+      <div>
+        <label for="monthSelect" class="block text-sm font-medium text-gray-700 mb-1">Select Month</label>
+        <select id="monthSelect" class="border rounded-md px-3 py-2 bg-white shadow-sm focus:ring focus:ring-indigo-200">
+          <option value="1">January</option>
+          <option value="2">February</option>
+          <option value="3">March</option>
+          <option value="4">April</option>
+          <option value="5">May</option>
+          <option value="6">June</option>
+          <option value="7">July</option>
+          <option value="8">August</option>
+          <option value="9">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+      </div>
+
+      <!-- Cluster Filter -->
+      <div>
+        <label for="clusterSelect" class="block text-sm font-medium text-gray-700 mb-1">Select Cluster</label>
+        <select id="clusterSelect" class="border rounded-md px-3 py-2 bg-white shadow-sm focus:ring focus:ring-indigo-200">
+          <option value="">All Clusters</option>
+        </select>
+      </div>
+
+      <!-- Apply Button -->
+      <div class="flex items-end">
+        <button id="applyFilter" class="bg-indigo-600 text-white px-4 py-2 rounded-md shadow hover:bg-indigo-700">
+          Apply Filter
+        </button>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="flex justify-center gap-6 mb-6 flex-wrap text-sm">
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-[#38761D]"></span>Present</div>
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-[#00FF00]"></span>Half Day</div>
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-[#F59E0B]"></span>Late</div>
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-[#8E7CC3]"></span>Terminated</div>
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-[#0000FF]"></span>Vacation Leave</div>
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-[#00FFFF]"></span>Suspended</div>
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-[#9CA3AF]"></span>Day Off</div>
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-[#EF4444]"></span>Absent</div>
+      <div class="flex items-center gap-2">
+        <span class="w-4 h-4 rounded bg-[repeating-linear-gradient(45deg,#E5E7EB_0px,#E5E7EB_2px,#D1D5DB_2px,#D1D5DB_4px)]"></span>
+        Not Marked
+      </div>
+    </div>
+
+    <!-- Campaign Calendars -->
+    <div id="campaign-calendars" class="space-y-5"></div>
+  </div>
+
+  <script>
+    /****************************************************
+     * CONFIGURATION
+     ****************************************************/
+    const API_BASE = "https://script.google.com/macros/s/AKfycbxJSZpVpcdhTSO7FFwomRxVMwevkovxenU9c6j4MKUXEjk525chO2MALoaleGM8E_pRKQ/exec"; // ← replace with your actual deployment URL
+
+    /****************************************************
+     * STATUS COLORS
+     ****************************************************/
+    const statusColors = {
+      P:    "bg-[#38761D]",
+      HD:   "bg-[#00FF00]",
+      L:    "bg-[#F59E0B]",
+      L15:  "bg-[#F59E0B]",
+      L30:  "bg-[#F59E0B]",
+      L45:  "bg-[#F59E0B]",
+      L60:  "bg-[#F59E0B]",
+      T:    "bg-[#8E7CC3]",
+      VL:   "bg-[#0000FF]",
+      SUS:  "bg-[#00FFFF]",
+      Off:  "bg-[#9CA3AF]",
+      A:    "bg-[#EF4444]",
+      NA:   "bg-[repeating-linear-gradient(45deg,#E5E7EB_0px,#E5E7EB_2px,#D1D5DB_2px,#D1D5DB_4px)]"
+    };
+
+    /****************************************************
+     * INITIALIZATION
+     ****************************************************/
+    document.addEventListener("DOMContentLoaded", () => {
+      setCurrentMonth();
+      loadClusters();
+      document.getElementById("applyFilter").addEventListener("click", loadAttendance);
+    });
+
+    function setCurrentMonth() {
+      const currentMonth = new Date().getMonth() + 1;
+      document.getElementById("monthSelect").value = currentMonth;
+    }
+
+    async function loadClusters() {
+      try {
+        const res = await fetch(`${API_BASE}?api=clusters`);
+        const clusters = await res.json();
+        const clusterSelect = document.getElementById("clusterSelect");
+
+        clusters
+          .filter(c => c.toLowerCase().includes("admin") || c) // keep "Admin" + others
+          .forEach(c => {
+            const option = document.createElement("option");
+            option.value = c;
+            option.textContent = c;
+            clusterSelect.appendChild(option);
+          });
+      } catch (err) {
+        console.error("Error loading clusters:", err);
+      }
+    }
+
+    /****************************************************
+     * MAIN FUNCTION
+     ****************************************************/
+    async function loadAttendance() {
+      const month = document.getElementById("monthSelect").value;
+      const cluster = document.getElementById("clusterSelect").value;
+      const container = document.getElementById("campaign-calendars");
+      container.innerHTML = `<div class='text-center text-gray-600'>Loading attendance...</div>`;
+
+      try {
+        const res = await fetch(`${API_BASE}?api=calendars&month=${month}&cluster=${encodeURIComponent(cluster)}`);
+        const campaigns = await res.json();
+        container.innerHTML = ""; // clear content after fetch
+
+        Object.entries(campaigns).forEach(([campaign, employees]) => {
+          const section = document.createElement("div");
+          section.innerHTML = `
+            <h3 class="text-l font-semibold text-gray-700 mb-4">${campaign}</h3>
+            <div class="overflow-x-auto border rounded-lg shadow bg-white">
+              <table class="table-fixed border-collapse w-full text-xs">
+                <thead class="bg-gray-100">
+                  <tr>
+                    <th class="border px-2 py-1 text-left w-40">Employee</th>
+                    ${[...Array(31).keys()].map(d => `<th class='border px-1 py-1 w-6 text-center'>${d + 1}</th>`).join('')}
+                  </tr>
+                </thead>
+                <tbody>
+                  ${Object.entries(employees).map(([name, days]) => `
+                    <tr>
+                      <td class="border px-2 py-1 font-medium text-gray-700">${name}</td>
+                      ${days.map(status => `
+                        <td class="border w-6 h-6 ${statusColors[status] || statusColors["NA"]}" title="${status}"></td>
+                      `).join('')}
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `;
+          container.appendChild(section);
+        });
+      } catch (err) {
+        console.error("Error loading attendance:", err);
+        container.innerHTML = `<div class='text-center text-red-600'>Failed to load attendance data.</div>`;
+      }
+    }
+  </script>
+</body>
+</html>
