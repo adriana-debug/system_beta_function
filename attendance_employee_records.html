@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-t" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Unified Attendance Dashboard</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Custom styles for consistent look and feel, and for print view */
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48; }
+    :root { --brand-accent: #CBEB33; }
+    .paper-view { background: #fff; width: 8.27in; min-height: 11.69in; margin: 2rem auto; padding: 0.75in; box-shadow: 0 0 8px rgba(0,0,0,0.12); border-radius: 4px; color:#111827; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1rem; }
+    .status-box { width: 22px; height: 22px; border: 1px solid #d1d5db; }
+    .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @media print {
+      body * { visibility: hidden; }
+      #employeePaperView, #employeePaperView * { visibility: visible; }
+      #employeePaperView { position: absolute; left: 0; top: 0; width: 100%; height: auto; margin: 0; padding: 0; box-shadow: none; border-radius: 0; }
+      #printControls { display: none; }
+    }
+  </style>
+
+  <script>
+    /* Tailwind theme config */
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Roboto', 'sans-serif'] },
+          colors: {
+            'brand-accent': '#CBEB33',
+            'bg-dark': '#0f172a',
+            'text-dark': '#f1f5f9',
+            'card-dark': '#1e293b',
+            'border-dark': '#334155',
+            'bg-light': '#f8fafc',
+            'text-light': '#1e293b',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-bg-light dark:bg-bg-dark text-text-light dark:text-text-dark transition-colors duration-300">
+
+  <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+      <div>
+        <h1 class="text-2xl font-bold">Unified Attendance Dashboard</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Real-time attendance and employee records.</p>
+      </div>
+      <div class="flex items-center space-x-2 mt-4 sm:mt-0">
+        <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+          <i data-feather="moon" class="dark-icon"></i><i data-feather="sun" class="light-icon hidden"></i>
+        </button>
+        <button id="refreshBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+          <i data-feather="refresh-cw"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- View Toggler -->
+    <div class="mb-6 border-b border-gray-200 dark:border-border-dark">
+      <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+        <a href="#" id="showDashboard" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-brand-accent border-brand-accent">Dashboard</a>
+        <a href="#" id="showRecords" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600">Employee Records</a>
+      </nav>
+    </div>
+
+
+    <!-- =================================================================== -->
+    <!-- Attendance Dashboard View -->
+    <!-- =================================================================== -->
+    <main id="dashboardView">
+      <!-- Filters -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 rounded-lg bg-white dark:bg-card-dark shadow">
+        <div>
+          <label for="monthSelector" class="block text-sm font-medium mb-1">Month</label>
+          <select id="monthSelector" class="w-full p-2 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-border-dark focus:ring-2 focus:ring-brand-accent">
+            <option value="1">January</option> <option value="2">February</option>
+            <option value="3">March</option> <option value="4">April</option>
+            <option value="5">May</option> <option value="6">June</option>
+            <option value="7">July</option> <option value="8">August</option>
+            <option value="9">September</option> <option value="10">October</option>
+            <option value="11">November</option> <option value="12">December</option>
+          </select>
+        </div>
+        <div>
+          <label for="clusterSelector" class="block text-sm font-medium mb-1">Cluster</label>
+          <select id="clusterSelector" class="w-full p-2 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-border-dark focus:ring-2 focus:ring-brand-accent">
+            <option value="">All Clusters</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Overall Summary -->
+      <section id="overallSummary" class="mb-6">
+        <h2 class="text-xl font-semibold mb-3">Overall Summary</h2>
+        <div id="summaryContainer" class="summary-grid">
+          <!-- Summary cards will be injected here -->
+        </div>
+      </section>
+
+      <!-- Calendar Heatmap -->
+      <section id="calendarHeatmap">
+        <h2 class="text-xl font-semibold mb-3">Employee Calendar</h2>
+        <div id="calendarContainer" class="space-y-6">
+          <!-- Calendar views will be injected here -->
+        </div>
+      </section>
+    </main>
+
+
+    <!-- =================================================================== -->
+    <!-- Employee Records View -->
+    <!-- =================================================================== -->
+    <main id="employeeRecordsView" class="hidden">
+      <!-- Search Form -->
+      <div id="employeeSearchForm" class="p-4 rounded-lg bg-white dark:bg-card-dark shadow">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label for="employeeMonthSelector" class="block text-sm font-medium mb-1">Month</label>
+            <select id="employeeMonthSelector" class="w-full p-2 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-border-dark focus:ring-2 focus:ring-brand-accent"></select>
+          </div>
+          <div>
+            <label for="empClusterFilter" class="block text-sm font-medium mb-1">Cluster</label>
+            <select id="empClusterFilter" class="w-full p-2 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-border-dark focus:ring-2 focus:ring-brand-accent"></select>
+          </div>
+          <div>
+            <label for="empCampaignFilter" class="block text-sm font-medium mb-1">Campaign</label>
+            <select id="empCampaignFilter" class="w-full p-2 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-border-dark focus:ring-2 focus:ring-brand-accent"></select>
+          </div>
+          <div>
+            <label for="employeeSelector" class="block text-sm font-medium mb-1">Employee Name</label>
+            <select id="employeeSelector" class="w-full p-2 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-border-dark focus:ring-2 focus:ring-brand-accent"></select>
+          </div>
+        </div>
+        <div class="mt-4 text-right">
+            <button id="viewRecordBtn" class="bg-brand-accent text-gray-800 font-bold py-2 px-6 rounded-md hover:opacity-90 transition-opacity">View Record</button>
+        </div>
+      </div>
+      
+      <!-- Employee Record Paper View (hidden by default) -->
+      <div id="employeePaperView" class="paper-view hidden mt-6">
+        <!-- Paper content will be injected here -->
+      </div>
+    </main>
+
+    <!-- Universal Loader -->
+    <div id="loader" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50">
+      <div class="loader"></div>
+    </div>
+  </div>
+
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxrfoxlvS2IJdSQd7fO9Vz5cnsCbtJ_xsDvAehmJ2odwr5S2ZLm_bCu87kOvezE6sSl9Q/exec";
+    const STATUS_CONFIG = {
+      P: { color: "#38761D", deduction: 0, label: "Present" },
+      A: { color: "#EF4444", deduction: 8, label: "Absent" },
+      Off: { color: "#9CA3AF", deduction: 0, label: "Day Off" },
+      L: { color: "#F59E0B", deduction: 8, label: "Leave" },
+      VL: { color: "#0000FF", deduction: 8, label: "Vacation Leave" },
+      T: { color: "#8E7CC3", deduction: 8, label: "Training" },
+      SUS: { color: "#00FFFF", deduction: 8, label: "Suspended" },
+      HD: { color: "#00FF00", deduction: 4, label: "Half Day" },
+      L15: { color: "#FACC15", deduction: 0.25, label: "Late (15m)" },
+      L30: { color: "#FB923C", deduction: 0.5, label: "Late (30m)" },
+      L45: { color: "#F97316", deduction: 0.75, label: "Late (45m)" },
+      L60: { color: "#EA580C", deduction: 1, label: "Late (60m)" },
+      SL: { color: "#6FA8DC", deduction: 8, label: "Sick Leave" },
+      Resigned: { color: "#475569", deduction: 8, label: "Resigned" },
+      Terminated: { color: "#334155", deduction: 8, label: "Terminated" },
+      NA: { color: "#e5e7eb", deduction: 0, label: "Not Applicable" }
+    };
+    let allEmployees = []; // Cache for employee data
+
+    /* ============ DOM Elements ============ */
+    const loader = document.getElementById("loader");
+    // Dashboard elements
+    const monthSelector = document.getElementById("monthSelector");
+    const clusterSelector = document.getElementById("clusterSelector");
+    // Employee record elements
+    const employeeMonthSelector = document.getElementById("employeeMonthSelector");
+    const empClusterFilter = document.getElementById("empClusterFilter");
+    const empCampaignFilter = document.getElementById("empCampaignFilter");
+    const employeeSelector = document.getElementById("employeeSelector");
+    const viewRecordBtn = document.getElementById("viewRecordBtn");
+    const employeePaperView = document.getElementById("employeePaperView");
+    const employeeSearchForm = document.getElementById("employeeSearchForm");
+    // View containers
+    const dashboardView = document.getElementById("dashboardView");
+    const employeeRecordsView = document.getElementById("employeeRecordsView");
+
+    /* ============ Utility Functions ============ */
+    const showLoader = (show) => loader.classList.toggle("hidden", !show);
+    const getMonthName = (m) => new Date(2000, m - 1, 1).toLocaleString('default', { month: 'long' });
+
+    /* ============ API Fetch Functions ============ */
+    async function fetchData(api, params = {}) {
+      showLoader(true);
+      try {
+        const url = new URL(GAS_URL);
+        url.searchParams.set("api", api);
+        Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return await response.json();
+      } catch (error) {
+        console.error(`Error fetching ${api}:`, error);
+        alert(`Failed to load data for ${api}. Please check the console for details.`);
+        return null;
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    /* ============ Dashboard Rendering ============ */
+    function renderSummary(summary) {
+      const container = document.getElementById("summaryContainer");
+      container.innerHTML = "";
+      if (!summary || !summary.overall) {
+        container.innerHTML = "<p>No summary data available.</p>";
+        return;
+      }
+      Object.entries(STATUS_CONFIG).forEach(([key, { color, label }]) => {
+        const count = summary.overall[key] || 0;
+        if(count > 0){
+          container.innerHTML += `
+            <div class="flex items-center p-3 bg-white dark:bg-card-dark rounded-lg shadow">
+              <div class="w-4 h-4 rounded-full mr-3" style="background-color: ${color};"></div>
+              <div>
+                <div class="font-bold text-lg">${count}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">${label}</div>
+              </div>
+            </div>`;
+        }
+      });
+    }
+
+    function renderCalendars(campaigns) {
+      const container = document.getElementById("calendarContainer");
+      container.innerHTML = "";
+      if (!campaigns || Object.keys(campaigns).length === 0) {
+        container.innerHTML = "<p class='p-4 text-center'>No employee data found for the selected criteria.</p>";
+        return;
+      }
+      const daysInMonth = new Date(new Date().getFullYear(), monthSelector.value, 0).getDate();
+      
+      Object.entries(campaigns).forEach(([campaign, employees]) => {
+        const section = document.createElement("div");
+        section.className = "bg-white dark:bg-card-dark rounded-lg shadow overflow-x-auto";
+        
+        let tableHTML = `
+          <h3 class="p-4 text-lg font-semibold border-b border-gray-200 dark:border-border-dark">${campaign}</h3>
+          <table class="w-full text-sm text-left">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th class="p-2 sticky left-0 bg-gray-50 dark:bg-gray-700 z-10">Employee Name</th>
+                ${[...Array(daysInMonth)].map((_, i) => `<th class="text-center p-2">${i + 1}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>`;
+
+        Object.entries(employees).forEach(([name, statuses]) => {
+          tableHTML += `
+            <tr class="border-b border-gray-200 dark:border-border-dark">
+              <td class="p-2 font-medium sticky left-0 bg-white dark:bg-card-dark z-10">${name}</td>
+              ${statuses.slice(0, daysInMonth).map(status => {
+                  const color = STATUS_CONFIG[status]?.color || "#e5e7eb";
+                  return `<td class="p-0.5 text-center"><div class="w-5 h-5 mx-auto rounded" style="background-color:${color}" title="${STATUS_CONFIG[status]?.label || 'N/A'}"></div></td>`;
+              }).join('')}
+            </tr>`;
+        });
+
+        tableHTML += `</tbody></table>`;
+        section.innerHTML = tableHTML;
+        container.appendChild(section);
+      });
+    }
+
+    /* ============ Employee Record Rendering ============ */
+    function renderEmployeeRecord(data) {
+        if (!data || data.error) {
+            employeePaperView.innerHTML = `<p class="text-red-500">${data.error || "Could not fetch employee record."}</p>`;
+            return;
+        }
+
+        const { name, campaign, cluster, records } = data;
+        const monthName = getMonthName(employeeMonthSelector.value);
+        const year = new Date().getFullYear();
+        const daysInMonth = new Date(year, employeeMonthSelector.value, 0).getDate();
+
+        // Tally statuses
+        const statusTally = {};
+        records.forEach(r => {
+            const status = r.status || "NA";
+            statusTally[status] = (statusTally[status] || 0) + 1;
+        });
+
+        let summaryHTML = "";
+        Object.entries(statusTally).forEach(([status, count]) => {
+            const config = STATUS_CONFIG[status];
+            if (config) {
+                summaryHTML += `
+                <div class="flex justify-between items-center text-sm py-1">
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full mr-2" style="background-color: ${config.color};"></div>
+                        <span>${config.label}</span>
+                    </div>
+                    <span class="font-semibold">${count}</span>
+                </div>`;
+            }
+        });
+
+        let calendarHTML = "";
+        for (let i = 1; i <= daysInMonth; i++) {
+            const record = records.find(r => r.day === i);
+            const status = record ? record.status : "NA";
+            const config = STATUS_CONFIG[status];
+            calendarHTML += `<div class="border text-center py-1" title="${config.label}">
+                <div class="font-bold text-gray-600">${i}</div>
+                <div class="w-4 h-4 rounded-full mx-auto mt-1" style="background-color: ${config.color};"></div>
+            </div>`;
+        }
+
+        employeePaperView.innerHTML = `
+            <div id="printControls" class="flex justify-end gap-2 mb-4">
+                <button id="backToSearchBtn" class="py-1 px-3 text-sm rounded bg-gray-200 hover:bg-gray-300">Back</button>
+                <button id="printEmployeeBtn" class="py-1 px-3 text-sm rounded bg-blue-500 text-white hover:bg-blue-600">Print</button>
+            </div>
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold">${name}</h2>
+                <p class="text-gray-600">Attendance Record for ${monthName} ${year}</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-1">
+                    <h3 class="font-bold text-lg border-b pb-2 mb-2">Details</h3>
+                    <p class="text-sm"><strong>Campaign:</strong> ${campaign}</p>
+                    <p class="text-sm"><strong>Cluster:</strong> ${cluster}</p>
+                    <h3 class="font-bold text-lg border-b pb-2 mt-4 mb-2">Summary</h3>
+                    <div class="space-y-1">${summaryHTML}</div>
+                </div>
+                <div class="md:col-span-2">
+                    <h3 class="font-bold text-lg border-b pb-2 mb-2">Monthly Calendar</h3>
+                    <div class="grid grid-cols-7 gap-1">${calendarHTML}</div>
+                </div>
+            </div>
+        `;
+        
+        // Add event listeners for the new buttons
+        document.getElementById('backToSearchBtn').addEventListener('click', () => {
+          employeePaperView.classList.add('hidden');
+          employeeSearchForm.classList.remove('hidden');
+        });
+        document.getElementById('printEmployeeBtn').addEventListener('click', () => window.print());
+
+        // Show the paper view and hide the form
+        employeePaperView.classList.remove('hidden');
+        employeeSearchForm.classList.add('hidden');
+    }
+
+    /* ============ Data Loading and Population ============ */
+    async function loadAll() {
+      const month = monthSelector.value;
+      const cluster = clusterSelector.value;
+      const [summary, calendars] = await Promise.all([
+        fetchData("summary", { month, cluster }),
+        fetchData("calendars", { month, cluster }),
+      ]);
+      renderSummary(summary);
+      renderCalendars(calendars);
+    }
+
+    async function initFiltersAndEmployees() {
+      const [clusters, employees] = await Promise.all([
+        fetchData("clusters"),
+        fetchData("employees")
+      ]);
+
+      allEmployees = employees || [];
+      const campaigns = [...new Set(allEmployees.map(e => e.campaign))].sort();
+
+      // Populate cluster dropdowns
+      const clusterOptions = clusters ? clusters.map(c => `<option value="${c}">${c}</option>`).join('') : '';
+      clusterSelector.innerHTML = `<option value="">All Clusters</option>${clusterOptions}`;
+      empClusterFilter.innerHTML = `<option value="">All Clusters</option>${clusterOptions}`;
+
+      // Populate campaign dropdown
+      const campaignOptions = campaigns.map(c => `<option value="${c}">${c}</option>`).join('');
+      empCampaignFilter.innerHTML = `<option value="">All Campaigns</option>${campaignOptions}`;
+
+      populateEmployeeDropdown();
+    }
+    
+    function populateEmployeeDropdown() {
+        const selectedCampaign = empCampaignFilter.value;
+        const selectedCluster = empClusterFilter.value;
+
+        const filtered = allEmployees.filter(e => 
+            (!selectedCampaign || e.campaign === selectedCampaign) &&
+            (!selectedCluster || e.cluster === selectedCluster)
+        );
+
+        const employeeOptions = filtered
+            .map(e => e.name)
+            .sort()
+            .map(name => `<option value="${name}">${name}</option>`)
+            .join('');
+        
+        employeeSelector.innerHTML = `<option value="">Select Employee</option>${employeeOptions}`;
+    }
+
+    async function viewEmployeeRecord() {
+        const name = employeeSelector.value;
+        const month = employeeMonthSelector.value;
+        if (!name || !month) {
+            alert("Please select a month and an employee.");
+            return;
+        }
+        const data = await fetchData("employeeRecord", { name, month });
+        renderEmployeeRecord(data);
+    }
+
+
+    /* ============ Theme Management ============ */
+    function themeToggle() {
+      const isDark = document.body.classList.toggle("dark");
+      localStorage.setItem("theme", isDark ? "dark" : "light");
+      updateThemeIcon(isDark);
+    }
+
+    function updateThemeIcon(isDark) {
+        document.querySelectorAll(".dark-icon").forEach(i => i.classList.toggle("hidden", !isDark));
+        document.querySelectorAll(".light-icon").forEach(i => i.classList.toggle("hidden", isDark));
+    }
+    
+    /* ============ View Management ============ */
+    function showView(viewToShow) {
+        dashboardView.classList.toggle('hidden', viewToShow !== 'dashboard');
+        employeeRecordsView.classList.toggle('hidden', viewToShow !== 'records');
+        
+        document.getElementById('showDashboard').classList.toggle('text-brand-accent', viewToShow === 'dashboard');
+        document.getElementById('showDashboard').classList.toggle('border-brand-accent', viewToShow === 'dashboard');
+        document.getElementById('showDashboard').classList.toggle('text-gray-500', viewToShow !== 'dashboard');
+        document.getElementById('showDashboard').classList.toggle('border-transparent', viewToShow !== 'dashboard');
+        
+        document.getElementById('showRecords').classList.toggle('text-brand-accent', viewToShow === 'records');
+        document.getElementById('showRecords').classList.toggle('border-brand-accent', viewToShow === 'records');
+        document.getElementById('showRecords').classList.toggle('text-gray-500', viewToShow !== 'records');
+        document.getElementById('showRecords').classList.toggle('border-transparent', viewToShow !== 'records');
+    }
+
+    /* ============ Init and Event Wiring ============ */
+    function init() {
+        feather.replace();
+        const now = new Date();
+        const currentMonth = String(now.getMonth() + 1);
+
+        // Set default month
+        monthSelector.value = currentMonth;
+
+        // Populate employee month selector (all 12 months)
+        const monthOptions = Array.from({length: 12}, (_, i) => 
+            `<option value="${i + 1}" ${i + 1 == currentMonth ? 'selected' : ''}>${getMonthName(i + 1)}</option>`
+        ).join('');
+        employeeMonthSelector.innerHTML = monthOptions;
+
+        // Theme setup
+        const savedTheme = localStorage.getItem("theme");
+        const isDark = savedTheme === "dark" || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.body.classList.toggle("dark", isDark);
+        updateThemeIcon(isDark);
+
+        // Event listeners
+        document.getElementById("themeToggle").addEventListener("click", themeToggle);
+        document.getElementById("refreshBtn").addEventListener("click", loadAll);
+        monthSelector.addEventListener("change", loadAll);
+        clusterSelector.addEventListener("change", loadAll);
+        
+        // View toggling
+        document.getElementById('showDashboard').addEventListener('click', (e) => { e.preventDefault(); showView('dashboard'); });
+        document.getElementById('showRecords').addEventListener('click', (e) => { e.preventDefault(); showView('records'); });
+
+        // Employee records listeners
+        empCampaignFilter.addEventListener('change', populateEmployeeDropdown);
+        empClusterFilter.addEventListener('change', populateEmployeeDropdown);
+        viewRecordBtn.addEventListener('click', viewEmployeeRecord);
+        
+        // Initial data load
+        initFiltersAndEmployees().then(loadAll);
+    }
+    
+    window.addEventListener("load", init);
+
+  </script>
+</body>
+</html>
