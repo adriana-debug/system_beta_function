@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solutions Hub - Digital Minds BPO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <style>
+        :root {
+            /* Digital Minds Brand Colors */
+            --primary-navy: #24355b;
+            --primary-blue: #1e3a8a;
+            --secondary-blue: #3b82f6;
+            --accent-lime: rgb(227, 240, 130);
+            --accent-lime-dark: rgb(210, 231, 51);
+            --accent-teal: #06b6d4;
+            --accent-green: #10b981;
+            --accent-orange: #f97316;
+            --accent-purple: #8b5cf6;
+
+            /* Neutral Colors */
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --white: #ffffff;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--gray-50);
+            color: var(--gray-700);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-content {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .logo img {
+            height: 42px;
+            width: auto;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 0.25rem;
+            align-items: center;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.625rem 1.25rem;
+            color: var(--gray-700);
+            text-decoration: none;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .nav-link:hover {
+            background: var(--gray-100);
+            color: var(--primary-navy);
+        }
+
+        .nav-link .material-icons-outlined {
+            font-size: 18px;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 0.25rem);
+            left: 0;
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow-xl);
+            min-width: 260px;
+            padding: 0.75rem 0;
+            z-index: 1001;
+            animation: dropdownFade 0.2s ease-out;
+        }
+
+        @keyframes dropdownFade {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nav-item:hover .dropdown {
+            display: block;
+        }
+
+        .dropdown::before {
+            content: '';
+            position: absolute;
+            top: -1rem;
+            left: 0;
+            right: 0;
+            height: 1rem;
+            background: transparent;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            padding: 0.75rem 1.25rem;
+            color: var(--gray-700);
+            text-decoration: none;
+            font-size: 0.9375rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: var(--gray-50);
+            color: var(--primary-navy);
+        }
+
+        .dropdown-item .material-icons-outlined {
+            font-size: 20px;
+            color: var(--gray-500);
+        }
+
+        .dropdown-item:hover .material-icons-outlined {
+            color: var(--primary-navy);
+        }
+
+        .header-right {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: var(--gray-600);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: var(--gray-100);
+            color: var(--primary-navy);
+        }
+
+        .btn-text {
+            background: var(--primary-navy);
+            border: none;
+            color: var(--white);
+            padding: 0.625rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-text:hover {
+            background: var(--primary-blue);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-navy) 0%, #1e40af 50%, var(--secondary-blue) 100%);
+            color: var(--white);
+            padding: 5rem 2rem 5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.3) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 2rem;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-icon img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+
+        .hero h1 {
+            font-size: 3.75rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            font-family: 'Poppins', sans-serif;
+            letter-spacing: -0.025em;
+            line-height: 1.1;
+        }
+
+        .hero p {
+            font-size: 1.375rem;
+            color: rgba(255, 255, 255, 0.95);
+            margin-bottom: 2.5rem;
+            font-weight: 400;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .search-container {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: var(--white);
+            border-radius: 3rem;
+            padding: 0.375rem 0.75rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .search-box:focus-within {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .search-box .material-icons-outlined {
+            color: var(--gray-400);
+            margin: 0 0.75rem;
+            font-size: 24px;
+        }
+
+        .search-box input {
+            flex: 1;
+            border: none;
+            padding: 1rem 0;
+            font-size: 1.0625rem;
+            outline: none;
+            color: var(--gray-900);
+            background: transparent;
+        }
+
+        .search-box input::placeholder {
+            color: var(--gray-400);
+        }
+
+        .btn-search {
+            background: var(--primary-navy);
+            border: none;
+            padding: 0.875rem 2rem;
+            border-radius: 2rem;
+            color: var(--white);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9375rem;
+            transition: all 0.2s;
+        }
+
+        .btn-search:hover {
+            background: var(--secondary-blue);
+            transform: scale(1.02);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 3.5rem 2rem;
+        }
+
+        /* Filter Bar */
+        .filter-wrapper {
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 0.75rem;
+            overflow-x: auto;
+            padding: 0.5rem 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--gray-300) transparent;
+        }
+
+        .filter-bar::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .filter-bar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .filter-bar::-webkit-scrollbar-thumb {
+            background: var(--gray-300);
+            border-radius: 4px;
+        }
+
+        .filter-bar::-webkit-scrollbar-thumb:hover {
+            background: var(--gray-400);
+        }
+
+        .filter-chip {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--white);
+            border: 2px solid var(--gray-200);
+            border-radius: 2rem;
+            cursor: pointer;
+            font-size: 0.9375rem;
+            color: var(--gray-700);
+            white-space: nowrap;
+            transition: all 0.2s;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .filter-chip:hover {
+            border-color: var(--accent-lime-dark);
+            background: var(--gray-50);
+            transform: translateY(-1px);
+        }
+
+        .filter-chip.active {
+            background: var(--accent-lime);
+            color: var(--gray-900);
+            border-color: var(--accent-lime);
+            box-shadow: var(--shadow-md);
+        }
+
+        .filter-chip .material-icons-outlined {
+            font-size: 18px;
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.75rem;
+        }
+
+        .card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: 1rem;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-xl);
+            transform: translateY(-6px);
+            border-color: var(--primary-navy);
+        }
+
+        .card-header {
+            padding: 1.75rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1.25rem;
+        }
+
+        .card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.3s;
+        }
+
+        .card:hover .card-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .card-icon .material-icons-outlined {
+            font-size: 32px;
+        }
+
+        .card-icon.blue {
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.1) 0%, rgba(59, 130, 246, 0.15) 100%);
+            color: var(--primary-navy);
+        }
+
+        .card-icon.teal {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(6, 182, 212, 0.15) 100%);
+            color: var(--accent-teal);
+        }
+
+        .card-icon.green {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.15) 100%);
+            color: var(--accent-green);
+        }
+
+        .card-icon.orange {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, rgba(249, 115, 22, 0.15) 100%);
+            color: var(--accent-orange);
+        }
+
+        .card-icon.purple {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.15) 100%);
+            color: var(--accent-purple);
+        }
+
+        .card-info {
+            flex: 1;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .card-description {
+            font-size: 0.9375rem;
+            color: var(--gray-600);
+            line-height: 1.6;
+        }
+
+        .card-footer {
+            padding: 0 1.75rem 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.875rem;
+            background: var(--gray-100);
+            border-radius: 1rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .card-badge .material-icons-outlined {
+            font-size: 14px;
+        }
+
+        .card-action {
+            color: var(--primary-navy);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: gap 0.2s;
+        }
+
+        .card:hover .card-action {
+            gap: 0.5rem;
+        }
+
+        .card-action .material-icons-outlined {
+            font-size: 18px;
+        }
+
+        /* Category Sections */
+        .category-section {
+            margin-bottom: 4.5rem;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--gray-200);
+        }
+
+        .category-icon-header {
+            width: 48px;
+            height: 48px;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .category-icon-header .material-icons-outlined {
+            font-size: 28px;
+        }
+
+        .category-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--gray-700);
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .mobile-menu-btn .material-icons-outlined {
+            font-size: 28px;
+        }
+
+        /* Hidden state */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .nav-menu {
+                gap: 0;
+            }
+
+            .nav-link {
+                padding: 0.625rem 1rem;
+                font-size: 0.875rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.125rem;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                gap: 1rem;
+            }
+
+            .btn-text {
+                font-size: 0.875rem;
+                padding: 0.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo">
+                    <img src="https://digitalmindsbpo.com/storage/2021/11/cropped-Digital_Minds_Logo_Original.png"
+                        alt="Digital Minds BPO">
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-item">
+                    <a class="nav-link">
+                        <span class="material-icons-outlined">apps</span>
+                        <span>Solutions</span>
+                    </a>
+                    <div class="dropdown">
+                        <a href="#analytics" class="dropdown-item">
+                            <span class="material-icons-outlined">analytics</span>
+                            <span>Analytics & Insights</span>
+                        </a>
+                        <a href="#hr" class="dropdown-item">
+                            <span class="material-icons-outlined">groups</span>
+                            <span>Human Resources</span>
+                        </a>
+                        <a href="#training" class="dropdown-item">
+                            <span class="material-icons-outlined">school</span>
+                            <span>Training & Development</span>
+                        </a>
+                        <a href="#compliance" class="dropdown-item">
+                            <span class="material-icons-outlined">verified_user</span>
+                            <span>Compliance & Risk</span>
+                        </a>
+                        <a href="#operations" class="dropdown-item">
+                            <span class="material-icons-outlined">settings</span>
+                            <span>Operations</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="nav-item">
+                    <a class="nav-link">
+                        <span class="material-icons-outlined">description</span>
+                        <span>Documentation</span>
+                    </a>
+                    <div class="dropdown">
+                        <a href="https://docs.google.com/" target="_blank" class="dropdown-item">
+                            <span class="material-icons-outlined">article</span>
+                            <span>SOP Library</span>
+                        </a>
+                        <a href="https://docs.google.com/" target="_blank" class="dropdown-item">
+                            <span class="material-icons-outlined">menu_book</span>
+                            <span>Training Guides</span>
+                        </a>
+                        <a href="https://docs.google.com/" target="_blank" class="dropdown-item">
+                            <span class="material-icons-outlined">policy</span>
+                            <span>Policies & Procedures</span>
+                        </a>
+                        <a href="https://docs.google.com/" target="_blank" class="dropdown-item">
+                            <span class="material-icons-outlined">help_outline</span>
+                            <span>Help Center</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="nav-item">
+                    <a class="nav-link">
+                        <span class="material-icons-outlined">extension</span>
+                        <span>Tools</span>
+                    </a>
+                    <div class="dropdown">
+                        <a href="https://script.google.com/" target="_blank" class="dropdown-item">
+                            <span class="material-icons-outlined">code</span>
+                            <span>Apps Script</span>
+                        </a>
+                        <a href="https://sheets.google.com/" target="_blank" class="dropdown-item">
+                            <span class="material-icons-outlined">table_chart</span>
+                            <span>Google Sheets</span>
+                        </a>
+                        <a href="https://forms.google.com/" target="_blank" class="dropdown-item">
+                            <span class="material-icons-outlined">ballot</span>
+                            <span>Google Forms</span>
+                        </a>
+                        <a href="https://drive.google.com/" target="_blank" class="dropdown-item">
+                            <span class="material-icons-outlined">cloud</span>
+                            <span>Google Drive</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="header-right">
+                <button class="btn-text" onclick="window.location.href='mailto:support@digitalmindsbpo.com'">Contact
+                    Support</button>
+                <button class="btn-icon mobile-menu-btn">
+                    <span class="material-icons-outlined">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-icon">
+                <img src="https://digitalmindsbpo.com/storage/2018/11/cropped-dm-favicon.png" alt="Digital Minds BPO">
+            </div>
+            <h1>Solutions Hub</h1>
+            <p>Streamline your workflows with powerful tools designed exclusively for Digital Minds BPO teams</p>
+            <div class="search-container">
+                <div class="search-box">
+                    <span class="material-icons-outlined">search</span>
+                    <input type="text" id="searchInput" placeholder="Search solutions, apps, and resources..."
+                        oninput="performSearch()">
+                    <button class="btn-search" onclick="performSearch()">Search</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Filter Bar -->
+        <div class="filter-wrapper">
+            <div class="filter-bar">
+                <div class="filter-chip active" onclick="filterCategory(this, 'all')">
+                    <span class="material-icons-outlined">grid_view</span>
+                    <span>All Solutions</span>
+                </div>
+                <div class="filter-chip" onclick="filterCategory(this, 'analytics')">
+                    <span class="material-icons-outlined">analytics</span>
+                    <span>Analytics</span>
+                </div>
+                <div class="filter-chip" onclick="filterCategory(this, 'hr')">
+                    <span class="material-icons-outlined">groups</span>
+                    <span>HR</span>
+                </div>
+                <div class="filter-chip" onclick="filterCategory(this, 'training')">
+                    <span class="material-icons-outlined">school</span>
+                    <span>Training</span>
+                </div>
+                <div class="filter-chip" onclick="filterCategory(this, 'compliance')">
+                    <span class="material-icons-outlined">verified_user</span>
+                    <span>Compliance</span>
+                </div>
+                <div class="filter-chip" onclick="filterCategory(this, 'operations')">
+                    <span class="material-icons-outlined">settings</span>
+                    <span>Operations</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Section -->
+        <section class="category-section" id="analytics" data-category="analytics">
+
+
+        <div class="category-header">
+            <div class="category-icon-header green">
+                <span class="material-icons-outlined">analytics</span>
+            </div>
+            <h2 class="category-title">Analytics & Insights</h2>
+        </div>
+
+
+
+
+
+            <div class="cards-grid">
+                <div class="card" data-category="analytics" onclick="openApp('executive-summary')">
+                    <div class="card-header">
+                        <div class="card-icon blue"> <span class="material-icons-outlined">dashboard</span> </div>
+                        <div class="card-info">
+                            <h3 class="card-title">Executive Summary</h3>
+                            <p class="card-description">Comprehensive dashboard with real-time KPIs and business
+                                intelligence metrics</p>
+                        </div>
+                    </div>
+                    <div class="card-footer"> <span class="card-badge"> <span
+                                class="material-icons-outlined">analytics</span> Analytics </span> <span
+                            class="card-action"> <span>Open</span> <span
+                                class="material-icons-outlined">arrow_forward</span> </span> </div>
+                </div>
+                <div class="card" data-category="analytics" onclick="openApp('kpi')">
+                    <div class="card-header">
+                        <div class="card-icon blue"> <span class="material-icons-outlined">trending_up</span> </div>
+                        <div class="card-info">
+                            <h3 class="card-title">KPI Tracker</h3>
+                            <p class="card-description">Monitor key performance indicators and track progress across all
+                                departments</p>
+                        </div>
+                    </div>
+                    <div class="card-footer"> <span class="card-badge"> <span
+                                class="material-icons-outlined">analytics</span> Analytics </span> <span
+                            class="card-action"> <span>Open</span> <span
+                                class="material-icons-outlined">arrow_forward</span> </span> </div>
+                </div>
+            </div>
+        </section>
+
+
+
+        <div class="category-header">
+            <div class="category-icon-header green">
+                <span class="material-icons-outlined">groups</span>
+            </div>
+            <h2 class="category-title">Human Resources</h2>
+        </div>
+        <div class="cards-grid">
+            <div class="card" data-category="hr" onclick="openApp('attendance')">
+                <div class="card-header">
+                    <div class="card-icon green">
+                        <span class="material-icons-outlined">event_available</span>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">Attendance System</h3>
+                        <p class="card-description">Track employee attendance, time-off requests, and generate detailed
+                            reports</p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="card-badge">
+                        <span class="material-icons-outlined">groups</span>
+                        HR
+                    </span>
+                    <span class="card-action">
+                        <span>Open</span>
+                        <span class="material-icons-outlined">arrow_forward</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="card" data-category="hr" onclick="openApp('leave-request')">
+                <div class="card-header">
+                    <div class="card-icon green">
+                        <span class="material-icons-outlined">beach_access</span>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">Leave Management</h3>
+                        <p class="card-description">Submit and approve employee time-off requests with automated
+                            workflows</p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="card-badge">
+                        <span class="material-icons-outlined">groups</span>
+                        HR
+                    </span>
+                    <span class="card-action">
+                        <span>Open</span>
+                        <span class="material-icons-outlined">arrow_forward</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="card" data-category="hr" onclick="openApp('onboarding')">
+                <div class="card-header">
+                    <div class="card-icon teal">
+                        <span class="material-icons-outlined">person_add</span>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">Employee Onboarding</h3>
+                        <p class="card-description">Streamline new hire orientation process with comprehensive
+                            checklists</p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="card-badge">
+                        <span class="material-icons-outlined">groups</span>
+                        HR
+                    </span>
+                    <span class="card-action">
+                        <span>Open</span>
+                        <span class="material-icons-outlined">arrow_forward</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="card" data-category="hr" onclick="openApp('applicant-intake')">
+                <div class="card-header">
+                    <div class="card-icon teal">
+                        <span class="material-icons-outlined">assignment_ind</span>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">Applicant Intake</h3>
+                        <p class="card-description">Efficiently collect and process job applications with standardized
+                            forms</p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="card-badge">
+                        <span class="material-icons-outlined">groups</span>
+                        HR
+                    </span>
+                    <span class="card-action">
+                        <span>Open</span>
+                        <span class="material-icons-outlined">arrow_forward</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="card" data-category="hr" onclick="openApp('nte-form')">
+                <div class="card-header">
+                    <div class="card-icon orange">
+                        <span class="material-icons-outlined">warning</span>
+                    </div>
+                    <div class="card-info">
+                        <h3 class="card-title">NTE Form</h3>
+                        <p class="card-description">Submit and manage Notice to Explain documents for HR processes</p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="card-badge">
+                        <span class="material-icons-outlined">groups</span>
+                        HR
+                    </span>
+                    <span class="card-action">
+                        <span>Open</span>
+                        <span class="material-icons-outlined">arrow_forward</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        </section>
+
+        <!-- Training & Development -->
+        <section class="category-section" id="training" data-category="training">
+            <div class="category-header">
+                <div class="category-icon-header orange">
+                    <span class="material-icons-outlined">school</span>
+                </div>
+                <h2 class="category-title">Training & Development</h2>
+            </div>
+            <div class="cards-grid">
+                <div class="card" data-category="training" onclick="openApp('coaching-logs')">
+                    <div class="card-header">
+                        <div class="card-icon orange">
+                            <span class="material-icons-outlined">psychology</span>
+                        </div>
+                        <div class="card-info">
+                            <h3 class="card-title">Coaching Logs</h3>
+                            <p class="card-description">Document coaching sessions and track employee development
+                                progress</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-badge">
+                            <span class="material-icons-outlined">school</span>
+                            Training
+                        </span>
+                        <span class="card-action">
+                            <span>Open</span>
+                            <span class="material-icons-outlined">arrow_forward</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card" data-category="training" onclick="openApp('assessment-tracker')">
+                    <div class="card-header">
+                        <div class="card-icon orange">
+                            <span class="material-icons-outlined">task_alt</span>
+                        </div>
+                        <div class="card-info">
+                            <h3 class="card-title">Assessment Tracker</h3>
+                            <p class="card-description">Monitor employee evaluations and performance review cycles</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-badge">
+                            <span class="material-icons-outlined">school</span>
+                            Training
+                        </span>
+                        <span class="card-action">
+                            <span>Open</span>
+                            <span class="material-icons-outlined">arrow_forward</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card" data-category="training" onclick="openApp('training-scheduler')">
+                    <div class="card-header">
+                        <div class="card-icon purple">
+                            <span class="material-icons-outlined">calendar_month</span>
+                        </div>
+                        <div class="card-info">
+                            <h3 class="card-title">Training Scheduler</h3>
+                            <p class="card-description">Schedule training sessions and track course completion rates</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-badge">
+                            <span class="material-icons-outlined">school</span>
+                            Training
+                        </span>
+                        <span class="card-action">
+                            <span>Open</span>
+                            <span class="material-icons-outlined">arrow_forward</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Compliance & Risk -->
+        <section class="category-section" id="compliance" data-category="compliance">
+            <div class="category-header">
+                <div class="category-icon-header purple">
+                    <span class="material-icons-outlined">verified_user</span>
+                </div>
+                <h2 class="category-title">Compliance & Risk Management</h2>
+            </div>
+            <div class="cards-grid">
+                <div class="card" data-category="compliance" onclick="openDocs('sop')">
+                    <div class="card-header">
+                        <div class="card-icon purple">
+                            <span class="material-icons-outlined">article</span>
+                        </div>
+                        <div class="card-info">
+                            <h3 class="card-title">SOP Documents</h3>
+                            <p class="card-description">Access comprehensive standardized operating procedures library
+                            </p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-badge">
+                            <span class="material-icons-outlined">verified_user</span>
+                            Compliance
+                        </span>
+                        <span class="card-action">
+                            <span>Open</span>
+                            <span class="material-icons-outlined">arrow_forward</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card" data-category="compliance" onclick="openApp('ir-nte-logs')">
+                    <div class="card-header">
+                        <div class="card-icon purple">
+                            <span class="material-icons-outlined">report</span>
+                        </div>
+                        <div class="card-info">
+                            <h3 class="card-title">IR / NTE Logs</h3>
+                            <p class="card-description">Centralized logging system for incident reports and compliance
+                                tracking</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-badge">
+                            <span class="material-icons-outlined">verified_user</span>
+                            Compliance
+                        </span>
+                        <span class="card-action">
+                            <span>Open</span>
+                            <span class="material-icons-outlined">arrow_forward</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card" data-category="compliance" onclick="openApp('risk-management')">
+                    <div class="card-header">
+                        <div class="card-icon orange">
+                            <span class="material-icons-outlined">shield</span>
+                        </div>
+                        <div class="card-info">
+                            <h3 class="card-title">Risk Management System</h3>
+                            <p class="card-description">Identify, assess, and mitigate operational risks across the
+                                organization</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-badge">
+                            <span class="material-icons-outlined">verified_user</span>
+                            Compliance
+                        </span>
+                        <span class="card-action">
+                            <span>Open</span>
+                            <span class="material-icons-outlined">arrow_forward</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Operations -->
+        <section class="category-section" id="operations" data-category="operations">
+            <div class="category-header">
+                <div class="category-icon-header teal">
+                    <span class="material-icons-outlined">settings</span>
+                </div>
+                <h2 class="category-title">Operations</h2>
+            </div>
+            <div class="cards-grid">
+                <div class="card" data-category="operations" onclick="openApp('campaign-tools')">
+                    <div class="card-header">
+                        <div class="card-icon teal">
+                            <span class="material-icons-outlined">campaign</span>
+                        </div>
+                        <div class="card-info">
+                            <h3 class="card-title">Campaign Tools</h3>
+                            <p class="card-description">Plan, execute, and track marketing campaigns with integrated
+                                analytics</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-badge">
+                            <span class="material-icons-outlined">settings</span>
+                            Operations
+                        </span>
+                        <span class="card-action">
+                            <span>Open</span>
+                            <span class="material-icons-outlined">arrow_forward</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card" data-category="operations" onclick="openApp('project-tracker')">
+                    <div class="card-header">
+                        <div class="card-icon blue">
+                            <span class="material-icons-outlined">view_timeline</span>
+                        </div>
+                        <div class="card-info">
+                            <h3 class="card-title">Project Tracker</h3>
+                            <p class="card-description">Monitor project progress, deadlines, and resource allocation</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-badge">
+                            <span class="material-icons-outlined">settings</span>
+                            Operations
+                        </span>
+                        <span class="card-action">
+                            <span>Open</span>
+                            <span class="material-icons-outlined">arrow_forward</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card" data-category="operations" onclick="openApp('asset-management')">
+                    <div class="card-header">
+                        <div class="card-icon teal">
+                            <span class="material-icons-outlined">inventory</span>
+                        </div>
+                        <div class="card-info">
+                            <h3 class="card-title">Asset Management</h3>
+                            <p class="card-description">Track and manage hardware, software, and equipment inventory</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-badge">
+                            <span class="material-icons-outlined">settings</span>
+                            Operations
+                        </span>
+                        <span class="card-action">
+                            <span>Open</span>
+                            <span class="material-icons-outlined">arrow_forward</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card" data-category="operations" onclick="openApp('support-tickets')">
+                    <div class="card-header">
+                        <div class="card-icon blue">
+                            <span class="material-icons-outlined">support</span>
+                        </div>
+                        <div class="card-info">
+                            <h3 class="card-title">Support Ticket System</h3>
+                            <p class="card-description">Log and resolve internal technical issues with priority tracking
+                            </p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-badge">
+                            <span class="material-icons-outlined">settings</span>
+                            Operations
+                        </span>
+                        <span class="card-action">
+                            <span>Open</span>
+                            <span class="material-icons-outlined">arrow_forward</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card" data-category="operations" onclick="openApp('client-intake')">
+                    <div class="card-header">
+                        <div class="card-icon green">
+                            <span class="material-icons-outlined">person_search</span>
+                        </div>
+                        <div class="card-info">
+                            <h3 class="card-title">Client Intake</h3>
+                            <p class="card-description">Streamline client onboarding with automated intake workflows</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-badge">
+                            <span class="material-icons-outlined">settings</span>
+                            Operations
+                        </span>
+                        <span class="card-action">
+                            <span>Open</span>
+                            <span class="material-icons-outlined">arrow_forward</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card" data-category="operations" onclick="openApp('budget-planner')">
+                    <div class="card-header">
+                        <div class="card-icon green">
+                            <span class="material-icons-outlined">account_balance</span>
+                        </div>
+                        <div class="card-info">
+                            <h3 class="card-title">Budget Planner</h3>
+                            <p class="card-description">Plan department budgets and forecast expenses with analytics</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-badge">
+                            <span class="material-icons-outlined">settings</span>
+                            Operations
+                        </span>
+                        <span class="card-action">
+                            <span>Open</span>
+                            <span class="material-icons-outlined">arrow_forward</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let currentFilter = 'all';
+        let currentSearch = '';
+
+        function filterCategory(element, category) {
+            currentFilter = category;
+
+            // Update active filter chip
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            element.classList.add('active');
+
+            // Apply filtering
+            applyFilters();
+        }
+
+        function performSearch() {
+            currentSearch = document.getElementById('searchInput').value.toLowerCase().trim();
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const cards = document.querySelectorAll('.card');
+            const sections = document.querySelectorAll('.category-section');
+
+            // Reset all sections to hidden first
+            sections.forEach(section => {
+                section.classList.add('hidden');
+            });
+
+            let hasVisibleCards = false;
+
+            cards.forEach(card => {
+                const cardCategory = card.getAttribute('data-category');
+                const title = card.querySelector('.card-title').textContent.toLowerCase();
+                const description = card.querySelector('.card-description').textContent.toLowerCase();
+
+                // Check if card matches category filter
+                const matchesCategory = currentFilter === 'all' || cardCategory === currentFilter;
+
+                // Check if card matches search
+                const matchesSearch = currentSearch === '' ||
+                    title.includes(currentSearch) ||
+                    description.includes(currentSearch);
+
+                // Show card if it matches both filters
+                if (matchesCategory && matchesSearch) {
+                    card.style.display = 'block';
+                    hasVisibleCards = true;
+
+                    // Show the parent section
+                    const parentSection = card.closest('.category-section');
+                    if (parentSection) {
+                        parentSection.classList.remove('hidden');
+                    }
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // If searching, show message if no results
+            if (currentSearch !== '' && !hasVisibleCards) {
+                console.log('No results found for: ' + currentSearch);
+            }
+        }
+
+        function openApp(appName) {
+            console.log(`Opening ${appName}...`);
+            alert(`Opening ${appName}...\n\nReplace this with your Google Apps Script URL in the openApp() function.\n\nExample:\nwindow.open('https://script.google.com/your-app-url', '_blank');`);
+            // Example: window.open('YOUR_APP_SCRIPT_URL', '_blank');
+        }
+
+        function openDocs(docType) {
+            window.open('https://docs.google.com/', '_blank');
+        }
+
+        // Search on Enter key
+        document.getElementById('searchInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // Clear search functionality
+        document.getElementById('searchInput').addEventListener('input', function () {
+            if (this.value === '') {
+                currentSearch = '';
+                applyFilters();
+            }
+        });
+
+        // Smooth scroll to sections
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    // Reset filter to show all when clicking section links
+                    const allFilter = document.querySelector('.filter-chip[onclick*="all"]');
+                    if (allFilter) {
+                        filterCategory(allFilter, 'all');
+                    }
+
+                    setTimeout(() => {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }, 100);
+                }
+            });
+        });
+
+        // Initialize - show all cards on load
+        window.addEventListener('DOMContentLoaded', function () {
+            applyFilters();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Knowledge Base SPA</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/feather-icons"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['Roboto', 'sans-serif'],
+      },
+      colors: {
+        'brand-accent': '#CBEB33',
+        'brand-dark': '#B5D12F',
+        'bg-dark': '#0f172a',
+        'text-dark': '#f1f5f9',
+        'card-dark': '#1e293b',
+        'border-dark': '#334155',
+      }
+    }
+  }
+}
+</script>
+<style>
+body { 
+  transition: background .2s, color .2s; 
+  font-family: 'Roboto', system-ui, sans-serif;
+}
+.editor { 
+  min-height: 240px; 
+  border: 1px solid #e5e7eb; 
+  padding: .75rem; 
+  border-radius: .5rem; 
+  background: white; 
+}
+.dark .editor {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+.editor:focus { 
+  outline: 3px solid rgba(203,235,51,.2); 
+}
+.table-wrap { 
+  max-height: 70vh; 
+  overflow: auto; 
+}
+.kb-mini { 
+  font-size: .85rem; 
+  color: #6b7280; 
+}
+.dark .kb-mini {
+  color: #9ca3af;
+}
+
+/* Dark mode input fixes */
+.dark input[type="text"], 
+.dark input[type="hidden"] + .editor,
+.dark textarea, 
+.dark select {
+  color: #f1f5f9 !important;
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* =====================  PAPER PREVIEW  ===================== */
+#previewView { 
+  background: #f3f4f6; 
+}
+.dark #previewView {
+  background: #0f172a;
+}
+
+#previewPagesContainer {
+  max-width: 8.27in;
+  margin: 0 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.paper {
+  background:#fff;
+  width:8.27in;
+  height:11.69in;
+  margin:2rem auto;
+  padding:0;
+  box-shadow:0 0 8px rgba(0,0,0,0.15);
+  border-radius: 4px;
+  page-break-after: always;
+  font-family: 'Calibri', 'Roboto', 'Arial', sans-serif;
+  font-size: 11pt;
+  line-height: 1.3;
+  color: #000;
+  position: relative;
+  overflow: hidden;
+}
+
+/* First page specific styles */
+.paper.first-page {
+  padding: 0.6in 0.75in 0.75in 0.75in;
+}
+
+/* Subsequent pages */
+.paper.content-page {
+  padding: 0.4in 0.75in 0.75in 0.75in;
+}
+
+/* Content area */
+.paper-content {
+  min-height: 9in;
+  max-height: 9.5in;
+  overflow: hidden;
+  padding-bottom: 0.6in;
+}
+
+.paper-content h1, .paper-content h2, .paper-content h3, .paper-content h4 { 
+  font-weight: bold; 
+  margin-top: 0.6em;
+  margin-bottom: 0.3em;
+  color: #000;
+  font-family: 'Calibri', 'Roboto', 'Arial', sans-serif;
+}
+.paper-content h1 { font-size: 14pt; }
+.paper-content h2 { font-size: 13pt; }
+.paper-content h3 { font-size: 12pt; }
+.paper-content h4 { font-size: 11pt; }
+.paper-content p { margin-bottom: 0.4em; line-height: 1.3; }
+.paper-content ul, .paper-content ol { margin-left: 1.2em; margin-bottom: 0.4em; }
+.paper-content li { margin-bottom: 0.15em; line-height: 1.3; }
+.paper-content table { margin-bottom: 0.5em; border-collapse: collapse; width: 100%; }
+.paper-content td, .paper-content th { padding: 0.2em 0.4em; border: 1px solid #ccc; }
+
+/* First page title header */
+.title-header {
+  text-align:center;
+  border-bottom:2px solid #000;
+  padding-bottom:10px;
+  margin-bottom:0.3in;
+}
+.title-header img {
+  display: block;
+  margin: 0 auto 10px;
+  width: 140px;
+}
+.title-header h1 {
+  font-size: 18pt;
+  font-weight: bold;
+  margin: 8px 0 6px 0;
+  color: #000;
+}
+.title-header .doc-meta {
+  font-size: 9pt;
+  color: #555;
+  line-height: 1.2;
+}
+.title-header .doc-meta p {
+  margin: 2px 0;
+}
+
+/* Running header for pages 2+ */
+.running-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  margin-bottom: 0.25in;
+  border-bottom: 1px solid #333;
+}
+.running-header img {
+  width: 80px;
+  height: auto;
+}
+.running-header .doc-title {
+  font-size: 9pt;
+  font-weight: bold;
+  color: #333;
+  text-align: right;
+  line-height: 1.2;
+}
+
+/* Footer styles */
+.page-footer {
+  position: absolute;
+  bottom: 0.4in;
+  left: 0.75in;
+  right: 0.75in;
+  padding-top: 5px;
+  border-top: 1px solid #ccc;
+  font-size: 8pt;
+  color: #666;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.page-footer .footer-left {
+  text-align: left;
+  font-size: 8pt;
+}
+.page-footer .footer-center {
+  text-align: center;
+  font-weight: bold;
+  font-size: 8pt;
+}
+.page-footer .footer-right {
+  text-align: right;
+  font-size: 8pt;
+}
+
+/* Print styles */
+@media print {
+  * { 
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  body { 
+    background: white !important; 
+    margin: 0 !important; 
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  
+  #previewView { 
+    background: white !important;
+    display: block !important;
+    overflow: visible !important;
+  }
+  
+  #previewPagesContainer {
+    padding: 0 !important;
+    overflow: visible !important;
+    max-height: none !important;
+  }
+  
+  #listView {
+    display: none !important;
+  }
+  
+  header:not(.title-header):not(.running-header), 
+  #backBtn, 
+  #downloadBtn,
+  .no-print { 
+    display: none !important; 
+  }
+  
+  .paper {
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    max-width: 210mm !important;
+    max-height: 297mm !important;
+    page-break-after: always !important;
+    page-break-inside: avoid !important;
+    overflow: visible !important;
+  }
+  
+  .paper.first-page {
+    padding: 15mm 20mm 20mm 20mm !important;
+  }
+  
+  .paper.content-page {
+    padding: 10mm 20mm 20mm 20mm !important;
+  }
+  
+  .paper-content {
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  
+  @page { 
+    size: A4 portrait;
+    margin: 0 !important;
+  }
+  
+  .page-footer {
+    position: absolute !important;
+    bottom: 15mm !important;
+    left: 20mm !important;
+    right: 20mm !important;
+  }
+  
+  .title-header,
+  .running-header,
+  .page-footer {
+    page-break-inside: avoid !important;
+  }
+}
+
+/* Screen-only buttons */
+@media screen {
+  .no-print { display: block; }
+}
+@media print {
+  .no-print { display: none !important; }
+}
+
+.loading-spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #CBEB33;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Table responsive fixes */
+.table-wrap table {
+  table-layout: auto;
+  width: 100%;
+}
+
+.table-wrap td, .table-wrap th {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Remove scrollbars from preview container on screen */
+#previewPagesContainer::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+#previewPagesContainer {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+</style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 dark:bg-bg-dark dark:text-text-dark transition-colors duration-300">
+
+<!-- ============= LIST VIEW ============= -->
+<div id="listView" class="min-h-screen">
+<header class="fixed top-0 left-0 right-0 bg-white dark:bg-card-dark shadow z-30 no-print transition-colors duration-300">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <h1 id="systemTitle" class="text-xl font-semibold dark:text-text-dark">Knowledge Base</h1>
+      <span class="kb-mini">Data Stored in Google Sheets</span>
+    </div>
+    <div class="flex items-center space-x-3">
+      <input id="searchInput" placeholder="Search..." class="px-3 py-2 border rounded dark:bg-card-dark dark:border-border-dark dark:text-text-dark" />
+      <button id="themeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-border-dark hover:bg-brand-accent dark:hover:bg-brand-dark transition-all duration-300" aria-label="Toggle Dark Mode">
+        <span class="material-symbols-outlined text-xl">dark_mode</span>
+      </button>
+      <button id="addBtn" class="px-4 py-2 rounded bg-brand-accent hover:bg-brand-dark text-black font-medium transition-all duration-300">+ New</button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6 pt-24">
+  <div class="bg-white dark:bg-card-dark rounded p-4 shadow transition-colors duration-300">
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="font-semibold dark:text-text-dark">Documents</h2>
+      <div class="kb-mini" id="counts"></div>
+    </div>
+    <div class="table-wrap border rounded dark:border-border-dark">
+<table class="min-w-full text-sm text-center">
+  <thead class="bg-gray-50 dark:bg-border-dark text-gray-600 dark:text-gray-300 text-xs">
+    <tr>
+      <th class="px-3 py-2">Doc_ID</th>
+      <th class="px-3 py-2">Title</th>
+      <th class="px-3 py-2">Category</th>
+      <th class="px-3 py-2">Department</th>
+      <th class="px-3 py-2">Status</th>
+      <th class="px-3 py-2">Actions</th>
+    </tr>
+  </thead>
+  <tbody id="docsTable" class="divide-y dark:divide-border-dark text-center"></tbody>
+</table>
+
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- ============= PREVIEW VIEW ============= -->
+<div id="previewView" class="hidden min-h-screen flex flex-col">
+  <header class="bg-white dark:bg-card-dark shadow-md p-4 flex justify-between items-center sticky top-0 z-50 no-print transition-colors duration-300">
+    <button id="backBtn" class="bg-gray-200 dark:bg-border-dark hover:bg-brand-accent dark:hover:bg-brand-dark text-gray-700 dark:text-text-dark px-4 py-2 rounded-full flex items-center gap-2 transition-all duration-300">
+      <span class="material-symbols-outlined">arrow_back</span> Back
+    </button>
+    <h1 id="previewTitle" class="text-2xl font-bold text-gray-800 dark:text-text-dark">Document Preview</h1>
+    <button id="downloadBtn" class="bg-brand-accent hover:bg-brand-dark text-black font-bold py-2 px-6 rounded-full flex items-center gap-2 transition-all duration-300">
+      <span class="material-symbols-outlined">download</span> Print/Download
+    </button>
+  </header>
+  <main id="previewPagesContainer" class="flex-1 p-4"></main>
+</div>
+
+<!-- ============= MODAL EDITOR ============= -->
+<div id="modal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50 flex items-start justify-center pt-16 p-4">
+  <div class="w-full max-w-4xl bg-white dark:bg-card-dark rounded shadow-lg p-5 overflow-auto max-h-[90vh] transition-colors duration-300">
+    <div class="flex justify-between items-center mb-3">
+      <h3 id="modalTitle" class="text-lg font-semibold dark:text-text-dark">New Document</h3>
+      <button id="closeModal" class="text-gray-600 dark:text-gray-400 text-2xl leading-none hover:text-brand-accent dark:hover:text-brand-accent">&times;</button>
+    </div>
+    <form id="kbForm" class="space-y-3">
+      <div class="grid md:grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-medium block mb-1 dark:text-gray-300">Title *</label>
+          <input name="Title" class="w-full border rounded px-3 py-2 dark:bg-card-dark dark:border-border-dark dark:text-text-dark" required>
+        </div>
+        <div>
+          <label class="text-xs font-medium block mb-1 dark:text-gray-300">Category</label>
+          <select name="Category" class="w-full border rounded px-3 py-2 dark:bg-card-dark dark:border-border-dark dark:text-text-dark"></select>
+        </div>
+        <div>
+          <label class="text-xs font-medium block mb-1 dark:text-gray-300">Department</label>
+          <select name="Department" class="w-full border rounded px-3 py-2 dark:bg-card-dark dark:border-border-dark dark:text-text-dark"></select>
+        </div>
+        <div>
+          <label class="text-xs font-medium block mb-1 dark:text-gray-300">Owner</label>
+          <select name="Owner" class="w-full border rounded px-3 py-2 dark:bg-card-dark dark:border-border-dark dark:text-text-dark"></select>
+        </div>
+        <div>
+          <label class="text-xs font-medium block mb-1 dark:text-gray-300">Approved By</label>
+          <select name="Approved_By" class="w-full border rounded px-3 py-2 dark:bg-card-dark dark:border-border-dark dark:text-text-dark"></select>
+        </div>
+        <div>
+          <label class="text-xs font-medium block mb-1 dark:text-gray-300">Status</label>
+          <select name="Status" class="w-full border rounded px-3 py-2 dark:bg-card-dark dark:border-border-dark dark:text-text-dark"></select>
+        </div>
+      </div>
+      <div>
+        <label class="text-xs font-medium block mb-1 dark:text-gray-300">Summary</label>
+        <textarea name="Summary" class="w-full border rounded px-3 py-2 dark:bg-card-dark dark:border-border-dark dark:text-text-dark" rows="2"></textarea>
+      </div>
+      <div>
+        <label class="text-xs font-medium block mb-1 dark:text-gray-300">Policy Body (HTML)</label>
+        <div id="policyEditor" class="editor" contenteditable="true"></div>
+        <input type="hidden" name="Policy_Body">
+      </div>
+      <div class="flex justify-between pt-2">
+        <div class="kb-mini">Auto timestamps</div>
+        <div class="space-x-2">
+          <button type="button" id="cancelBtn" class="px-3 py-2 border rounded hover:bg-gray-50 dark:border-border-dark dark:text-text-dark dark:hover:bg-border-dark transition">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-brand-accent hover:bg-brand-dark text-black rounded font-medium transition">Save</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzl121ZwV5mO1rcRhnn-ZbkTQpghCcRpNtw0RH5wrHk6v-FcjinwZj-iewb8OJ75MZUCw/exec";
+const listView = document.getElementById('listView');
+const previewView = document.getElementById('previewView');
+const previewPagesContainer = document.getElementById('previewPagesContainer');
+const previewTitle = document.getElementById('previewTitle');
+const backBtn = document.getElementById('backBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const docsTable = document.getElementById('docsTable');
+const addBtn = document.getElementById('addBtn');
+const modal = document.getElementById('modal');
+const closeModal = document.getElementById('closeModal');
+const cancelBtn = document.getElementById('cancelBtn');
+const kbForm = document.getElementById('kbForm');
+const policyEditor = document.getElementById('policyEditor');
+const searchInput = document.getElementById('searchInput');
+const counts = document.getElementById('counts');
+const systemTitle = document.getElementById('systemTitle');
+const modalTitle = document.getElementById('modalTitle');
+const themeToggle = document.getElementById('themeToggle');
+let docs = [];
+let config = {};
+let editingDoc = null;
+
+// Dark Mode Toggle
+function updateThemeIcon(isDark) {
+  themeToggle.innerHTML = isDark 
+    ? '<span class="material-symbols-outlined text-xl">light_mode</span>' 
+    : '<span class="material-symbols-outlined text-xl">dark_mode</span>';
+}
+
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  updateThemeIcon(isDark);
+}
+
+themeToggle.addEventListener('click', toggleTheme);
+
+// Initialize theme
+const storedTheme = localStorage.getItem('theme');
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const initialDark = storedTheme === 'dark' || (storedTheme === null && prefersDark);
+if (initialDark) {
+  document.body.classList.add('dark');
+}
+updateThemeIcon(initialDark);
+
+// Load configuration from backend
+async function loadConfig() {
+  try {
+    console.log("Loading config...");
+    const res = await fetch(API_URL + "?config=1");
+    if (!res.ok) throw new Error("Config fetch failed");
+    config = await res.json();
+    console.log("Config loaded:", config);
+    systemTitle.textContent = config.SYSTEM_TITLE || "Knowledge Base";
+  } catch (err) {
+    console.error("Config load error:", err);
+    config = {
+      SYSTEM_TITLE: "Knowledge Base",
+      DEFAULT_OWNER_LIST: ["CEO", "COO", "HR Manager"],
+      CATEGORIES_LIST: ["HR Policies", "IT Procedures", "Training"],
+      DEPARTMENT_LIST: ["Human Resources", "IT Operations", "Marketing"],
+      DEFAULT_APPROVER_LIST: ["CEO", "COO"],
+      DEFAULT_STATUS_LIST: ["Draft", "Active", "Pending Review"]
+    };
+  }
+  populateSelects();
+}
+
+function populateSelects() {
+  const lists = {
+    Category: config.CATEGORIES_LIST || ["General", "Policy", "Procedure"],
+    Department: config.DEPARTMENT_LIST || ["HR", "IT", "Finance"],
+    Owner: config.DEFAULT_OWNER_LIST || ["Admin", "Manager"],
+    Approved_By: config.DEFAULT_APPROVER_LIST || ["Director", "VP"],
+    Status: config.DEFAULT_STATUS_LIST || ["Draft", "Active", "Archived"]
+  };
+  
+  console.log("Populating selects with:", lists);
+  
+  for (const name in lists) {
+    const sel = kbForm.elements[name];
+    if (!sel) {
+      console.warn(`Select element not found: ${name}`);
+      continue;
+    }
+    sel.innerHTML = "";
+    lists[name].forEach(v => {
+      const opt = document.createElement("option");
+      opt.value = v;
+      opt.text = v;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+// Load all documents
+async function loadDocs() {
+  docsTable.innerHTML = "<tr><td colspan='6' class='p-3 text-center'><div class='loading-spinner'></div><div class='dark:text-text-dark'>Loading documents...</div></td></tr>";
+  try {
+    console.log("Fetching documents from:", API_URL);
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    docs = await res.json();
+    console.log("Documents loaded:", docs.length, docs);
+    renderDocs(docs);
+  } catch (err) {
+    console.error("Load docs error:", err);
+    docsTable.innerHTML = `<tr><td colspan='6' class='p-3 text-center text-red-600 dark:text-red-400'>Error loading documents: ${err.message}</td></tr>`;
+  }
+}
+
+function renderDocs(list) {
+  const q = searchInput.value.toLowerCase();
+  const filtered = list.filter(d => 
+    !q || 
+    (d.Title || "").toLowerCase().includes(q) ||
+    (d.Category || "").toLowerCase().includes(q) ||
+    (d.Department || "").toLowerCase().includes(q) ||
+    (d.Doc_ID || "").toLowerCase().includes(q)
+  );
+  
+  counts.textContent = `${filtered.length}/${list.length}`;
+  docsTable.innerHTML = "";
+  
+  if (!filtered.length) {
+    docsTable.innerHTML = "<tr><td colspan='6' class='text-center p-3 text-gray-500 dark:text-gray-400'>No documents found</td></tr>";
+    return;
+  }
+  
+  filtered.forEach(d => {
+    const tr = document.createElement('tr');
+    tr.className = "hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-150";
+    tr.innerHTML = `
+      <td class="px-3 py-2 font-mono text-xs dark:text-text-dark">${escapeHtml(d.Doc_ID || "")}</td>
+      <td class="px-3 py-2 font-medium dark:text-text-dark">${escapeHtml(d.Title || "Untitled")}</td>
+      <td class="px-3 py-2 dark:text-text-dark">${escapeHtml(d.Category || "")}</td>
+      <td class="px-3 py-2 dark:text-text-dark">${escapeHtml(d.Department || "")}</td>
+      <td class="px-3 py-2">
+        <span class="px-2 py-1 rounded text-xs ${getStatusClass(d.Status)}">${escapeHtml(d.Status || "")}</span>
+      </td>
+      <td class="px-3 py-2 text-right space-x-2">
+        <button class="viewBtn border rounded px-2 py-1 text-sm hover:bg-gray-100 dark:border-border-dark dark:text-text-dark dark:hover:bg-border-dark transition">View</button>
+        <button class="editBtn border rounded px-2 py-1 text-sm hover:bg-blue-50 text-blue-600 dark:border-border-dark dark:hover:bg-blue-900/30 transition">Edit</button>
+        <button class="deleteBtn border rounded px-2 py-1 text-sm text-red-600 hover:bg-red-50 dark:border-border-dark dark:hover:bg-red-900/30 transition">Delete</button>
+      </td>`;
+    
+    tr.querySelector('.viewBtn').onclick = () => openPreview(d);
+    // tr.querySelector('.editBtn').onclick = () => openEdit(d);
+    tr.querySelector('.deleteBtn').onclick = () => deleteDoc(d);
+    docsTable.appendChild(tr);
+  });
+}
+
+function getStatusClass(status) {
+  const s = (status || "").toLowerCase();
+  if (s === "active") return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+  if (s === "draft") return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
+  if (s === "archived") return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+  if (s.includes("pending") || s.includes("review")) return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+  return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+}
+
+function openPreview(d) {
+  console.log("Opening preview for document:", d);
+  
+  listView.classList.add('hidden');
+  previewView.classList.remove('hidden');
+  
+  previewPagesContainer.innerHTML = "";
+  previewTitle.textContent = d.Title || "Document Preview";
+  
+  let bodyHtml = "";
+  if (d.Policy_Body && d.Policy_Body.trim()) {
+    bodyHtml = d.Policy_Body;
+  } else if (d.Summary && d.Summary.trim()) {
+    bodyHtml = `<div><h2>Summary</h2><p>${escapeHtml(d.Summary)}</p></div>`;
+  } else {
+    bodyHtml = "<p><em>No content available for this document.</em></p>";
+  }
+  
+  const pages = splitIntoPages(bodyHtml, d);
+  
+  pages.forEach((pageContent, index) => {
+    const page = document.createElement("div");
+    page.className = index === 0 ? "paper first-page" : "paper content-page";
+    
+    let pageHtml = "";
+    
+    if (index === 0) {
+      pageHtml = `
+        <header class="title-header">
+          <img src="https://digitalmindsbpo.com/storage/2021/11/cropped-Digital_Minds_Logo_Original.png" alt="Company Logo">
+          <h1>${escapeHtml(d.Title || "Untitled Document")}</h1>
+          <div class="doc-meta">
+            <p>Document ID: ${escapeHtml(d.Doc_ID || "N/A")} | Category: ${escapeHtml(d.Category || "N/A")} | Department: ${escapeHtml(d.Department || "N/A")}</p>
+            <p>Owner: ${escapeHtml(d.Owner || "N/A")} | Approved By: ${escapeHtml(d.Approved_By || "N/A")} | Status: ${escapeHtml(d.Status || "N/A")}</p>
+            ${d.Version ? `<p>Version: ${escapeHtml(d.Version)} | Last Updated: ${escapeHtml(d.Last_Updated || "N/A")}</p>` : ""}
+          </div>
+        </header>
+      `;
+    } else {
+      pageHtml = `
+        <header class="running-header">
+          <img src="https://digitalmindsbpo.com/storage/2021/11/cropped-Digital_Minds_Logo_Original.png" alt="Logo">
+          <div class="doc-title">${escapeHtml(d.Title || "Untitled Document")}</div>
+        </header>
+      `;
+    }
+    
+    pageHtml += `<div class="paper-content">${pageContent}</div>`;
+    
+    pageHtml += `
+      <footer class="page-footer">
+        <span class="footer-left">Doc ID: ${escapeHtml(d.Doc_ID || "N/A")}</span>
+        <span class="footer-center">Page ${index + 1} of ${pages.length}</span>
+        <span class="footer-right">${new Date().toLocaleDateString()}</span>
+      </footer>
+    `;
+    
+    page.innerHTML = pageHtml;
+    previewPagesContainer.appendChild(page);
+  });
+  
+  console.log("Preview rendered successfully with", pages.length, "page(s)");
+}
+
+function splitIntoPages(htmlContent, doc) {
+  const tempContainer = document.createElement('div');
+  tempContainer.style.cssText = `
+    position: absolute;
+    visibility: hidden;
+    width: 6.77in;
+    font-family: 'Calibri', 'Roboto', 'Arial', sans-serif;
+    font-size: 11pt;
+    line-height: 1.3;
+    padding: 0;
+  `;
+  document.body.appendChild(tempContainer);
+  tempContainer.innerHTML = htmlContent;
+  
+  const pageHeightInches = 11.69;
+  const firstPageContentHeight = pageHeightInches - 2.2;
+  const subsequentPageContentHeight = pageHeightInches - 1.5;
+  const pixelsPerInch = 96;
+  
+  const firstPageMaxHeight = firstPageContentHeight * pixelsPerInch;
+  const subsequentPageMaxHeight = subsequentPageContentHeight * pixelsPerInch;
+  
+  const pages = [];
+  const elements = Array.from(tempContainer.children);
+  
+  let currentPageContent = [];
+  let currentPageHeight = 0;
+  let isFirstPage = true;
+  
+  elements.forEach(element => {
+    const clone = element.cloneNode(true);
+    const measureDiv = document.createElement('div');
+    measureDiv.style.cssText = tempContainer.style.cssText;
+    measureDiv.appendChild(clone);
+    document.body.appendChild(measureDiv);
+    
+    const elementHeight = measureDiv.offsetHeight;
+    document.body.removeChild(measureDiv);
+    
+    const maxHeight = isFirstPage ? firstPageMaxHeight : subsequentPageMaxHeight;
+    
+    if (currentPageHeight + elementHeight > maxHeight && currentPageContent.length > 0) {
+      pages.push(currentPageContent.map(el => el.outerHTML).join(''));
+      
+      currentPageContent = [element.cloneNode(true)];
+      currentPageHeight = elementHeight;
+      isFirstPage = false;
+    } else if (currentPageHeight + elementHeight > maxHeight && currentPageContent.length === 0) {
+      if (element.tagName === 'P' || element.tagName === 'DIV') {
+        const splitResult = splitLargeElement(element, maxHeight, tempContainer.style.cssText);
+        splitResult.forEach((part, idx) => {
+          if (idx > 0) {
+            pages.push(currentPageContent.map(el => el.outerHTML).join(''));
+            currentPageContent = [];
+            currentPageHeight = 0;
+            isFirstPage = false;
+          }
+          currentPageContent.push(part);
+          const partDiv = document.createElement('div');
+          partDiv.style.cssText = tempContainer.style.cssText;
+          partDiv.appendChild(part.cloneNode(true));
+          document.body.appendChild(partDiv);
+          currentPageHeight = partDiv.offsetHeight;
+          document.body.removeChild(partDiv);
+        });
+      } else {
+        currentPageContent.push(element.cloneNode(true));
+        currentPageHeight += elementHeight;
+      }
+    } else {
+      currentPageContent.push(element.cloneNode(true));
+      currentPageHeight += elementHeight;
+    }
+  });
+  
+  if (currentPageContent.length > 0) {
+    pages.push(currentPageContent.map(el => el.outerHTML).join(''));
+  }
+  
+  document.body.removeChild(tempContainer);
+  
+  return pages.length > 0 ? pages : [htmlContent];
+}
+
+function splitLargeElement(element, maxHeight, containerStyle) {
+  const pixelsPerInch = 96;
+  const lineHeightPx = 11 * 1.3 * (pixelsPerInch / 72);
+  
+  const parts = [];
+  const text = element.textContent;
+  const words = text.split(' ');
+  
+  let currentText = '';
+  let testDiv = document.createElement('div');
+  testDiv.style.cssText = containerStyle;
+  document.body.appendChild(testDiv);
+  
+  const tagName = element.tagName;
+  const attributes = Array.from(element.attributes).map(attr => `${attr.name}="${attr.value}"`).join(' ');
+  
+  words.forEach((word, idx) => {
+    const testText = currentText + (currentText ? ' ' : '') + word;
+    testDiv.innerHTML = `<${tagName} ${attributes}>${testText}</${tagName}>`;
+    
+    if (testDiv.offsetHeight > maxHeight && currentText) {
+      const part = document.createElement(tagName);
+      Array.from(element.attributes).forEach(attr => {
+        part.setAttribute(attr.name, attr.value);
+      });
+      part.textContent = currentText;
+      parts.push(part);
+      currentText = word;
+    } else {
+      currentText = testText;
+    }
+  });
+  
+  if (currentText) {
+    const part = document.createElement(tagName);
+    Array.from(element.attributes).forEach(attr => {
+      part.setAttribute(attr.name, attr.value);
+    });
+    part.textContent = currentText;
+    parts.push(part);
+  }
+  
+  document.body.removeChild(testDiv);
+  return parts.length > 0 ? parts : [element.cloneNode(true)];
+}
+
+backBtn.onclick = () => {
+  previewView.classList.add('hidden');
+  listView.classList.remove('hidden');
+  previewPagesContainer.innerHTML = "";
+};
+
+downloadBtn.onclick = () => {
+  const originalTitle = document.title;
+  
+  const currentDoc = previewTitle.textContent;
+  document.title = currentDoc || "Document";
+  
+  document.body.style.overflow = 'visible';
+  previewPagesContainer.style.overflow = 'visible';
+  
+  setTimeout(() => {
+    window.print();
+    
+    setTimeout(() => {
+      document.title = originalTitle;
+      document.body.style.overflow = '';
+      previewPagesContainer.style.overflow = '';
+    }, 100);
+  }, 100);
+};
+
+function openEdit(d) {
+  console.log("Opening edit for document:", d);
+  editingDoc = d;
+  modalTitle.textContent = "Edit Document";
+  
+  ["Title", "Category", "Department", "Owner", "Approved_By", "Status"].forEach(k => {
+    if (kbForm[k]) {
+      kbForm[k].value = d[k] || "";
+    }
+  });
+  
+  if (kbForm["Summary"]) {
+    kbForm["Summary"].value = d.Summary || "";
+  }
+  
+  policyEditor.innerHTML = d.Policy_Body || "";
+  modal.classList.remove("hidden");
+}
+
+async function deleteDoc(d) {
+  if (!confirm(`Are you sure you want to delete "${d.Title}"?\n\nDoc ID: ${d.Doc_ID}`)) return;
+  
+  try {
+    console.log("Deleting document:", d.Doc_ID);
+    const payload = {
+      _method: "DELETE",
+      id: d.Doc_ID,
+      Doc_ID: d.Doc_ID
+    };
+    
+    const res = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+    const result = await res.json();
+    console.log("Delete response:", result);
+    
+    if (result.success === false) {
+      throw new Error(result.error || "Delete failed");
+    }
+    
+    await loadDocs();
+    alert("Document deleted successfully!");
+  } catch (err) {
+    console.error("Delete error:", err);
+    alert("Error deleting document: " + err.message);
+  }
+}
+
+addBtn.onclick = () => {
+  editingDoc = null;
+  modalTitle.textContent = "New Document";
+  kbForm.reset();
+  policyEditor.innerHTML = "<p>Enter document content here...</p>";
+  modal.classList.remove("hidden");
+};
+
+closeModal.onclick = () => {
+  modal.classList.add("hidden");
+  editingDoc = null;
+};
+
+cancelBtn.onclick = () => {
+  modal.classList.add("hidden");
+  editingDoc = null;
+};
+
+kbForm.onsubmit = async (e) => {
+  e.preventDefault();
+  
+  const data = Object.fromEntries(new FormData(kbForm).entries());
+  data.Policy_Body = policyEditor.innerHTML;
+  
+  if (editingDoc) {
+    data._method = "PUT";
+    data.id = editingDoc.Doc_ID;
+    data.Doc_ID = editingDoc.Doc_ID;
+  }
+  
+  console.log("Submitting form data:", data);
+  
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(data)
+    });
+    
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+    const result = await res.json();
+    console.log("Save response:", result);
+    
+    if (result.success === false) {
+      throw new Error(result.error || "Save failed");
+    }
+    
+    modal.classList.add("hidden");
+    editingDoc = null;
+    await loadDocs();
+    alert(data._method === "PUT" ? "Document updated successfully!" : "Document created successfully!");
+  } catch (err) {
+    console.error("Save error:", err);
+    alert("Error saving document: " + err.message);
+  }
+};
+
+searchInput.oninput = () => renderDocs(docs);
+
+function escapeHtml(s) {
+  if (s === null || s === undefined) return "";
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[c]));
+}
+
+(async () => {
+  console.log("Initializing Knowledge Base...");
+  if (typeof feather !== 'undefined') {
+    feather.replace();
+  }
+  await loadConfig();
+  await loadDocs();
+  console.log("Initialization complete");
+})();
+</script>
+</body>
+</html>

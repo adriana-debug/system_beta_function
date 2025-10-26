@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Employee Attendance Records</title>
+
+  <!-- External Resources -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* ========================================
+       CSS VARIABLES & GLOBAL STYLES
+       ======================================== */
+    :root {
+      /* Color Palette */
+      --color-primary: #10b981;
+      --color-danger: #ef4444;
+      --color-accent: #3b82f6;
+      --color-text-primary: #1f2937;
+      --color-text-secondary: #6b7280;
+      --color-background-light: #f9fafb;
+      --color-border: #e5e7eb;
+      --color-hover: #f3f4f6;
+      
+      /* Status Indicator Colors */
+      --color-indicator-green-text: #166534;
+      --color-indicator-red-text: #991b1b;
+      
+      /* Spacing & Effects */
+      --radius-default: 6px;
+      --radius-large: 12px;
+      --shadow-subtle: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    /* ========================================
+       LOADER ANIMATION
+       ======================================== */
+    .loader {
+      border: 4px solid var(--color-border);
+      border-top: 4px solid var(--color-accent);
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1.5s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* ========================================
+       PAPER VIEW CONTAINER
+       ======================================== */
+    .paper-view {
+      background: #ffffff;
+      width: 8.27in;
+      min-height: 11.69in;
+      margin: 3rem auto;
+      padding: 2rem 2.5rem;
+      box-shadow: var(--shadow-subtle);
+      border-radius: var(--radius-large);
+      color: var(--color-text-primary);
+      font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    /* ========================================
+       SUMMARY TABLE STYLES
+       ======================================== */
+    .summary-table {
+      width: 100%;
+      table-layout: fixed; /* Equal column widths */
+      margin-top: 1.5rem;
+      font-size: 0.875rem;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow: hidden;
+      border-radius: var(--radius-default);
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+    }
+
+    .summary-table th, 
+    .summary-table td {
+      padding: 0.6rem 0.5rem;
+      text-align: center;
+      border-bottom: 1px solid var(--color-border);
+      color: var(--color-text-primary);
+      font-weight: 500;
+    }
+
+    /* First column (Month) - left aligned */
+    .summary-table th:first-child,
+    .summary-table td:first-child {
+      text-align: left;
+      width: 15%;
+    }
+
+    .summary-table th {
+      background-color: var(--color-background-light);
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      text-transform: capitalize;
+      font-size: 0.8125rem;
+    }
+
+    .summary-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .summary-table tr:hover {
+      background-color: var(--color-hover);
+    }
+
+    /* ========================================
+       COLOR INDICATORS
+       ======================================== */
+    /* Red text for poor performance indicators */
+    .score-red {
+      color: var(--color-indicator-red-text);
+      font-weight: 700;
+    }
+
+    /* Green text for good performance indicators */
+    .score-green {
+      color: var(--color-indicator-green-text);
+      font-weight: 700;
+    }
+  </style>
+
+  <script>
+    // Tailwind Configuration
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Roboto', 'sans-serif'] },
+          colors: {
+            'brand-accent': '#CBEB33',
+            'bg-dark': '#0f172a',
+            'text-dark': '#f1f5f9',
+            'card-dark': '#1e293b',
+            'border-dark': '#334155',
+            'bg-light': '#f8fafc',
+            'text-light': '#1e293b',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-bg-light dark:bg-bg-dark text-text-light dark:text-text-dark transition-colors duration-300">
+  <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+
+    <!-- ========================================
+         HEADER SECTION
+         ======================================== -->
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+      <div>
+        <h1 class="text-2xl font-bold">Employee Attendance Records</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">View and print employee attendance records.</p>
+      </div>
+      <div class="flex items-center space-x-2 mt-4 sm:mt-0">
+        <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" aria-label="Toggle theme">
+          <i data-feather="moon" class="dark-icon"></i>
+          <i data-feather="sun" class="light-icon hidden"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ========================================
+         MAIN CONTENT
+         ======================================== -->
+    <main id="employeeRecordsView">
+      
+      <!-- Print Controls (Hidden by default) -->
+      <div id="printControls" class="hidden mb-4 flex justify-end gap-2">
+        <button id="backToSearchBtn" class="py-2 px-4 text-sm rounded bg-gray-200 hover:bg-gray-300 font-medium">
+          <i data-feather="arrow-left" class="inline w-4 h-4 mr-1"></i>Back
+        </button>
+        <button id="printEmployeeBtn" class="py-2 px-4 text-sm rounded bg-blue-500 text-white hover:bg-blue-600 font-medium">
+          <i data-feather="printer" class="inline w-4 h-4 mr-1"></i>Print / Download
+        </button>
+      </div>
+
+      <!-- Employee Search Form -->
+      <div id="employeeSearchForm" class="p-4 rounded-lg bg-white dark:bg-card-dark shadow">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          
+          <!-- Month Selector -->
+          <div>
+            <label for="employeeMonthSelector" class="block text-sm font-medium mb-1">Month</label>
+            <select id="employeeMonthSelector" class="w-full p-2 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-border-dark focus:ring-2 focus:ring-brand-accent"></select>
+          </div>
+          
+          <!-- Cluster Filter -->
+          <div>
+            <label for="empClusterFilter" class="block text-sm font-medium mb-1">Cluster</label>
+            <select id="empClusterFilter" class="w-full p-2 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-border-dark focus:ring-2 focus:ring-brand-accent"></select>
+          </div>
+          
+          <!-- Campaign Filter -->
+          <div>
+            <label for="empCampaignFilter" class="block text-sm font-medium mb-1">Campaign</label>
+            <select id="empCampaignFilter" class="w-full p-2 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-border-dark focus:ring-2 focus:ring-brand-accent"></select>
+          </div>
+          
+          <!-- Employee Selector -->
+          <div>
+            <label for="employeeSelector" class="block text-sm font-medium mb-1">Employee Name</label>
+            <select id="employeeSelector" class="w-full p-2 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-border-dark focus:ring-2 focus:ring-brand-accent"></select>
+          </div>
+        </div>
+        
+        <!-- View Button -->
+        <div class="mt-4 text-right">
+          <button id="viewRecordBtn" class="bg-brand-accent text-gray-800 font-bold py-2 px-6 rounded-md hover:opacity-90 transition-opacity">
+            View Record
+          </button>
+        </div>
+      </div>
+      
+      <!-- Paper View Container (Hidden by default) -->
+      <div id="employeePaperView" class="paper-view hidden mt-6"></div>
+    </main>
+
+    <!-- ========================================
+         LOADER OVERLAY
+         ======================================== -->
+    <div id="loader" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden z-50">
+      <div class="loader"></div>
+    </div>
+  </div>
+
+  <script>
+    /* ========================================
+       CONSTANTS & CONFIGURATION
+       ======================================== */
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxrfoxlvS2IJdSQd7fO9Vz5cnsCbtJ_xsDvAehmJ2odwr5S2ZLm_bCu87kOvezE6sSl9Q/exec";
+    
+    // Status configuration for attendance types
+    const STATUS_CONFIG = {
+      P: { color: "#38761D", label: "Present" },
+      A: { color: "#EF4444", label: "Absent" },
+      Off: { color: "#9CA3AF", label: "Day Off" },
+      L: { color: "#F59E0B", label: "Late" },
+      VL: { color: "#0000FF", label: "Vacation Leave" },
+      SUS: { color: "#00FFFF", label: "Suspended" },
+      HD: { color: "#00FF00", label: "Half Day" },
+      L15: { color: "#FACC15", label: "Late (15m)" },
+      L30: { color: "#FB923C", label: "Late (30m)" },
+      L45: { color: "#F97316", label: "Late (45m)" },
+      L60: { color: "#EA580C", label: "Late (60m)" },
+      SL: { color: "#6FA8DC", label: "Sick Leave" },
+      Resigned: { color: "#475569", label: "Resigned" },
+      Terminated: { color: "#334155", label: "Terminated" },
+      NA: { color: "#e5e7eb", label: "Not Applicable" }
+    };
+    
+    const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    // Application state
+    let allEmployees = [];
+    let allMonthsData = [];
+
+    /* ========================================
+       DOM ELEMENT REFERENCES
+       ======================================== */
+    const loader = document.getElementById("loader");
+    const employeeMonthSelector = document.getElementById("employeeMonthSelector");
+    const empClusterFilter = document.getElementById("empClusterFilter");
+    const empCampaignFilter = document.getElementById("empCampaignFilter");
+    const employeeSelector = document.getElementById("employeeSelector");
+    const viewRecordBtn = document.getElementById("viewRecordBtn");
+    const employeePaperView = document.getElementById("employeePaperView");
+    const employeeSearchForm = document.getElementById("employeeSearchForm");
+    const printControls = document.getElementById("printControls");
+
+    /* ========================================
+       UTILITY FUNCTIONS
+       ======================================== */
+    
+    /**
+     * Show or hide the loading spinner
+     * @param {boolean} show - Whether to show the loader
+     */
+    const showLoader = (show) => loader.classList.toggle("hidden", !show);
+    
+    /**
+     * Get full month name from month number
+     * @param {number} m - Month number (1-12)
+     * @returns {string} Full month name
+     */
+    const getMonthName = (m) => MONTH_NAMES[m - 1] || "";
+    
+    /**
+     * Get abbreviated month name from month number
+     * @param {number} m - Month number (1-12)
+     * @returns {string} Abbreviated month name
+     */
+    const getMonthAbbr = (m) => MONTH_ABBR[m - 1] || "";
+
+    /* ========================================
+       API FUNCTIONS
+       ======================================== */
+    
+    /**
+     * Generic fetch function for API calls
+     * @param {string} api - API endpoint name
+     * @param {Object} params - Query parameters
+     * @returns {Promise<Object|null>} API response data
+     */
+    async function fetchData(api, params = {}) {
+      showLoader(true);
+      try {
+        const url = new URL(GAS_URL);
+        url.searchParams.set("api", api);
+        Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
+        
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return await response.json();
+      } catch (error) {
+        console.error(`Error fetching ${api}:`, error);
+        alert(`Failed to load data for ${api}. Please check the console for details.`);
+        return null;
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    /**
+     * Fetch attendance records for all 12 months for a specific employee
+     * @param {string} employeeName - Name of the employee
+     * @returns {Promise<Array>} Array of monthly data
+     */
+    async function fetchAllMonthsForEmployee(employeeName) {
+      // Create promises for all 12 months
+      const promises = Array.from({ length: 12 }, (_, i) => 
+        fetchData("employeeRecord", { name: employeeName, month: i + 1 })
+      );
+      
+      const results = await Promise.all(promises);
+      
+      // Filter valid results and add month information
+      return results
+        .map((data, idx) => ({ ...data, month: idx + 1 }))
+        .filter(data => data && !data.error && data.records && data.records.length > 0);
+    }
+
+    /* ========================================
+       CALCULATION FUNCTIONS
+       ======================================== */
+    
+    /**
+     * Calculate monthly attendance metrics
+     * @param {Array} records - Array of daily attendance records
+     * @returns {Object} Calculated metrics
+     */
+    function calculateMonthMetrics(records) {
+      const statusTally = {};
+      
+      // Count occurrences of each status
+      records.forEach(r => {
+        const status = r.status || "NA";
+        statusTally[status] = (statusTally[status] || 0) + 1;
+      });
+
+      // Extract specific counts
+      const absent = statusTally['A'] || 0;
+      const late = (statusTally['L'] || 0) + (statusTally['L15'] || 0) + 
+                   (statusTally['L30'] || 0) + (statusTally['L45'] || 0) + 
+                   (statusTally['L60'] || 0); 
+      const halfDay = statusTally['HD'] || 0;
+      const present = statusTally['P'] || 0;
+      const suspended = statusTally['SUS'] || 0;
+      const vacationLeave = statusTally['VL'] || 0;
+      
+      // Calculate total work days (excluding Off and NA)
+      const totalWorkDays = records.filter(r => 
+        r.status && r.status !== 'Off' && r.status !== 'NA'
+      ).length;
+      
+      // Calculate attendance score
+      const attendanceScore = totalWorkDays > 0 
+        ? ((present + late + (halfDay * 0.5)) / totalWorkDays * 100)
+        : 0;
+
+      return {
+        absent,
+        late,
+        halfDay,
+        present,
+        suspended,
+        vacationLeave,
+        totalWorkDays,
+        attendanceScore: parseFloat(attendanceScore.toFixed(2))
+      };
+    }
+
+    /* ========================================
+       RENDERING FUNCTIONS
+       ======================================== */
+    
+    /**
+     * Render the employee attendance record
+     * @param {Object} data - Current month data
+     * @param {Array} allMonthsData - All months data for history
+     */
+    function renderEmployeeRecord(data, allMonthsData) {
+      if (!data || data.error) {
+        employeePaperView.innerHTML = `<p class="text-red-500">${data.error || "Could not fetch employee record."}</p>`;
+        return;
+      }
+
+      const { name, campaign, cluster, records } = data;
+      const monthName = getMonthName(employeeMonthSelector.value);
+      const year = new Date().getFullYear();
+      const daysInMonth = new Date(year, employeeMonthSelector.value, 0).getDate();
+
+      // Generate status summary for current month
+      const statusTally = {};
+      records.forEach(r => {
+        const status = r.status || "NA";
+        statusTally[status] = (statusTally[status] || 0) + 1;
+      });
+
+      let summaryHTML = "";
+      Object.entries(statusTally).forEach(([status, count]) => {
+        const config = STATUS_CONFIG[status];
+        if (config) {
+          summaryHTML += `
+            <div class="flex justify-between items-center text-sm py-1">
+              <div class="flex items-center">
+                <div class="w-3 h-3 rounded-full mr-2" style="background-color: ${config.color};"></div>
+                <span>${config.label}</span>
+              </div>
+              <span class="font-semibold">${count}</span>
+            </div>`;
+        }
+      });
+
+      // Generate calendar grid
+      let calendarHTML = "";
+      for (let i = 1; i <= daysInMonth; i++) {
+        const record = records.find(r => r.day === i);
+        const status = record ? record.status : "NA";
+        const config = STATUS_CONFIG[status];
+        calendarHTML += `
+          <div class="border text-center py-1" title="${config.label}">
+            <div class="font-bold text-gray-600">${i}</div>
+            <div class="w-4 h-4 rounded-full mx-auto mt-1" style="background-color: ${config.color};"></div>
+          </div>`;
+      }
+
+      // Generate attendance history table
+      const summaryTableHTML = generateAttendanceHistoryTable(allMonthsData);
+
+      // Render complete paper view
+      employeePaperView.innerHTML = `
+        <div class="flex items-start justify-between mb-6">
+          <img src="https://digitalmindsbpo.com/storage/2021/11/cropped-Digital_Minds_Logo_Original.png" alt="Digital Minds BPO" class="h-10" />
+          <div class="text-right flex-1 ml-4">
+            <h2 class="text-2xl font-bold">${name}</h2>
+            <p class="text-gray-600">Attendance Record for ${monthName} ${year}</p>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div class="md:col-span-1">
+            <h3 class="font-bold text-lg border-b pb-2 mb-2">Details</h3>
+            <p class="text-sm"><strong>Campaign:</strong> ${campaign}</p>
+            <p class="text-sm"><strong>Cluster:</strong> ${cluster}</p>
+            <h3 class="font-bold text-lg border-b pb-2 mt-4 mb-2">Status Summary</h3>
+            <div class="space-y-1">${summaryHTML}</div>
+          </div>
+          <div class="md:col-span-2">
+            <h3 class="font-bold text-lg border-b pb-2 mb-2">Monthly Calendar</h3>
+            <div class="grid grid-cols-7 gap-1">${calendarHTML}</div>
+          </div>
+        </div>
+
+        <div class="mt-6">
+          <h3 class="font-bold text-lg border-b pb-2 mb-3">Attendance History</h3>
+          ${summaryTableHTML}
+        </div>
+      `;
+
+      // Show paper view and hide search form
+      employeePaperView.classList.remove('hidden');
+      employeeSearchForm.classList.add('hidden');
+      printControls.classList.remove('hidden');
+    }
+
+    /**
+     * Generate the attendance history table HTML
+     * @param {Array} monthsData - Array of monthly data
+     * @returns {string} HTML string for the table
+     */
+    function generateAttendanceHistoryTable(monthsData) {
+      // Sort months in descending order (latest first)
+      const sortedMonths = [...monthsData].sort((a, b) => b.month - a.month);
+      
+      let tableHTML = `
+        <table class="summary-table">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>A</th>
+              <th>L</th>
+              <th>HD</th>
+              <th>P</th>
+              <th>SUS</th>
+              <th>VL</th>
+              <th>Total Days</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      sortedMonths.forEach(monthData => {
+        const metrics = calculateMonthMetrics(monthData.records);
+        
+        // Determine color classes based on performance
+        const scoreClass = metrics.attendanceScore < 95 ? 'score-red' : 'score-green';
+        const absentClass = 'score-red'; // Always red
+        const lateClass = metrics.late > 0 ? 'score-red' : '';
+        const halfDayClass = metrics.halfDay > 0 ? 'score-red' : '';
+        
+        tableHTML += `
+          <tr>
+            <td>${getMonthAbbr(monthData.month)}</td>
+            <td class="${absentClass}">${metrics.absent}</td>
+            <td class="${lateClass}">${metrics.late}</td>
+            <td class="${halfDayClass}">${metrics.halfDay}</td>
+            <td>${metrics.present}</td>
+            <td>${metrics.suspended}</td>
+            <td>${metrics.vacationLeave}</td>
+            <td>${metrics.totalWorkDays}</td>
+            <td class="${scoreClass}">${metrics.attendanceScore.toFixed(2)}%</td>
+          </tr>
+        `;
+      });
+
+      tableHTML += `
+          </tbody>
+        </table>
+      `;
+      
+      return tableHTML;
+    }
+
+    /* ========================================
+       DATA POPULATION FUNCTIONS
+       ======================================== */
+    
+    /**
+     * Initialize filters and load employee data
+     */
+    async function initFiltersAndEmployees() {
+      const [clusters, employees] = await Promise.all([
+        fetchData("clusters"),
+        fetchData("employees")
+      ]);
+
+      allEmployees = employees || [];
+      
+      // Extract unique campaigns and sort
+      const campaigns = [...new Set(allEmployees.map(e => e.campaign))].sort();
+
+      // Populate cluster dropdown
+      const clusterOptions = clusters ? clusters.map(c => `<option value="${c}">${c}</option>`).join('') : '';
+      empClusterFilter.innerHTML = `<option value="">All Clusters</option>${clusterOptions}`;
+
+      // Populate campaign dropdown
+      const campaignOptions = campaigns.map(c => `<option value="${c}">${c}</option>`).join('');
+      empCampaignFilter.innerHTML = `<option value="">All Campaigns</option>${campaignOptions}`;
+
+      // Initial population of employee dropdown
+      populateEmployeeDropdown();
+    }
+    
+    /**
+     * Populate employee dropdown based on selected filters
+     */
+    function populateEmployeeDropdown() {
+      const selectedCampaign = empCampaignFilter.value;
+      const selectedCluster = empClusterFilter.value;
+
+      // Filter employees based on selected campaign and cluster
+      const filtered = allEmployees.filter(e => 
+        (!selectedCampaign || e.campaign === selectedCampaign) &&
+        (!selectedCluster || e.cluster === selectedCluster)
+      );
+
+      // Generate sorted employee options
+      const employeeOptions = filtered
+        .map(e => e.name)
+        .sort()
+        .map(name => `<option value="${name}">${name}</option>`)
+        .join('');
+      
+      employeeSelector.innerHTML = `<option value="">Select Employee</option>${employeeOptions}`;
+    }
+
+    /**
+     * View the selected employee's attendance record
+     */
+    async function viewEmployeeRecord() {
+      const name = employeeSelector.value;
+      const month = employeeMonthSelector.value;
+      
+      if (!name || !month) {
+        alert("Please select a month and an employee.");
+        return;
+      }
+      
+      // Fetch all 12 months of data for the employee
+      allMonthsData = await fetchAllMonthsForEmployee(name);
+      
+      // Get data for the selected month
+      const currentMonthData = allMonthsData.find(d => d.month == month);
+      
+      if (!currentMonthData) {
+        employeePaperView.innerHTML = `<p class="text-red-500">No records found for this employee in the selected month.</p>`;
+        employeePaperView.classList.remove('hidden');
+        employeeSearchForm.classList.add('hidden');
+        printControls.classList.remove('hidden');
+        return;
+      }
+      
+      renderEmployeeRecord(currentMonthData, allMonthsData);
+    }
+
+    /* ========================================
+       THEME MANAGEMENT
+       ======================================== */
+    
+    /**
+     * Toggle between light and dark theme
+     */
+    function themeToggle() {
+      const isDark = document.body.classList.toggle("dark");
+      localStorage.setItem("theme", isDark ? "dark" : "light");
+      updateThemeIcon(isDark);
+    }
+
+    /**
+     * Update theme toggle icon
+     * @param {boolean} isDark - Whether dark mode is active
+     */
+    function updateThemeIcon(isDark) {
+      document.querySelectorAll(".dark-icon").forEach(i => i.classList.toggle("hidden", !isDark));
+      document.querySelectorAll(".light-icon").forEach(i => i.classList.toggle("hidden", isDark));
+    }
+
+    /* ========================================
+       INITIALIZATION
+       ======================================== */
+    
+    /**
+     * Initialize the application
+     */
+    function init() {
+      // Initialize Feather icons
+      feather.replace();
+      
+      // Get current month
+      const currentMonth = String(new Date().getMonth() + 1);
+
+      // Populate month selector
+      const monthOptions = Array.from({length: 12}, (_, i) => 
+        `<option value="${i + 1}" ${i + 1 == currentMonth ? 'selected' : ''}>${getMonthName(i + 1)}</option>`
+      ).join('');
+      employeeMonthSelector.innerHTML = monthOptions;
+
+      // Setup theme
+      const savedTheme = localStorage.getItem("theme");
+      const isDark = savedTheme === "dark" || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.body.classList.toggle("dark", isDark);
+      updateThemeIcon(isDark);
+
+      // Event listeners
+      document.getElementById("themeToggle").addEventListener("click", themeToggle);
+      empCampaignFilter.addEventListener('change', populateEmployeeDropdown);
+      empClusterFilter.addEventListener('change', populateEmployeeDropdown);
+      viewRecordBtn.addEventListener('click', viewEmployeeRecord);
+      
+      document.getElementById('backToSearchBtn').addEventListener('click', () => {
+        employeePaperView.classList.add('hidden');
+        employeeSearchForm.classList.remove('hidden');
+        printControls.classList.add('hidden');
+        feather.replace();
+      });
+      
+      document.getElementById('printEmployeeBtn').addEventListener('click', () => window.print());
+      
+      // Load initial data
+      initFiltersAndEmployees();
+    }
+    
+    // Start application when page loads
+    window.addEventListener("load", init);
+  </script>
+</body>
+</html>
