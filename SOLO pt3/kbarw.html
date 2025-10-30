@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Knowledge Base & Tutorials - Merged</title>
+
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'media',
+    theme: {
+      extend: {
+        colors: { brandAccent: '#3b82f6', brandDark: '#0f172a' },
+        fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+      }
+    }
+  }
+</script>
+
+<style>
+/* --------------------
+   Base layout & utilities
+   -------------------- */
+html, body {height:100%;margin:0;font-size:11pt;}
+body {display:flex;flex-direction:column;min-height:100vh;}
+main {flex:1 0 auto;}
+footer {flex-shrink:0;}
+
+.compact-table td, .compact-table th {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:.6rem;}
+#globalLoader {
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);
+  z-index:60;align-items:center;justify-content:center;backdrop-filter:blur(2px);
+}
+.spinner {
+  width:45px;height:45px;border:4px solid #eee;border-top:4px solid #3b82f6;
+  border-radius:50%;animation:spin 1s linear infinite;
+}
+@keyframes spin {0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+
+/* Simple in-place editor used for KB (contenteditable) */
+.editor { 
+  min-height: 240px; 
+  border: 1px solid #e5e7eb; 
+  padding: .75rem; 
+  border-radius: .5rem; 
+  background: white; 
+}
+.editor:focus { 
+  outline: 3px solid rgba(59,130,246,.12); 
+}
+
+/* --------------------
+   Document preview & print styles (A4/Letter friendly)
+   -------------------- */
+.paper {
+  background:#fff;
+  width:8.27in; 
+  height:11.69in; 
+  margin:2rem auto;
+  padding:0;
+  box-shadow:0 0 8px rgba(0,0,0,0.15);
+  border-radius: 4px;
+  page-break-after: always;
+  font-family: 'Calibri', 'Inter', 'Arial', sans-serif;
+  font-size: 11pt;
+  line-height: 1.3;
+  color: #000;
+  position: relative;
+  overflow: hidden;
+}
+.paper.first-page {
+  padding: 0.6in 0.75in 0.75in 0.75in; 
+}
+.paper.content-page {
+  padding: 0.4in 0.75in 0.75in 0.75in;
+}
+.paper-content { min-height: 8.5in; max-height: 9.2in; overflow: hidden; padding-bottom: 0.6in; }
+
+.title-header { text-align:center; border-bottom:1px solid #ccc; padding-bottom:2px; margin-bottom:0.1in; }
+.title-header img { display:block; margin:0 auto 3px; width:100px; }
+.title-header h1 { font-size:14pt; font-weight:bold; margin:2px 0 2px; color:#000; }
+.title-details { font-size:9pt; color:#555; line-height:1.2; display:flex; justify-content:center; gap:15px; flex-wrap:wrap; }
+
+.page-footer {
+  position: absolute;
+  bottom: 0.4in;
+  left: 0.75in;
+  right: 0.75in;
+  padding-top: 5px;
+  border-top: 1px solid #ccc;
+  font-size:8pt;
+  color:#666;
+  display:flex; justify-content:space-between;
+}
+
+/* Print-specific rules to ensure KB preview prints only the document */
+@media print {
+  .no-print, header, nav, footer, #globalLoader, main > div:not(#kbPreviewView) { display: none !important; }
+  body { background: none !important; padding: 0 !important; margin: 0 !important; }
+  #kbPreviewView { display:block !important; position:static !important; width:100% !important; padding:0 !important; margin:0 !important; }
+  #kbPreviewContainer { background:none !important; padding:0 !important; margin:0 !important; box-shadow:none !important; }
+  .paper { margin:0 !important; box-shadow:none !important; page-break-after: always !important; width:100% !important; height:11.69in !important; }
+  .paper.last-page { page-break-after: avoid !important; }
+}
+</style>
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans">
+<!-- HEADER -->
+<header class="bg-brandDark text-white shadow sticky top-0 z-50 no-print">
+  <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <img src="https://americanrangewalls.com/wp-content/uploads/logo-white-text-on-clear-1.png" class="w-40" alt="Logo">
+      <h1 class="text-xl font-semibold">Knowledge Base & Tutorials</h1>
+    </div>
+  </div>
+</header>
+
+<!-- NAV TABS -->
+<nav class="bg-white border-b sticky top-[73px] z-40 no-print">
+  <div class="max-w-7xl mx-auto px-6 flex space-x-4">
+    <button class="tab-btn px-4 py-3 border-b-2 border-transparent hover:text-brandAccent" data-tab="home">Home</button>
+    <button class="tab-btn px-4 py-3 border-b-2 border-transparent hover:text-brandAccent" data-tab="kb">Knowledge Base</button>
+    <button class="tab-btn px-4 py-3 border-b-2 border-transparent hover:text-brandAccent" data-tab="tutorials">Tutorial Videos</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="max-w-7xl mx-auto px-6 py-10 w-full">
+
+  <!-- HOME -->
+  <section id="tab-home" class="tab-content">
+    <h1 class="text-3xl font-bold mb-2">Welcome</h1>
+    <p class="text-gray-600">Access SOPs and tutorials from one place.</p>
+  </section>
+
+  <!-- KNOWLEDGE BASE (from arw12 - simpler contenteditable editor + print preview) -->
+  <section id="tab-kb" class="tab-content hidden">
+    <!-- List view -->
+    <div id="kbListView">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+        <div class="flex gap-3">
+          <button id="addDocBtn" class="px-4 py-2 bg-brandAccent text-white rounded-md font-semibold hover:opacity-90">+ New Document</button>
+          <input id="kbSearchInput" placeholder="Search..." class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brandAccent" />
+        </div>
+      </div>
+
+      <div class="bg-white border rounded-lg shadow-sm overflow-x-auto">
+        <table class="min-w-full compact-table">
+          <thead class="bg-gray-100 border-b">
+            <tr>
+              <th class="px-4 text-left text-xs font-semibold uppercase">Doc ID</th>
+              <th class="px-4 text-left text-xs font-semibold uppercase">Title</th>
+              <th class="px-4 text-left text-xs font-semibold uppercase">Category</th>
+              <th class="px-4 text-left text-xs font-semibold uppercase">Process</th>
+              <th class="px-4 text-left text-xs font-semibold uppercase">Status</th>
+              <th class="px-4 text-right text-xs font-semibold uppercase no-print">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="kbDocsTable" class="text-sm">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Preview view -->
+    <div id="kbPreviewView" class="hidden">
+      <div class="mb-6 flex justify-between items-center no-print">
+        <button id="kbBackBtn" class="px-6 py-3 rounded-xl bg-slate-200 hover:bg-slate-300 text-brandDark font-semibold transition-all duration-300 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+          Back to List
+        </button>
+        <h2 id="kbPreviewTitle" class="text-3xl font-bold text-brandDark">Document Preview</h2>
+        <button id="kbPrintBtn" class="px-6 py-3 rounded-xl bg-gradient-to-r from-brandAccent to-blue-600 text-white font-semibold hover:shadow-lg transition-all duration-300 flex items-center gap-2 no-print">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+          Print/Download
+        </button>
+      </div>
+
+      <div id="kbPreviewContainer" class="bg-slate-100 p-8 rounded-2xl">
+        <!-- Generated 'paper' elements inserted here by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- TUTORIALS (use the working tutorial tab/modal from arw15) -->
+  <section id="tab-tutorials" class="tab-content hidden">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+      <div class="flex gap-3">
+        <button id="addTutBtn" class="px-4 py-2 bg-brandAccent text-white rounded-md font-semibold hover:opacity-90">+ New Tutorial</button>
+        <input id="tutSearchInput" placeholder="Search..." class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brandAccent" />
+      </div>
+    </div>
+
+    <div class="bg-white border rounded-lg shadow-sm overflow-x-auto">
+      <table class="min-w-full compact-table">
+        <thead class="bg-gray-100 border-b">
+          <tr>
+            <th class="px-4 text-left text-xs font-semibold uppercase">Tutorial ID</th>
+            <th class="px-4 text-left text-xs font-semibold uppercase">Title</th>
+            <th class="px-4 text-left text-xs font-semibold uppercase">Description</th>
+            <th class="px-4 text-left text-xs font-semibold uppercase">Drive Link</th>
+            <th class="px-4 text-right text-xs font-semibold uppercase">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tutorialTable" class="text-sm">
+          <!-- Populated via JS -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<!-- KB MODAL (uses contenteditable editor - simpler) -->
+<div id="kbModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
+  <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 shadow-2xl">
+    <div class="sticky top-0 bg-slate-50 border-b border-slate-200 p-6 flex justify-between items-center">
+      <h2 id="kbModalTitle" class="text-2xl font-bold text-brandDark">New Document</h2>
+      <button id="kbCloseModal" class="text-slate-400 hover:text-brandDark hover:bg-slate-200 p-2 rounded-lg transition-all">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    </div>
+
+    <form id="kbForm" class="p-6 space-y-4">
+      <div class="grid md:grid-cols-2 gap-4">
+        <div><label class="block text-sm font-semibold text-brandDark mb-2">Title *</label><input name="Title" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brandAccent focus:border-brandAccent" required></div>
+        <div><label class="block text-sm font-semibold text-brandDark mb-2">Category</label><select name="Category" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brandAccent focus:border-brandAccent"></select></div>
+        <div><label class="block text-sm font-semibold text-brandDark mb-2">Process</label><select name="Process" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brandAccent focus:border-brandAccent"></select></div>
+        <div><label class="block text-sm font-semibold text-brandDark mb-2">Owner</label><select name="Owner" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brandAccent focus:border-brandAccent"></select></div>
+        <div><label class="block text-sm font-semibold text-brandDark mb-2">Approved By</label><select name="Approved_By" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brandAccent focus:border-brandAccent"></select></div>
+        <div><label class="block text-sm font-semibold text-brandDark mb-2">Status</label><select name="Status" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-brandAccent focus:border-brandAccent"></select></div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-brandDark mb-2">Document Content (HTML)</label>
+        <!-- SIMPLE contenteditable editor (keeps it lightweight and editable) -->
+        <div id="kbPolicyEditor" class="editor" contenteditable="true"></div>
+        <!-- Hidden field to pass HTML when submitting -->
+        <input type="hidden" name="Policy_Body">
+      </div>
+
+      <div class="flex justify-end gap-3 pt-4">
+        <button type="button" id="kbCancelBtn" class="px-6 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 font-medium transition">Cancel</button>
+        <button type="submit" class="px-6 py-2 bg-gradient-to-r from-brandAccent to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-300">Save Document</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- TUTORIAL MODAL (kept from arw15; functions wired below) -->
+<div id="tutorialModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-lg max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
+    <div class="p-6 border-b flex justify-between items-center bg-gray-50">
+      <h2 id="tutorialModalTitle" class="text-xl font-bold text-gray-800">New Tutorial Video</h2>
+      <button type="button" id="tutorialCloseModal" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    </div>
+    <form id="tutorialForm" class="p-6 space-y-4">
+      <input type="hidden" name="Tutorial_ID" value="">
+      <div><label class="block text-sm font-semibold mb-1">Title *</label><input name="Title" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brandAccent" required></div>
+      <div>
+        <label class="block text-sm font-semibold mb-1">Video/Drive Link (YouTube URL/Drive Link) *</label>
+        <input name="Drive_Link" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brandAccent" required>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-1">Description</label>
+        <textarea name="Description" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brandAccent" rows="3"></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div><label class="block text-sm font-semibold mb-1">Related Doc ID (Optional)</label><input name="Doc_ID" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brandAccent"></div>
+        <div><label class="block text-sm font-semibold mb-1">Created By</label><input name="Created_By" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brandAccent"></div>
+      </div>
+      <div class="flex justify-end gap-3 pt-4">
+        <button type="button" id="tutorialCancelBtn" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100">Cancel</button>
+        <button type="submit" class="px-4 py-2 bg-brandAccent text-white rounded-md font-semibold hover:opacity-90">Save Tutorial</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- GLOBAL LOADER -->
+<div id="globalLoader">
+  <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center gap-2">
+    <div class="spinner"></div>
+    <p class="text-gray-700 text-sm font-medium">Loading...</p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="bg-brandDark text-white text-sm py-6 text-center mt-auto no-print">
+  © 2025 American Range Walls | Knowledge Base & Tutorials
+</footer>
+
+<!-- -------------------------
+     JavaScript: data + UI wiring
+     ------------------------- -->
+<script>
+/*
+  Merged App JS
+  - KB logic primarily from arw12 (simpler contenteditable editor + preview/pagination)
+  - Tutorials logic from arw15 (modal-based CRUD + fetch)
+  - API_URL: same Google Apps Script endpoint used previously by both files
+*/
+
+/* ======= Configuration ======= */
+/* IMPORTANT: Replace API_URL with your Google Apps Script web app URL if different */
+const API_URL = "https://script.google.com/macros/s/AKfycby0pX8Y3Oe2fC8NFePBFsso0GDwVJIVR42uMqz-X9K_yV75tgvf2-wuRxtWdIZSmK4PcQ/exec";
+
+let kbDocs = [], tutorials = [], kbConfig = {}, editingKbDoc = null, editingTutorial = null;
+
+/* Simple loader helper */
+const showLoader = (s) => document.getElementById('globalLoader').style.display = s ? 'flex' : 'none';
+
+/* ======= Utility helpers ======= */
+function escHtml(s){
+  if(s===null||s===undefined) return "";
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
+
+/* Date formatting helper (from arw12) */
+function formatDate(isoString) {
+  if (!isoString) return 'N/A';
+  try {
+    if (isoString.includes('/')) return isoString;
+    const date = new Date(isoString);
+    if (isNaN(date)) return isoString;
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${month}/${day}/${year} ${hours}:${minutes}`;
+  } catch(e) {
+    console.error("Date formatting error:", e);
+    return isoString;
+  }
+}
+
+/* ======= Tabs ======= */
+document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+function switchTab(tab){
+  document.querySelectorAll('.tab-content').forEach(s => s.classList.add('hidden'));
+  const el = document.getElementById('tab-' + tab);
+  if (el) el.classList.remove('hidden');
+
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.remove('text-brandAccent','border-brandAccent');
+    b.classList.add('border-transparent');
+  });
+  const activeBtn = document.querySelector(`[data-tab="${tab}"]`);
+  if (activeBtn) { activeBtn.classList.add('text-brandAccent','border-brandAccent'); activeBtn.classList.remove('border-transparent'); }
+
+  // lazy-load data when tabs first activated
+  if(tab === 'kb' && kbDocs.length === 0){ loadKbConfig(); loadKbDocs(); }
+  if(tab === 'tutorials' && tutorials.length === 0){ loadTutorials(); }
+}
+
+/* Default open home on load */
+switchTab('home');
+
+/* ======= KB Config & Select population (from arw12) ======= */
+async function loadKbConfig(){
+  try {
+    const res = await fetch(API_URL + "?config=1");
+    if (!res.ok) throw new Error("Config fetch failed");
+    kbConfig = await res.json();
+  } catch(err) {
+    console.warn("Config fetch failed, using fallback config:", err);
+    kbConfig = {
+      DEFAULT_OWNER_LIST:["CEO","COO","HR Manager"],
+      CATEGORIES_LIST:["Process","Technical","Training"],
+      PROCESS_LIST:["Operations","Quality","Production"],
+      DEFAULT_APPROVER_LIST:["CEO","Director"],
+      DEFAULT_STATUS_LIST:["Draft","Active","Archived"]
+    };
+  }
+  populateKbSelects();
+}
+
+function populateKbSelects(){
+  const lists = {
+    Category: kbConfig.CATEGORIES_LIST,
+    Process: kbConfig.PROCESS_LIST,
+    Owner: kbConfig.DEFAULT_OWNER_LIST,
+    Approved_By: kbConfig.DEFAULT_APPROVER_LIST,
+    Status: kbConfig.DEFAULT_STATUS_LIST
+  };
+  const form = document.getElementById('kbForm');
+  for (const name in lists){
+    const sel = form.elements[name];
+    if (!sel || !lists[name]) continue;
+    sel.innerHTML = "";
+    lists[name].forEach(v => {
+      const opt = document.createElement("option");
+      opt.value = v; opt.text = v;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+/* ======= KB CRUD & List Rendering (from arw12) ======= */
+async function loadKbDocs(){
+  showLoader(true);
+  try {
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    kbDocs = await res.json();
+    renderKB();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('kbDocsTable').innerHTML = `<tr><td colspan="6" class="text-center p-6 text-red-600">Error: ${e.message}</td></tr>`;
+  }
+  showLoader(false);
+}
+
+function renderKB(){
+  const q = (document.getElementById('kbSearchInput').value || '').toLowerCase();
+  const tbody = document.getElementById('kbDocsTable');
+  const f = kbDocs.filter(r =>
+    !q ||
+    (r.Title||'').toLowerCase().includes(q) ||
+    (r.Category||'').toLowerCase().includes(q) ||
+    (r.Process||'').toLowerCase().includes(q) ||
+    (r.Doc_ID||'').toLowerCase().includes(q)
+  );
+
+  tbody.innerHTML = f.length ? f.map(r => `
+    <tr class="border-b hover:bg-gray-50">
+      <td class="px-4">${escHtml(r.Doc_ID||'')}</td>
+      <td class="px-4">${escHtml(r.Title||'')}</td>
+      <td class="px-4">${escHtml(r.Category||'')}</td>
+      <td class="px-4">${escHtml(r.Process||'')}</td>
+<td class="px-4">${statusBadge(r.Status)}</td>
+
+      <td class="px-4 text-right space-x-2 no-print">
+        <button class="view px-2 py-1 border rounded text-xs">View</button>
+        <button class="edit px-2 py-1 border border-brandAccent text-brandAccent rounded text-xs">Edit</button>
+        <button class="del px-2 py-1 border border-red-300 text-red-600 rounded text-xs">Delete</button>
+      </td>
+    </tr>`).join('') : `<tr><td colspan="6" class="text-center p-4 text-gray-500">No records</td></tr>`;
+
+  tbody.querySelectorAll('.view').forEach((b,i) => b.onclick = () => openKbPreview(f[i]));
+  tbody.querySelectorAll('.edit').forEach((b,i) => b.onclick = () => openKbEdit(f[i]));
+  tbody.querySelectorAll('.del').forEach((b,i) => b.onclick = () => deleteKB(f[i]));
+}
+
+/* ======= KB Preview (pagination split + print-ready pages) ======= */
+/* openKbPreview and splitIntoPages based on arw12 implementation */
+function openKbPreview(d){
+  document.getElementById('kbListView').classList.add('hidden');
+  document.getElementById('kbPreviewView').classList.remove('hidden');
+
+  const container = document.getElementById('kbPreviewContainer');
+  container.innerHTML = "";
+  document.getElementById('kbPreviewTitle').textContent = d.Title || "Document Preview";
+
+  let bodyHtml = d.Policy_Body && d.Policy_Body.trim() ? d.Policy_Body : "<p><em>No content available</em></p>";
+  const pages = splitIntoPages(bodyHtml, d);
+
+  pages.forEach((pageContent, index) => {
+    const page = document.createElement('div');
+    page.className = index === 0 ? "paper first-page" : (index === pages.length - 1 ? "paper content-page last-page" : "paper content-page");
+    let pageHtml = "";
+
+    if (index === 0) {
+      pageHtml = `
+        <header class="title-header">
+          <img src="https://americanrangewalls.com/wp-content/uploads/logo-white-text-on-clear-1.png" alt="Logo">
+          <h1>${escHtml(d.Title || "Untitled")}</h1>
+          <div class="title-details">
+            <span>ID: ${escHtml(d.Doc_ID||'N/A')}</span> |
+            <span>Category: ${escHtml(d.Category||'N/A')}</span> |
+            <span>Process: ${escHtml(d.Process||'N/A')}</span> |
+            <span>Status: ${escHtml(d.Status||'N/A')}</span>
+            ${d.Version?`| <span>Ver: ${escHtml(d.Version)}</span>`:''}
+            ${d.Last_Updated?`| <span>Updated: ${formatDate(d.Last_Updated)}</span>`:''}
+          </div>
+        </header>
+      `;
+    } else {
+      pageHtml = `
+        <header style="display:flex;align-items:center;justify-content:space-between;padding-bottom:4px;margin-bottom:0.15in;border-bottom:1px solid #333;height:0.3in;">
+          <div style="font-size:8pt;font-weight:bold;color:#333;">${escHtml(d.Title || "Untitled")}</div>
+          <img src="https://americanrangewalls.com/wp-content/uploads/logo-white-text-on-clear-1.png" style="width:60px;">
+        </header>
+      `;
+    }
+
+    pageHtml += `<div class="paper-content">${pageContent}</div>`;
+    pageHtml += `
+      <footer class="page-footer">
+        <span>Doc ID: ${escHtml(d.Doc_ID||'N/A')}</span>
+        <span>Page ${index+1} of ${pages.length}</span>
+        <span>${formatDate(new Date().toISOString())}</span>
+      </footer>
+    `;
+    page.innerHTML = pageHtml;
+    container.appendChild(page);
+  });
+}
+
+/* Splitting content into page-sized chunks using height measuring technique */
+function splitIntoPages(htmlContent, d){
+  const DPI = 96;
+  const CONTENT_WIDTH = 6.77 * DPI;
+  const REGULAR_PAGE_MAX_H = 9.2 * DPI;
+  const FIRST_PAGE_HEADER_H = 1.6 * DPI;
+  const FIRST_PAGE_MAX_H = REGULAR_PAGE_MAX_H - FIRST_PAGE_HEADER_H;
+
+  const tempContainer = document.createElement('div');
+  tempContainer.style.cssText = `
+    position:absolute;visibility:hidden;width:${CONTENT_WIDTH}px;
+    font-family:'Calibri','Inter','Arial',sans-serif;
+    font-size:11pt;line-height:1.3;box-sizing:border-box;
+    overflow:hidden;padding:0;margin:0;
+  `;
+  document.body.appendChild(tempContainer);
+
+  const contentEl = document.createElement('div');
+  contentEl.innerHTML = htmlContent.trim();
+  if(!contentEl.children.length){
+    document.body.removeChild(tempContainer);
+    return [htmlContent || ""];
+  }
+
+  const elements = Array.from(contentEl.children);
+  const pages = [];
+  let currentPageElements = [];
+  let maxHeight = FIRST_PAGE_MAX_H;
+
+  for(let i=0; i<elements.length; i++){
+    const el = elements[i];
+    const trialElements = [...currentPageElements, el];
+    tempContainer.innerHTML = trialElements.map(e => e.outerHTML).join('');
+    const trialHeight = tempContainer.scrollHeight;
+
+    if(trialHeight > maxHeight && currentPageElements.length > 0){
+      pages.push(currentPageElements.map(e => e.outerHTML).join(''));
+      currentPageElements = [el];
+      maxHeight = REGULAR_PAGE_MAX_H;
+      tempContainer.innerHTML = el.outerHTML;
+      if(tempContainer.scrollHeight > maxHeight){
+        pages.push(el.outerHTML);
+        currentPageElements = [];
+      }
+    } else if(trialHeight > maxHeight && currentPageElements.length === 0){
+      pages.push(el.outerHTML);
+      currentPageElements = [];
+      maxHeight = REGULAR_PAGE_MAX_H;
+    } else {
+      currentPageElements = trialElements;
+    }
+  }
+
+  if(currentPageElements.length > 0) pages.push(currentPageElements.map(e => e.outerHTML).join(''));
+  document.body.removeChild(tempContainer);
+  return pages.length > 0 ? pages : [htmlContent];
+}
+
+/* ======= KB Edit/Delete/Form handling ======= */
+function openKbEdit(d) {
+  editingKbDoc = d || {};
+
+  // Safeguard modal and form
+  const modal = document.getElementById('kbModal');
+  const form = document.getElementById('kbForm');
+  const editor = document.getElementById('kbPolicyEditor');
+
+  if (!form || !modal) {
+    console.error("KB modal or form not found in DOM.");
+    return;
+  }
+
+  document.getElementById('kbModalTitle').textContent = "Edit Document";
+
+  // Populate form fields safely
+  ["Title", "Category", "Process", "Owner", "Approved_By", "Status"].forEach(k => {
+    if (form.elements[k]) form.elements[k].value = d[k] || "";
+  });
+
+  // Ensure we have a Doc_ID (some Apps Script rows might use "id")
+  if (!d.Doc_ID && d.id) d.Doc_ID = d.id;
+
+  // Set editor content, fallback to blank if missing
+  const content = d.Policy_Body || d.policy_body || d.Body || "";
+  editor.innerHTML = content.trim() || "<p>(no content)</p>";
+
+  // Show modal
+  modal.classList.remove('hidden');
+}
+
+
+async function deleteKB(r){
+  if(!confirm(`Delete "${r.Title}"?`)) return;
+  showLoader(true);
+  try {
+    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({_method:'DELETE', Doc_ID: r.Doc_ID, id: r.Doc_ID}) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    if (result.success === false) throw new Error(result.error || "Delete failed");
+    await loadKbDocs();
+    alert('Deleted');
+  } catch(err) {
+    console.error(err);
+    alert("Error: " + err.message);
+  }
+  showLoader(false);
+}
+
+/* KB search input */
+document.getElementById('kbSearchInput').addEventListener('input', renderKB);
+
+/* ======= KB Modal buttons ======= */
+document.getElementById('addDocBtn').onclick = () => {
+  editingKbDoc = null;
+  document.getElementById('kbModalTitle').textContent = "New Document";
+  document.getElementById('kbForm').reset();
+  document.getElementById('kbPolicyEditor').innerHTML = "<p>Enter document content here...</p>";
+  document.getElementById('kbModal').classList.remove('hidden');
+};
+
+document.getElementById('kbCloseModal').onclick = () => { document.getElementById('kbModal').classList.add('hidden'); editingKbDoc = null; };
+document.getElementById('kbCancelBtn').onclick = () => { document.getElementById('kbModal').classList.add('hidden'); editingKbDoc = null; };
+
+document.getElementById('kbBackBtn').onclick = () => {
+  document.getElementById('kbPreviewView').classList.add('hidden');
+  document.getElementById('kbListView').classList.remove('hidden');
+};
+
+document.getElementById('kbPrintBtn').onclick = () => { window.print(); };
+
+/* KB form submission (contenteditable -> hidden field) */
+document.getElementById('kbForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const formEl = e.target;
+  // fill hidden Policy_Body with editor html
+  formEl.elements["Policy_Body"].value = document.getElementById('kbPolicyEditor').innerHTML;
+
+  const data = Object.fromEntries(new FormData(formEl).entries());
+
+if (editingKbDoc) {
+  const docId = editingKbDoc.Doc_ID || editingKbDoc.id || editingKbDoc.ID;
+  if (!docId) {
+    alert("Error: Missing document ID for update.");
+    showLoader(false);
+    return;
+  }
+  data._method = "PUT";
+  data.id = docId;
+  data.Doc_ID = docId;
+}
+
+
+  try {
+    showLoader(true);
+    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(data) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    if (result.success === false) throw new Error(result.error || "Save failed");
+
+    document.getElementById('kbModal').classList.add('hidden');
+    editingKbDoc = null;
+    await loadKbDocs();
+    alert(data._method === "PUT" ? "Document updated!" : "Document created!");
+  } catch(err) {
+    console.error("Save error:", err);
+    alert("Error saving document: " + err.message);
+  } finally {
+    showLoader(false);
+  }
+};
+
+/* Status badge helper */
+function statusBadge(status) {
+  const s = (status || '').toLowerCase();
+  let cls = 'bg-gray-200 text-gray-800';
+  if (s === 'active') cls = 'bg-green-100 text-green-800';
+  else if (s === 'pending review') cls = 'bg-yellow-100 text-yellow-800';
+  else if (s === 'draft') cls = 'bg-gray-100 text-gray-600';
+  else if (s === 'archived') cls = 'bg-red-100 text-red-800';
+  return `<span class="px-2 py-1 rounded-full text-xs font-semibold ${cls}">${escHtml(status || 'N/A')}</span>`;
+}
+
+
+/* ======= Tutorials CRUD (from arw15) ======= */
+async function loadTutorials(){
+  showLoader(true);
+  try {
+    const res = await fetch(API_URL + '?tutorials=1');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    tutorials = data;
+    renderTutorials();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('tutorialTable').innerHTML = `<tr><td colspan="5" class="text-center p-6 text-red-600">Error loading tutorials.</td></tr>`;
+  }
+  showLoader(false);
+}
+
+function renderTutorials(){
+  const q = (document.getElementById('tutSearchInput').value || '').toLowerCase();
+  const tbody = document.getElementById('tutorialTable');
+  const f = tutorials.filter(r => (r.Title||'').toLowerCase().includes(q) || (r.Description||'').toLowerCase().includes(q));
+
+  tbody.innerHTML = f.length ? f.map(r => `
+    <tr class="border-b hover:bg-gray-50">
+      <td class="px-4">${escHtml(r.Tutorial_ID||'')}</td>
+      <td class="px-4">${escHtml(r.Title||'')}</td>
+      <td class="px-4">${escHtml(r.Description||'')}</td>
+      <td class="px-4"><a href="${escHtml(r.Video_URL||r.Drive_Link||'#')}" target="_blank" class="text-brandAccent underline">Open</a></td>
+      <td class="px-4 text-right space-x-2">
+        <button class="edit px-2 py-1 border border-brandAccent text-brandAccent rounded text-xs">Edit</button>
+        <button class="del px-2 py-1 border border-red-300 text-red-600 rounded text-xs">Delete</button>
+      </td>
+    </tr>`).join('') : `<tr><td colspan="5" class="text-center p-4 text-gray-500">No tutorials</td></tr>`;
+
+  tbody.querySelectorAll('.edit').forEach((b,i) => b.onclick = () => editTut(f[i]));
+  tbody.querySelectorAll('.del').forEach((b,i) => b.onclick = () => deleteTut(f[i]));
+}
+
+function handleAddTut(){
+  editingTutorial = null;
+  document.getElementById('tutorialModalTitle').textContent = "New Tutorial Video";
+  document.getElementById('tutorialForm').reset();
+  document.getElementById('tutorialForm').elements["Tutorial_ID"].value = "";
+  document.getElementById('tutorialModal').classList.remove('hidden');
+}
+
+function editTut(r){
+  editingTutorial = r;
+  document.getElementById('tutorialModalTitle').textContent = "Edit Tutorial Video";
+  const form = document.getElementById('tutorialForm');
+
+  form.elements["Tutorial_ID"].value = r.Tutorial_ID || '';
+  form.elements["Title"].value = r.Title || '';
+  form.elements["Drive_Link"].value = r.Video_URL || r.Drive_Link || '';
+  form.elements["Description"].value = r.Description || '';
+  form.elements["Doc_ID"].value = r.Doc_ID || '';
+  form.elements["Created_By"].value = r.Created_By || '';
+
+  document.getElementById('tutorialModal').classList.remove('hidden');
+}
+
+async function deleteTut(r){
+  if(!confirm(`Delete "${r.Title}"?`)) return;
+  showLoader(true);
+  try {
+    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({_method:'DELETE', Tutorial_ID: r.Tutorial_ID, id: r.Tutorial_ID}) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    if (result.success === false) throw new Error(result.error || "Delete failed");
+    await loadTutorials();
+    alert('Deleted');
+  } catch(err) {
+    console.error(err);
+    alert("Error: " + err.message);
+  }
+  showLoader(false);
+}
+
+/* Tutorial modal wiring */
+document.getElementById('addTutBtn').onclick = handleAddTut;
+document.getElementById('tutorialCloseModal').onclick = () => { document.getElementById('tutorialModal').classList.add('hidden'); editingTutorial = null; };
+document.getElementById('tutorialCancelBtn').onclick = () => { document.getElementById('tutorialModal').classList.add('hidden'); editingTutorial = null; };
+
+/* Tutorial form submission */
+document.getElementById('tutorialForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const data = Object.fromEntries(new FormData(form).entries());
+
+  let method = "POST";
+  if (editingTutorial) {
+    method = "PUT";
+    data._method = "PUT";
+    data.id = editingTutorial.Tutorial_ID;
+    data.Tutorial_ID = editingTutorial.Tutorial_ID;
+  } else {
+    // Ensure Tutorial_ID exists for server-side routing if required
+    data.Tutorial_ID = data.Tutorial_ID || "NEW";
+  }
+
+  try {
+    showLoader(true);
+    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(data) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
+    if (result.success === false) throw new Error(result.error || "Save failed");
+
+    document.getElementById('tutorialModal').classList.add('hidden');
+    editingTutorial = null;
+    await loadTutorials();
+    alert(method === "PUT" ? "Tutorial updated!" : "Tutorial created!");
+  } catch(err) {
+    console.error("Tutorial save error:", err);
+    alert("Error saving tutorial: " + err.message);
+  } finally {
+    showLoader(false);
+  }
+};
+
+/* Tutorial search */
+document.getElementById('tutSearchInput').addEventListener('input', renderTutorials);
+
+/* ======= Initial / helper behavior ======= */
+/* Wire search for KB (already above), and trigger center tab loads if user clicks */
+document.addEventListener('DOMContentLoaded', () => {
+  // Optionally preload tutorials or kb depending on common usage:
+  // loadTutorials();
+  // loadKbConfig(); loadKbDocs();
+});
+
+/* End of merged JS */
+</script>
+</body>
+</html>

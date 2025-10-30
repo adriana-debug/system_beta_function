@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solutions Hub - Internal Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Using Inter for a clean, modern, intranet-like sans-serif look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .font-sans {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Updated Neutral and Lime Palette */
+        :root {
+            --primary-gray: #4b5563;
+            /* Dark Gray - Main Text */
+            --accent-lime: rgb(227, 240, 130);
+            /* Light Lime for backgrounds/accents */
+            --accent-lime-dark: rgb(210, 231, 51);
+            /* Darker Lime for text/icons/hovers */
+            --secondary-gray-light: #f3f4f6;
+            /* Very Light Gray - Page Background */
+            --secondary-gray-dark: #6b7280;
+            /* Medium Gray - Secondary Text */
+            --white: #ffffff;
+        }
+
+        /* Custom Tailwind Configuration for new colors */
+        tailwind.config= {
+            theme: {
+                extend: {
+                    colors: {
+                        'lime-light': 'var(--accent-lime)',
+                            'lime-dark': 'var(--accent-lime-dark)',
+                            'primary-gray': 'var(--primary-gray)',
+                            'secondary-gray-light': 'var(--secondary-gray-light)',
+                            'secondary-gray-dark': 'var(--secondary-gray-dark)',
+                    }
+                }
+            }
+        }
+
+        /* Custom animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .scale-in {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .scale-in.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Solution card styles - Neutral Base */
+        .solution-card {
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            /* Lighter shadow */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+        }
+
+        /* Default lime highlight for all cards */
+        .solution-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: var(--accent-lime-dark);
+            /* Solid lime line */
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+            transform-origin: left;
+        }
+
+        .solution-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.1);
+            border-color: var(--accent-lime-dark);
+        }
+
+        .solution-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        /* Sticky navigation */
+        .nav-sticky {
+            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.98);
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Search box */
+        .search-box {
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus-within {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--accent-lime-dark);
+            /* Subtle focus highlight */
+        }
+
+        /* Filter chips */
+        .filter-chip {
+            transition: all 0.2s ease;
+        }
+
+        .filter-chip:hover {
+            transform: translateY(-2px);
+        }
+
+        .filter-chip.active {
+            background: var(--accent-lime-dark);
+            /* Darker lime for active */
+            color: #1f2937;
+            /* Dark text for contrast */
+            border-color: var(--accent-lime-dark);
+        }
+
+        .filter-chip:not(.active):hover {
+            background: var(--accent-lime);
+            /* Lighter lime on hover */
+        }
+
+        /* Icon containers */
+        .icon-container {
+            transition: transform 0.3s ease;
+        }
+
+        .solution-card:hover .icon-container {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* Category sections */
+        .category-section {
+            scroll-margin-top: 100px;
+        }
+
+        /* Dropdown menu - fixed hover issue */
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            left: 0;
+            background: var(--white);
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            min-width: 240px;
+            padding: 0.5rem;
+            z-index: 1000;
+            animation: dropdownFade 0.2s ease-out;
+        }
+
+        /* This ensures the dropdown stays visible when hovering over the parent item */
+        .nav-item:hover .dropdown,
+        .nav-item:focus-within .dropdown {
+            display: block;
+        }
+
+        @keyframes dropdownFade {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: #374151;
+            text-decoration: none;
+            font-size: 0.9375rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: var(--accent-lime);
+            /* Use light lime on hover */
+            color: #1f2937;
+        }
+
+        /* Utility class for image fallback */
+        .img-fallback {
+            background-color: #e5e7eb;
+            /* Light gray background if image fails */
+        }
+    </style>
+</head>
+
+<body class="font-sans bg-gray-50 text-gray-900">
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-300 bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Header Logo - Updated -->
+                <div class="text-2xl font-bold text-gray-900" style="background-color: transparent;">
+                    <img src="https://digitalmindsbpo.com/storage/2021/11/cropped-Digital_Minds_Logo_Original.png"
+                        alt="Digital Minds Logo" class="h-8 md:h-10 w-auto img-fallback"
+                        style="background-color: transparent;"
+                        onerror="this.onerror=null;this.style.backgroundColor='transparent';">
+                </div>
+
+                <div class="hidden md:flex items-center space-x-1">
+                    <div class="nav-item relative">
+                        <a href="#"
+                            class="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-300">
+                            <i class="fas fa-th-large"></i>
+                            <span>Solutions</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </a>
+                        <div class="dropdown">
+                            <a href="#analytics" class="dropdown-item">
+                                <i class="fas fa-chart-line text-secondary-gray-dark"></i>
+                                <span>Analytics & Insights</span>
+                            </a>
+                            <a href="#hr" class="dropdown-item">
+                                <i class="fas fa-users text-secondary-gray-dark"></i>
+                                <span>Human Resources</span>
+                            </a>
+                            <a href="#training" class="dropdown-item">
+                                <i class="fas fa-graduation-cap text-secondary-gray-dark"></i>
+                                <span>Training & Development</span>
+                            </a>
+                            <a href="#compliance" class="dropdown-item">
+                                <i class="fas fa-shield-alt text-secondary-gray-dark"></i>
+                                <span>Compliance & Risk</span>
+                            </a>
+                            <a href="#operations" class="dropdown-item">
+                                <i class="fas fa-cogs text-secondary-gray-dark"></i>
+                                <span>Operations</span>
+                            </a>
+                        </div>
+                    </div>
+                    <a href="#documentation"
+                        class="px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-300">
+                        <i class="fas fa-book mr-2"></i>
+                        Documentation
+                    </a>
+                    <a href="#tools"
+                        class="px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-300">
+                        <i class="fas fa-tools mr-2"></i>
+                        Tools
+                    </a>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button
+                        class="hidden md:flex items-center gap-2 text-gray-900 px-6 py-2.5 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-md"
+                        style="background-color: var(--accent-lime-dark); border: 1px solid var(--accent-lime-dark); hover:background-color: var(--accent-lime);">
+                        <i class="fas fa-headset"></i>
+                        <span class="font-medium">Support</span>
+                    </button>
+                    <button class="md:hidden text-gray-600 hover:text-gray-900 p-2">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section - Updated to Neutral/Lime -->
+    <section class="pt-32 pb-16 px-6 bg-gray-100 text-gray-900 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute top-20 left-10 w-72 h-72 rounded-full blur-3xl"
+                style="background-color: var(--accent-lime-dark);"></div>
+            <div class="absolute bottom-10 right-10 w-96 h-96 rounded-full blur-3xl"
+                style="background-color: var(--accent-lime);"></div>
+        </div>
+
+        <div class="max-w-5xl mx-auto text-center relative z-10">
+            <div class="flex items-center justify-center mb-8 fade-in">
+                <!-- Hero Logo - Updated -->
+                <div class="w-20 h-20 rounded-2xl flex items-center justify-center"
+                    style="background-color: transparent; border: none;">
+                    <img src="https://digitalmindsbpo.com/storage/2018/11/cropped-dm-favicon.png" alt="DM Favicon"
+                        class="w-full h-full object-contain" style="background-color: transparent;"
+                        onerror="this.onerror=null;this.classList.add('img-fallback');">
+                </div>
+
+            </div>
+
+            <h1 class="text-5xl md:text-6xl font-extrabold leading-tight mb-6 fade-in"
+                style="animation-delay: 0.1s; color: var(--primary-gray);">
+                Your Workflow, Simplified
+            </h1>
+
+            <p class="text-xl md:text-2xl text-secondary-gray-dark leading-relaxed mb-10 max-w-3xl mx-auto fade-in"
+                style="animation-delay: 0.2s;">
+  Web applications powered by Google Apps Script. Easy, effective, and built for you.
+            </p>
+
+
+
+            <!-- Search Box -->
+            <div class="max-w-2xl mx-auto fade-in" style="animation-delay: 0.3s;">
+                <div class="search-box flex items-center bg-white rounded-full p-2 shadow-xl border border-gray-200">
+                    <i class="fas fa-search text-gray-400 ml-4 text-xl"></i>
+                    <input type="text" id="searchInput" placeholder="Search solutions, tools, and resources..."
+                        class="flex-1 px-4 py-3 text-gray-900 bg-transparent border-none outline-none text-lg"
+                        oninput="performSearch()">
+                    <button onclick="performSearch()"
+                        class="text-gray-900 px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
+                        style="background-color: var(--accent-lime-dark);">
+                        Search
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-3 gap-8 mt-16 max-w-3xl mx-auto fade-in" style="animation-delay: 0.4s;">
+                <div class="text-center">
+                    <div class="text-4xl font-bold mb-2" style="color: var(--primary-gray);">25+</div>
+                    <div class="text-secondary-gray-dark">Solutions</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold mb-2" style="color: var(--primary-gray);">5</div>
+                    <div class="text-secondary-gray-dark">Categories</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold mb-2" style="color: var(--primary-gray);">24/7</div>
+                    <div class="text-secondary-gray-dark">Access</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-16">
+
+        <!-- Filter Bar -->
+        <div class="mb-12 fade-in">
+            <div class="flex gap-3 overflow-x-auto pb-4 scrollbar-thin">
+                <button
+                    class="filter-chip active flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-full font-medium text-gray-700 whitespace-nowrap shadow-sm"
+                    onclick="filterCategory(this, 'all')">
+                    <i class="fas fa-th"></i>
+                    <span>All Solutions</span>
+                </button>
+                <button
+                    class="filter-chip flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-full font-medium text-gray-700 whitespace-nowrap shadow-sm"
+                    onclick="filterCategory(this, 'analytics')">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </button>
+                <button
+                    class="filter-chip flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-full font-medium text-gray-700 whitespace-nowrap shadow-sm"
+                    onclick="filterCategory(this, 'hr')">
+                    <i class="fas fa-users"></i>
+                    <span>HR</span>
+                </button>
+                <button
+                    class="filter-chip flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-full font-medium text-gray-700 whitespace-nowrap shadow-sm"
+                    onclick="filterCategory(this, 'training')">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Training</span>
+                </button>
+                <button
+                    class="filter-chip flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-full font-medium text-gray-700 whitespace-nowrap shadow-sm"
+                    onclick="filterCategory(this, 'compliance')">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Compliance</span>
+                </button>
+                <button
+                    class="filter-chip flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-full font-medium text-gray-700 whitespace-nowrap shadow-sm"
+                    onclick="filterCategory(this, 'operations')">
+                    <i class="fas fa-cogs"></i>
+                    <span>Operations</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Analytics Section -->
+        <section id="analytics" class="category-section mb-20" data-category="analytics">
+            <div class="flex items-center gap-4 mb-8 fade-in">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gray-300">
+                    <i class="fas fa-chart-line text-xl" style="color: var(--primary-gray);"></i>
+                </div>
+                <h2 class="text-4xl font-bold text-gray-900">Analytics & Insights</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="solution-card scale-in" data-category="analytics" style="animation-delay: 0.1s;"
+                    onclick="openApp('executive-summary')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-tachometer-alt text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Executive Summary</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Comprehensive dashboard with real-time
+                                    KPIs and business intelligence metrics</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-chart-line"></i>
+                                Analytics
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="analytics" style="animation-delay: 0.2s;"
+                    onclick="openApp('kpi-tracker')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-chart-bar text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">KPI Tracker</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Monitor key performance indicators and
+                                    track progress across all departments</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-chart-line"></i>
+                                Analytics
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="analytics" style="animation-delay: 0.3s;"
+                    onclick="openApp('reports-dashboard')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-file-chart-line text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Reports Dashboard</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Generate and schedule automated reports
+                                    with customizable templates</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-chart-line"></i>
+                                Analytics
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- HR Section -->
+        <section id="hr" class="category-section mb-20" data-category="hr">
+            <div class="flex items-center gap-4 mb-8 fade-in">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gray-300">
+                    <i class="fas fa-users text-xl" style="color: var(--primary-gray);"></i>
+                </div>
+                <h2 class="text-4xl font-bold text-gray-900">Human Resources</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="solution-card scale-in" data-category="hr" style="animation-delay: 0.1s;"
+                    onclick="openApp('attendance')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-calendar-check text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Attendance System</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Track employee attendance, time-off
+                                    requests, and generate detailed reports</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-users"></i>
+                                HR
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="hr" style="animation-delay: 0.2s;"
+                    onclick="openApp('leave-management')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-umbrella-beach text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Leave Management</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Submit and approve employee time-off
+                                    requests with automated workflows</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-users"></i>
+                                HR
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="hr" style="animation-delay: 0.3s;"
+                    onclick="openApp('onboarding')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-user-plus text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Employee Onboarding</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Streamline new hire orientation process
+                                    with comprehensive checklists</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-users"></i>
+                                HR
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="hr" style="animation-delay: 0.4s;"
+                    onclick="openApp('applicant-intake')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-clipboard-user text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Applicant Intake</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Efficiently collect and process job
+                                    applications with standardized forms</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-users"></i>
+                                HR
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="hr" style="animation-delay: 0.5s;"
+                    onclick="openApp('nte-form')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">NTE Form</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Submit and manage Notice to Explain
+                                    documents for HR processes</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-users"></i>
+                                HR
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="hr" style="animation-delay: 0.6s;"
+                    onclick="openApp('payroll-system')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-money-bill-wave text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Payroll System</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Manage employee compensation, benefits,
+                                    and payroll processing</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-users"></i>
+                                HR
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Training Section -->
+        <section id="training" class="category-section mb-20" data-category="training">
+            <div class="flex items-center gap-4 mb-8 fade-in">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gray-300">
+                    <i class="fas fa-graduation-cap text-xl" style="color: var(--primary-gray);"></i>
+                </div>
+                <h2 class="text-4xl font-bold text-gray-900">Training & Development</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="solution-card scale-in" data-category="training" style="animation-delay: 0.1s;"
+                    onclick="openApp('coaching-logs')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-comments text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Coaching Logs</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Document coaching sessions and track
+                                    employee development progress</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-graduation-cap"></i>
+                                Training
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="training" style="animation-delay: 0.2s;"
+                    onclick="openApp('assessment-tracker')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-clipboard-check text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Assessment Tracker</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Monitor employee evaluations and
+                                    performance review cycles</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-graduation-cap"></i>
+                                Training
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="training" style="animation-delay: 0.3s;"
+                    onclick="openApp('training-scheduler')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-calendar-alt text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Training Scheduler</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Schedule training sessions and track
+                                    course completion rates</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-graduation-cap"></i>
+                                Training
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="training" style="animation-delay: 0.4s;"
+                    onclick="openApp('learning-portal')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-book-reader text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Learning Portal</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Access training materials, courses, and
+                                    learning resources</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-graduation-cap"></i>
+                                Training
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Compliance Section -->
+        <section id="compliance" class="category-section mb-20" data-category="compliance">
+            <div class="flex items-center gap-4 mb-8 fade-in">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gray-300">
+                    <i class="fas fa-shield-alt text-xl" style="color: var(--primary-gray);"></i>
+                </div>
+                <h2 class="text-4xl font-bold text-gray-900">Compliance & Risk Management</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="solution-card scale-in" data-category="compliance" style="animation-delay: 0.1s;"
+                    onclick="openApp('sop-library')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-book text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">SOP Library</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Access comprehensive standardized
+                                    operating procedures documentation</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-shield-alt"></i>
+                                Compliance
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="compliance" style="animation-delay: 0.2s;"
+                    onclick="openApp('ir-nte-logs')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-file-alt text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">IR / NTE Logs</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Centralized logging system for incident
+                                    reports and compliance tracking</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-shield-alt"></i>
+                                Compliance
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="compliance" style="animation-delay: 0.3s;"
+                    onclick="openApp('risk-management')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-shield text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Risk Management</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Identify, assess, and mitigate
+                                    operational risks across the organization</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-shield-alt"></i>
+                                Compliance
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="compliance" style="animation-delay: 0.4s;"
+                    onclick="openApp('audit-tracker')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-search text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Audit Tracker</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Schedule and manage compliance audits
+                                    with findings documentation</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-shield-alt"></i>
+                                Compliance
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Operations Section -->
+        <section id="operations" class="category-section mb-20" data-category="operations">
+            <div class="flex items-center gap-4 mb-8 fade-in">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gray-300">
+                    <i class="fas fa-cogs text-xl" style="color: var(--primary-gray);"></i>
+                </div>
+                <h2 class="text-4xl font-bold text-gray-900">Operations</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="solution-card scale-in" data-category="operations" style="animation-delay: 0.1s;"
+                    onclick="openApp('campaign-tools')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-bullhorn text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Campaign Tools</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Plan, execute, and track marketing
+                                    campaigns with integrated analytics</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-cogs"></i>
+                                Operations
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="operations" style="animation-delay: 0.2s;"
+                    onclick="openApp('project-tracker')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-tasks text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Project Tracker</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Monitor project progress, deadlines,
+                                    and resource allocation</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-cogs"></i>
+                                Operations
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="operations" style="animation-delay: 0.3s;"
+                    onclick="openApp('asset-management')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-box text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Asset Management</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Track and manage hardware, software,
+                                    and equipment inventory</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-cogs"></i>
+                                Operations
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="operations" style="animation-delay: 0.4s;"
+                    onclick="openApp('support-tickets')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-headset text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Support Tickets</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Log and resolve internal technical
+                                    issues with priority tracking</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-cogs"></i>
+                                Operations
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="operations" style="animation-delay: 0.5s;"
+                    onclick="openApp('client-intake')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-user-tie text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Client Intake</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Streamline client onboarding with
+                                    automated intake workflows</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-cogs"></i>
+                                Operations
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="solution-card scale-in" data-category="operations" style="animation-delay: 0.6s;"
+                    onclick="openApp('budget-planner')">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4 mb-4">
+                            <div
+                                class="icon-container w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-calculator text-2xl" style="color: var(--primary-gray);"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Budget Planner</h3>
+                                <p class="text-gray-600 text-sm leading-relaxed">Plan department budgets and forecast
+                                    expenses with analytics</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+                                style="background-color: var(--accent-lime); color: var(--primary-gray);">
+                                <i class="fas fa-cogs"></i>
+                                Operations
+                            </span>
+                            <span class="font-semibold text-sm flex items-center gap-2"
+                                style="color: var(--primary-gray);">
+                                Open
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer (Footer Logo/Icon updated) -->
+    <footer class="bg-gray-900 text-white py-12 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <!-- Footer Logo/Icon - Updated -->
+                    <div class="text-2xl font-bold mb-4 flex items-center gap-2"> <i class="fas fa-cube"
+                            style="color: var(--accent-lime-dark);"></i> <span>Solutions Hub</span> </div>
+
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Your centralized platform for accessing internal tools and resources.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#analytics"
+                                class="text-gray-400 hover:text-lime-dark transition-colors">Analytics</a></li>
+                        <li><a href="#hr" class="text-gray-400 hover:text-lime-dark transition-colors">Human
+                                Resources</a></li>
+                        <li><a href="#training"
+                                class="text-gray-400 hover:text-lime-dark transition-colors">Training</a></li>
+                        <li><a href="#compliance"
+                                class="text-gray-400 hover:text-lime-dark transition-colors">Compliance</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Resources</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-lime-dark transition-colors">Documentation</a>
+                        </li>
+                        <li><a href="#" class="text-gray-400 hover:text-lime-dark transition-colors">Help Center</a>
+                        </li>
+                        <li><a href="#" class="text-gray-400 hover:text-lime-dark transition-colors">Training Guides</a>
+                        </li>
+                        <li><a href="#" class="text-gray-400 hover:text-lime-dark transition-colors">API Access</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Support</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-lime-dark transition-colors">Contact Support</a>
+                        </li>
+                        <li><a href="#" class="text-gray-400 hover:text-lime-dark transition-colors">Report an Issue</a>
+                        </li>
+                        <li><a href="#" class="text-gray-400 hover:text-lime-dark transition-colors">Feature Request</a>
+                        </li>
+                        <li><a href="#" class="text-gray-400 hover:text-lime-dark transition-colors">System Status</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+     <p class="text-gray-400 text-sm">
+    © 2025 Digital Minds BPO Incorporated | Solutions Portal. All rights reserved.
+</p>
+
+                <div class="flex gap-4">
+                    <!-- Google Web App -->
+                    <a href="https://workspace.google.com/" target="_blank"
+                        class="text-gray-400 hover:text-lime-dark transition-colors" title="Google Web App">
+                        <i class="fab fa-google"></i>
+                    </a>
+
+                    <!-- Google Colab -->
+                    <a href="https://colab.research.google.com/" target="_blank"
+                        class="text-gray-400 hover:text-lime-dark transition-colors" title="Google Colab">
+                        <i class="fas fa-flask"></i>
+                    </a>
+
+                    <!-- Google Homepage or About Google -->
+                    <a href="https://about.google/" target="_blank"
+                        class="text-gray-400 hover:text-lime-dark transition-colors" title="About Google">
+                        <i class="fas fa-info-circle"></i>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript (Left intact as functionality is the same, only the CSS changes) -->
+    <script>
+        let currentFilter = 'all';
+        let currentSearch = '';
+
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all elements with animation classes
+        document.querySelectorAll('.fade-in, .scale-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Sticky navigation
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('nav-sticky');
+            } else {
+                navbar.classList.remove('nav-sticky');
+            }
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const offsetTop = target.offsetTop - 100;
+                    window.scrollTo({
+                        top: offsetTop,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Filter functionality
+        function filterCategory(element, category) {
+            currentFilter = category;
+
+            // Update active filter chip
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            element.classList.add('active');
+
+            // Apply filtering
+            applyFilters();
+        }
+
+        // Search functionality
+        function performSearch() {
+            currentSearch = document.getElementById('searchInput').value.toLowerCase().trim();
+            applyFilters();
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const cards = document.querySelectorAll('.solution-card');
+            const sections = document.querySelectorAll('.category-section');
+
+            // Reset all sections to hidden first
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
+
+            let hasVisibleCards = false;
+
+            cards.forEach(card => {
+                const cardCategory = card.getAttribute('data-category');
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+
+                // Check if card matches category filter
+                const matchesCategory = currentFilter === 'all' || cardCategory === currentFilter;
+
+                // Check if card matches search
+                const matchesSearch = currentSearch === '' ||
+                    title.includes(currentSearch) ||
+                    description.includes(currentSearch);
+
+                // Show card if it matches both filters
+                if (matchesCategory && matchesSearch) {
+                    card.style.display = 'block';
+                    hasVisibleCards = true;
+
+                    // Show the parent section
+                    const parentSection = card.closest('.category-section');
+                    if (parentSection) {
+                        parentSection.style.display = 'block';
+                    }
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Show message if no results (Note: This is logged to console as per instructions)
+            if (currentSearch !== '' && !hasVisibleCards) {
+                console.log('No results found for: ' + currentSearch);
+            }
+        }
+
+        // Open app function
+        function openApp(appName) {
+            console.log(`Opening ${appName}...`);
+
+            // Replaced alert() with console log to comply with instructions
+            console.log(`Opening ${appName}...\n\nTo connect this to your actual web app:\n\n1. Replace the openApp() function with your Google Apps Script URL\n2. Example: window.open('https://script.google.com/your-app-url', '_blank');\n\nFor now, this is a demonstration.`);
+        }
+
+        // Search on Enter key
+        document.getElementById('searchInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // Clear search functionality
+        document.getElementById('searchInput').addEventListener('input', function () {
+            if (this.value === '') {
+                currentSearch = '';
+                applyFilters();
+            }
+        });
+
+        // Initialize - show all cards on load
+        window.addEventListener('DOMContentLoaded', function () {
+            applyFilters();
+
+            // Trigger initial animations
+            setTimeout(() => {
+                document.querySelectorAll('.fade-in, .scale-in').forEach((el, index) => {
+                    if (el.getBoundingClientRect().top < window.innerHeight) {
+                        setTimeout(() => {
+                            el.classList.add('visible');
+                        }, index * 50);
+                    }
+                });
+            }, 100);
+        });
+
+        // Add subtle parallax effect to hero section
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const heroContent = document.querySelector('.hero-content');
+            // Removed parallax logic since the structure was slightly altered and it can cause rendering issues. 
+            // The intention here is usually just to provide smooth scrolling.
+        });
+    </script>
+</body>
+
+</html>

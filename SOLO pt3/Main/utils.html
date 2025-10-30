@@ -1,0 +1,175 @@
+<script>
+  // Utility functions
+  const AppUtils = {
+    // In-memory theme storage (since localStorage may not be available)
+    _themePreference: null,
+
+    // Spinner controls
+    showSpinner() {
+      const spinner = document.getElementById('loadingSpinner');
+      if (spinner) {
+        spinner.classList.remove('invisible', 'opacity-0');
+        spinner.classList.add('visible', 'opacity-100');
+        document.body.style.overflow = 'hidden';
+      }
+    },
+
+    hideSpinner() {
+      const spinner = document.getElementById('loadingSpinner');
+      if (spinner) {
+        spinner.classList.remove('visible', 'opacity-100');
+        spinner.classList.add('invisible', 'opacity-0');
+        document.body.style.overflow = '';
+      }
+    },
+
+    // Theme management
+    initTheme() {
+      // Try to get stored theme preference
+      let storedTheme = this._themePreference;
+
+      // Try localStorage if available
+      try {
+        if (typeof localStorage !== 'undefined') {
+          storedTheme = localStorage.getItem('theme');
+        }
+      } catch (e) {
+        console.log('localStorage not available, using session theme');
+      }
+
+      // Check system preference
+      const prefersDark =
+        window.matchMedia &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+      // Determine initial theme
+      const initialDark =
+        storedTheme === 'dark' || (storedTheme === null && prefersDark);
+
+      // Apply theme on <body>
+      if (initialDark) {
+        document.body.classList.add('dark');
+      } else {
+        document.body.classList.remove('dark');
+      }
+
+      this.updateThemeIcon(initialDark);
+      this._themePreference = initialDark ? 'dark' : 'light';
+    },
+
+    toggleTheme() {
+      const isDark = document.body.classList.toggle('dark');
+      const theme = isDark ? 'dark' : 'light';
+
+      // Store in memory
+      this._themePreference = theme;
+
+      // Try to store in localStorage
+      try {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('theme', theme);
+        }
+      } catch (e) {
+        console.log('localStorage not available, theme stored in session only');
+      }
+
+      this.updateThemeIcon(isDark);
+    },
+
+    updateThemeIcon(isDark) {
+      const iconHTML = isDark
+        ? '<span class="material-symbols-rounded">light_mode</span>'
+        : '<span class="material-symbols-rounded">dark_mode</span>';
+      const toggle = document.getElementById('themeToggle');
+      if (toggle) {
+        toggle.innerHTML = iconHTML;
+      }
+    },
+
+    // Drawer controls
+    toggleDrawer(open) {
+      const drawer = document.getElementById('drawer');
+      const overlay = document.getElementById('overlay');
+      if (!drawer || !overlay) return;
+
+      if (open) {
+        drawer.classList.add('drawer-open');
+        overlay.classList.remove('hidden');
+      } else {
+        drawer.classList.remove('drawer-open');
+        overlay.classList.add('hidden');
+      }
+    },
+
+    // Data parsing utilities
+    parseValue(value) {
+      if (typeof value === 'number') return value;
+      if (typeof value === 'string') {
+        const cleaned = value.replace(/[^0-9.-]/g, '');
+        return cleaned ? parseFloat(cleaned) : 0;
+      }
+      return 0;
+    },
+
+    formatNumber(val) {
+      const num = this.parseValue(val);
+      return num !== 0 ? num.toLocaleString() : '—';
+    },
+
+    formatPercent(val) {
+      if (val === 'N/A' || val === null || val === undefined) return '—';
+      const num = this.parseValue(val);
+      return num > 0 ? num.toFixed(1) + '%' : '—';
+    },
+
+    formatHours(val) {
+      const num = this.parseValue(val);
+      return num > 0 ? num.toFixed(1) + ' hrs' : '—';
+    },
+
+    formatDecimal(val) {
+      const num = parseFloat(val);
+      return isNaN(num) ? '—' : num.toFixed(1);
+    },
+
+    // HTTP request utility
+    async fetchData(url) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+      } catch (error) {
+        console.error('Fetch error:', error);
+        throw error;
+      }
+    },
+  };
+
+  // Initialize theme when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      AppUtils.initTheme();
+    });
+  } else {
+    AppUtils.initTheme();
+  }
+
+  // Watch for system theme changes
+  if (window.matchMedia) {
+    window
+      .matchMedia('(prefers-color-scheme: dark)')
+      .addEventListener('change', (e) => {
+        if (AppUtils._themePreference === null) {
+          const isDark = e.matches;
+          if (isDark) {
+            document.body.classList.add('dark');
+          } else {
+            document.body.classList.remove('dark');
+          }
+          AppUtils.updateThemeIcon(isDark);
+        }
+      });
+  }
+</script>

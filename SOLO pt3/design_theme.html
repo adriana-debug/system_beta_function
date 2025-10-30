@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resource Dashboard</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            'brand-accent': '#CBEB33',
+            'card-dark': '#1e293b',
+            'border-dark': '#334155',
+            'text-dark': '#f1f5f9',
+            'bg-dark': '#0f172a',
+            'bg-light': '#f8fafc'
+          },
+        },
+      },
+    };
+  </script>
+</head>
+
+<body class="bg-bg-light dark:bg-bg-dark text-gray-900 dark:text-text-dark transition-colors duration-300 font-sans min-h-screen p-6">
+
+  <!-- Header -->
+  <header class="flex justify-between items-center mb-8 pb-4 border-b dark:border-border-dark">
+    <h1 class="text-2xl font-bold text-brand-accent">Knowledge Base Overview</h1>
+    <button id="toggleTheme" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-card-dark transition">
+      <span id="theme-icon" class="material-symbols-outlined">dark_mode</span>
+    </button>
+  </header>
+
+  <!-- KPI Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="p-5 bg-white dark:bg-card-dark rounded-xl shadow text-center border-t-4 border-blue-500">
+      <p class="text-sm text-gray-500 dark:text-gray-400">Documents</p>
+      <p class="text-3xl font-bold mt-2 text-blue-500">124</p>
+    </div>
+    <div class="p-5 bg-white dark:bg-card-dark rounded-xl shadow text-center border-t-4 border-green-500">
+      <p class="text-sm text-gray-500 dark:text-gray-400">SOP</p>
+      <p class="text-3xl font-bold mt-2 text-green-500">36</p>
+    </div>
+    <div class="p-5 bg-white dark:bg-card-dark rounded-xl shadow text-center border-t-4 border-yellow-500">
+      <p class="text-sm text-gray-500 dark:text-gray-400">FAQ</p>
+      <p class="text-3xl font-bold mt-2 text-yellow-500">58</p>
+    </div>
+    <div class="p-5 bg-white dark:bg-card-dark rounded-xl shadow text-center border-t-4 border-pink-500">
+      <p class="text-sm text-gray-500 dark:text-gray-400">Tutorials</p>
+      <p class="text-3xl font-bold mt-2 text-pink-500">22</p>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white dark:bg-card-dark p-6 rounded-xl shadow-lg">
+    <h2 class="text-xl font-bold mb-4">Latest Resources</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200 dark:divide-border-dark">
+        <thead class="bg-gray-50 dark:bg-gray-800">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Title</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Category</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Last Updated</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Owner</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 dark:divide-border-dark">
+          <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-6 py-4 text-sm font-medium">Customer Receipt Guide</td>
+            <td class="px-6 py-4 text-sm">SOP</td>
+            <td class="px-6 py-4 text-sm">Oct 20, 2025</td>
+            <td class="px-6 py-4 text-sm">Ops Team</td>
+          </tr>
+          <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-6 py-4 text-sm font-medium">Refund Process Walkthrough</td>
+            <td class="px-6 py-4 text-sm">Tutorial</td>
+            <td class="px-6 py-4 text-sm">Oct 18, 2025</td>
+            <td class="px-6 py-4 text-sm">Finance</td>
+          </tr>
+          <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-6 py-4 text-sm font-medium">Shipping FAQ</td>
+            <td class="px-6 py-4 text-sm">FAQ</td>
+            <td class="px-6 py-4 text-sm">Oct 15, 2025</td>
+            <td class="px-6 py-4 text-sm">Support</td>
+          </tr>
+          <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+            <td class="px-6 py-4 text-sm font-medium">Order Lifecycle Policy</td>
+            <td class="px-6 py-4 text-sm">Document</td>
+            <td class="px-6 py-4 text-sm">Oct 10, 2025</td>
+            <td class="px-6 py-4 text-sm">Operations</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const toggle = document.getElementById('toggleTheme');
+    const icon = document.getElementById('theme-icon');
+    toggle.addEventListener('click', () => {
+      const isDark = document.body.classList.toggle('dark');
+      icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+    });
+    // Start in dark mode by default
+    document.body.classList.add('dark');
+  </script>
+
+</body>
+</html>
