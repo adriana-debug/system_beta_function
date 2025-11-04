@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CSR Monitoring Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --panel: #ffffff;
+      --muted: #6c757d;
+      --text: #333333;
+      --brand: #e31d24; /* Updated Brand Color: Red */
+      --brand-hover: #c91820; /* Darker Red */
+      --warn: #ffc107;
+      --danger: #dc3545;
+      --success: #28a745;
+      --primary: #007bff;
+      --border: #e9ecef;
+      --shadow: 0 4px 12px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      line-height: 1.6;
+    }
+
+    /* Header */
+    header {
+      padding: 16px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .logo-img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 0 0 2px var(--brand);
+    }
+
+    .title {
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: 0.2px;
+      color: var(--text);
+    }
+
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+      padding: 6px 12px;
+      background: rgba(40, 167, 69, 0.1);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--success);
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Tab Navigation */
+    .tab-nav {
+      margin: 20px auto;
+      max-width: 1400px;
+      padding: 0 24px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tab-button {
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .tab-button:hover {
+      background: var(--border);
+      color: var(--text);
+      transform: translateY(-1px);
+    }
+
+    .tab-button.active {
+      background: var(--brand);
+      color: white;
+      border-color: var(--brand);
+      box-shadow: 0 4px 12px rgba(0, 86, 179, 0.3); /* Updated RGBA */
+    }
+
+    /* Container & Grid */
+    .container {
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    /* KPI Cards */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .kpi {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .kpi::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--brand);
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .kpi .value {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      color: var(--text);
+    }
+
+    /* Panel */
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      min-height: 250px;
+    }
+
+    .panel h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      border-bottom: 2px solid var(--brand);
+      padding-bottom: 10px;
+    }
+
+    .panel small {
+      color: var(--muted);
+      font-size: 13px;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    /* Filter Controls */
+    .filter-controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 12px 10px 40px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      transition: var(--transition);
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.1); /* Updated RGBA */
+    }
+
+    .search-box::before {
+      content: '🔍';
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+    }
+
+    .filter-select {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: var(--transition);
+      background: var(--panel);
+      font-weight: 500;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.1); /* Updated RGBA */
+    }
+
+    .sort-indicator {
+      display: inline-block;
+      margin-left: 6px;
+      font-size: 10px;
+      opacity: 0.6;
+    }
+
+    /* Tables */
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    .table th,
+    .table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    .table.compact th,
+    .table.compact td {
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+
+    .table th {
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 11px;
+      background: #fcfcfc;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .table th:hover {
+      background: #f0f0f0;
+    }
+
+    .table tbody tr {
+      transition: background 0.2s ease;
+    }
+
+    .table tbody tr:hover {
+      background: #f8f9fa;
+      cursor: pointer;
+    }
+
+    /* Status Pills & Badges */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-pill .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+    }
+
+    .status-pill .dot.green { background: var(--success); }
+    .status-pill.green-bg { background: rgba(40, 167, 69, 0.15); color: var(--success); }
+    .status-pill .dot.yellow { background: var(--warn); }
+    .status-pill.yellow-bg { background: rgba(255, 193, 7, 0.15); color: #d39e00; }
+    .status-pill .dot.red { background: var(--danger); }
+    .status-pill.red-bg { background: rgba(220, 53, 69, 0.15); color: var(--danger); }
+
+    .ratio-badge {
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 12px;
+      display: inline-block;
+    }
+
+    .ratio-green {
+      background: rgba(40, 167, 69, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(40, 167, 69, 0.35);
+    }
+
+    .ratio-yellow {
+      background: rgba(255, 193, 7, 0.15);
+      color: #d39e00;
+      border: 1px solid rgba(255, 193, 7, 0.35);
+    }
+
+    .ratio-red {
+      background: rgba(220, 53, 69, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(220, 53, 69, 0.35);
+    }
+
+    /* Buttons */
+    .action-button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .action-button:hover {
+      background: #0056b3;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+    }
+
+    .action-button.secondary {
+      background: var(--muted);
+    }
+
+    .action-button.secondary:hover {
+      background: #5a6268;
+    }
+
+    /* Loading Spinner */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .loading-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid var(--border);
+      border-top-color: var(--brand);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      margin-top: 16px;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      backdrop-filter: blur(2px);
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--panel);
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 700px;
+      width: 90%;
+      max-height: 85vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 20px;
+      color: var(--muted);
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover {
+      background: var(--danger);
+      color: white;
+    }
+
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: var(--transition);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.1); /* Updated RGBA */
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* Chart Containers */
+    .chart-container {
+      height: 300px;
+      width: 100%;
+    }
+
+    .chart-container.tall {
+      height: 450px;
+    }
+
+    /* Legend Tab Styles */
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .legend-card {
+      background: linear-gradient(135deg, rgba(0, 86, 179, 0.05) 0%, rgba(0, 86, 179, 0.02) 100%); /* Updated RGBA */
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--brand);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .legend-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .legend-card p {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 960px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .kpis {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .tab-nav {
+        overflow-x: auto;
+        padding-bottom: 10px;
+      }
+
+      .modal {
+        width: 95%;
+        max-height: 90vh;
+      }
+
+      .filter-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-box {
+        min-width: 100%;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .kpis {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        padding: 12px 16px;
+      }
+
+      .title {
+        font-size: 16px;
+      }
+    }
+
+    /* Utility Classes */
+    .text-center { text-align: center; }
+    .mt-4 { margin-top: 16px; }
+    .mb-4 { margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div style="text-align: center;">
+      <div class="spinner"></div>
+      <div class="loading-text">Loading dashboard...</div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Modal Title</h2>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        </div>
+      <div class="modal-footer">
+        <button class="action-button secondary" onclick="closeModal()">Cancel</button>
+        <button class="action-button" id="modalSaveBtn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMSufsXBE_XuqFjYCWHcAKDflY7wzyupxgdA&s" alt="CSR Logo" class="logo-img">
+    <div class="title" id="portalTitle">Error Rate Ratio</div>
+    <div class="live-indicator">
+      <div class="live-dot"></div>
+      <span>Live</span>
+    </div>
+  </header>
+
+  <nav class="tab-nav">
+    <button class="tab-button active" data-tab="error-rate-ratio">Error Rate Ratio</button>
+    <button class="tab-button" data-tab="error-log">Error Log</button>
+    <button class="tab-button" data-tab="order-flow">Order Flow</button>
+    <button class="tab-button" data-tab="legend">Resolution Guide</button>
+  </nav>
+
+  <main class="container">
+    <section id="tab-error-rate-ratio" class="tab-content active">
+      <section class="kpis">
+        <div class="kpi">
+          <div class="label">Overall Error Rate</div>
+          <div class="value" id="kpi-overall">--</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Highest Stage Ratio</div>
+          <div class="value" id="kpi-highest">--</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Total Transactions (Log)</div>
+          <div class="value" id="kpi-transactions">--</div>
+        </div>
+        <div class="kpi">
+          <div class="label">Total Errors (Log)</div>
+          <div class="value" id="kpi-errors">--</div>
+        </div>
+      </section>
+
+      <div class="grid">
+        <section class="panel">
+          <h3>Error Rate by Lifecycle Stage</h3>
+          <small>Proportion of errors per total transactions at each stage</small>
+          <div class="chart-container" id="stageChartContainer"></div>
+        </section>
+
+        <section class="panel">
+          <h3>Monthly Error Rate Trend (Placeholder)</h3>
+          <small>Track improvements against 0.75% target</small>
+          <div class="chart-container" id="trendChartContainer"></div>
+        </section>
+
+        <section class="panel">
+          <h3>Stage Details & Thresholds</h3>
+          <small>Calculated from live log data</small>
+          <table class="table compact" id="stageTable">
+            <thead>
+              <tr>
+                <th>Stage</th>
+                <th>Transactions</th>
+                <th>Errors</th>
+                <th>Ratio</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="5" class="text-center text-muted">Loading Stage Metrics...</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="panel">
+          <h3>Oldest Unresolved Errors</h3>
+          <small>Critical errors requiring immediate attention</small>
+          <table class="table compact" id="oldestErrorLogTable">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Stage</th>
+                <th>Breach Duration</th>
+                <th>Timestamp</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="5" class="text-center text-muted">Loading Log Data...</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="panel" style="grid-column: span 2;">
+          <h3>D1-D13 Stage Error Rates</h3>
+          <small>Error rate percentage across all fulfillment stages</small>
+          <div class="chart-container" id="d1ToD13ChartContainer"></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="tab-error-log" class="tab-content">
+      <div class="panel">
+        <h3>Full Error Log Entries</h3>
+        <small>Complete history of stage-to-stage breaches and system messages</small>
+        
+        <div class="filter-controls">
+          <div class="search-box">
+            <input type="text" id="errorSearchInput" placeholder="Search by Order ID, Stage, System, or Message...">
+          </div>
+          <select class="filter-select" id="statusFilter">
+            <option value="all">All Statuses</option>
+            <option value="Unresolved">Unresolved</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Investigating">Investigating</option>
+            <option value="Delayed">Delayed</option>
+          </select>
+          <select class="filter-select" id="sortBy">
+            <option value="breach-desc">Breach: Highest First</option>
+            <option value="breach-asc">Breach: Lowest First</option>
+            <option value="status-asc">Status: A-Z</option>
+            <option value="status-desc">Status: Z-A</option>
+          </select>
+        </div>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th data-sort="id">Order ID</th>
+              <th data-sort="stage">Stage</th>
+              <th>Expected → Actual</th>
+              <th>Pass/Fail</th>
+              <th data-sort="breach">Breach <span class="sort-indicator">▼</span></th>
+              <th>System</th>
+              <th>Message</th>
+              <th data-sort="status">Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="fullErrorLogTableBody">
+            <tr><td colspan="9" class="text-center text-muted">Loading Error Log...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="tab-order-flow" class="tab-content">
+      <div class="grid">
+        <section class="panel" style="grid-column: span 2;">
+          <h3>Order Fulfillment Stage Time Thresholds</h3>
+          <small>Maximum expected duration for each stage (hover for details)</small>
+          <div class="chart-container tall" id="orderFlowChartContainer"></div>
+        </section>
+
+        <section class="panel" style="grid-column: span 2;">
+          <h3>Order Flow Definition & Expected Timings</h3>
+          <small>Detailed metrics for end-to-end order processing lifecycle</small>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Stage / Metric</th>
+                <th>Threshold (Minutes)</th>
+                <th>Threshold (Hours)</th>
+                <th>Pass/Fail Logic</th>
+                <th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody id="orderFlowTableBody">
+              <tr><td colspan="5" class="text-center text-muted">Loading Order Flow Data...</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </section>
+
+    <section id="tab-legend" class="tab-content">
+      <div class="panel">
+        <h3>Status Indicators</h3>
+        <small>Understanding the color-coded system status indicators</small>
+        
+        <div class="legend-grid mt-4">
+          <div class="legend-card">
+            <h4><span class="status-pill green-bg"><span class="dot green"></span>Pass / Resolved</span></h4>
+            <p>Order processed within expected timeframe or issue has been successfully resolved. No action required.</p>
+          </div>
+          
+          <div class="legend-card">
+            <h4><span class="status-pill yellow-bg"><span class="dot yellow"></span>Watch / Investigating</span></h4>
+            <p>Potential delay detected. Order is at-risk and requires verification. Monitor closely for escalation.</p>
+          </div>
+          
+          <div class="legend-card">
+            <h4><span class="status-pill red-bg"><span class="dot red"></span>Fail / Unresolved</span></h4>
+            <p>Time threshold breached or critical failure detected. Immediate action required. Escalate to relevant team.</p>
+          </div>
+        </div>
+
+        <h3 class="mt-4">Stage-Specific Resolution Guide</h3>
+        <small>Common errors, causes, and resolution steps for each fulfillment stage</small>
+        
+        <table class="table mt-4">
+          <thead>
+            <tr>
+              <th style="width: 20%;">Stage</th>
+              <th style="width: 20%;">Common Error</th>
+              <th style="width: 25%;">Likely Cause</th>
+              <th style="width: 35%;">Resolution Steps</th>
+            </tr>
+          </thead>
+          <tbody id="resolutionGuideTableBody">
+            <tr><td colspan="4" class="text-center text-muted">Loading Resolution Guide...</td></tr>
+          </tbody>
+        </table>
+
+        <h3 class="mt-4">Escalation Procedures</h3>
+        <small>When and how to escalate issues to appropriate teams</small>
+        
+        <div class="legend-grid mt-4">
+          <div class="legend-card">
+            <h4>Level 1: CSR Team</h4>
+            <p><strong>Timeframe:</strong> 0-2 hours after detection<br>
+            <strong>Actions:</strong> Basic troubleshooting, manual retries, status updates<br>
+            <strong>Tools:</strong> Dashboard, order management system</p>
+          </div>
+          
+          <div class="legend-card">
+            <h4>Level 2: Technical Support</h4>
+            <p><strong>Timeframe:</strong> 2-4 hours after detection<br>
+            <strong>Actions:</strong> API diagnostics, integration fixes, webhook repairs<br>
+            <strong>Tools:</strong> System logs, API monitoring, debug tools</p>
+          </div>
+          
+          <div class="legend-card">
+            <h4>Level 3: Engineering Team</h4>
+            <p><strong>Timeframe:</strong> 4+ hours or critical issues<br>
+            <strong>Actions:</strong> System architecture fixes, code deployment, infrastructure changes<br>
+            <strong>Tools:</strong> Full system access, deployment pipelines</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // --- Configuration ---
+    // !!! IMPORTANT: Replace this with your deployed Google Apps Script Web App URL !!!
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzJm2eVJnaEqahpAvjSfLO6nSzBEkh6VU8KRQVqB1IvhDSqZXwBD9E9wzNy-E9qnaalKQ/exec';
+    const BRAND_COLOR = '#e31d24'; 
+    
+    // --- Global Data Structures (Populated from Apps Script) ---
+    let errorLogEntries = [];
+    let orderFlowData = [];
+    let resolutionGuideData = [];
+    let stageMetrics = {}; // Calculated on client-side from errorLogEntries
+
+    // --- Utility Functions ---
+    const fmtNum = n => n.toLocaleString();
+    const fmtPct = r => (r * 100).toFixed(2) + '%';
+    
+    function ratioClass(r) {
+      // Assuming r is the error rate (0 to 1)
+      if (r < 0.01) return 'ratio-green';
+      if (r < 0.03) return 'ratio-yellow';
+      return 'ratio-red';
+    }
+    
+    function statusDot(status) {
+      let colorClass, bgClass;
+      if (status === 'Resolved' || status === 'Pass') {
+        colorClass = 'green';
+        bgClass = 'green-bg';
+      } else if (status === 'Unresolved' || status === 'Fail') {
+        colorClass = 'red';
+        bgClass = 'red-bg';
+      } else {
+        colorClass = 'yellow';
+        bgClass = 'yellow-bg';
+      }
+      return `<span class="status-pill ${bgClass}"><span class="dot ${colorClass}"></span>${status}</span>`;
+    }
+    
+    function formatDuration(minutes) {
+      if (minutes <= 0) return '0m';
+      let totalSeconds = Math.round(minutes * 60);
+      const d = Math.floor(totalSeconds / 86400);
+      totalSeconds -= d * 86400;
+      const h = Math.floor(totalSeconds / 3600);
+      totalSeconds -= h * 3600;
+      const m = Math.floor(totalSeconds / 60);
+      const s = Math.floor(totalSeconds % 60);
+      let parts = [];
+      if (d > 0) parts.push(d + 'd');
+      if (h > 0) parts.push(h + 'h');
+      if (m > 0) parts.push(m + 'm');
+      if (s > 0 && parts.length === 0) parts.push(s + 's');
+      else if (s > 0 && parts.length < 3) parts.push(s + 's');
+      if (parts.length === 0 && minutes > 0) return Math.ceil(minutes * 60) + 's';
+      return parts.join(' ');
+    }
+
+    // --- Loading & Modal Functions ---
+    function showLoading() {
+      document.getElementById('loadingOverlay').classList.add('active');
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.remove('active');
+    }
+
+    function openModal(title, content, saveCallback) {
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalBody').innerHTML = content;
+      document.getElementById('modalOverlay').classList.add('active');
+      
+      const saveBtn = document.getElementById('modalSaveBtn');
+      // Clone and replace to remove all previous event listeners
+      const newSaveBtn = saveBtn.cloneNode(true);
+      saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+      newSaveBtn.onclick = saveCallback;
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+    }
+
+    function showNotification(message, isError = false) {
+      const notif = document.createElement('div');
+      notif.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 24px;
+        background: ${isError ? 'var(--danger)' : 'var(--success)'};
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 10001;
+        animation: slideIn 0.3s ease;
+      `;
+      notif.textContent = message;
+      document.body.appendChild(notif);
+      setTimeout(() => {
+        // Simple slide-out (needs @keyframes slideIn/Out defined in global CSS or here)
+        notif.style.opacity = '0';
+        setTimeout(() => notif.remove(), 300);
+      }, 3000);
+    }
+    
+    // --- Data Fetching and Updating ---
+
+    async function fetchData() {
+        if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') {
+            alert('Please update the APPS_SCRIPT_URL in the JavaScript section.');
+            hideLoading();
+            return;
+        }
+
+        showLoading();
+        try {
+            const response = await fetch(`${APPS_SCRIPT_URL}?action=getAllData`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const data = await response.json();
+            
+            if (data.error) throw new Error(data.error);
+
+            // 1. Assign fetched data to global variables
+            errorLogEntries = data.errorLogEntries || [];
+            orderFlowData = data.orderFlowData || [];
+            resolutionGuideData = data.resolutionGuideData || [];
+
+            // 2. Format timestamps and calculate metrics
+            errorLogEntries.forEach(e => {
+              if (e.timestamp) {
+                // Apps Script returns a date string, convert it to a Date object
+                e.timestamp = new Date(e.timestamp);
+              }
+            });
+
+            calculateAndPopulateAllData();
+
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            showNotification('Failed to load dashboard data. Check Console/Apps Script logs.', true);
+        } finally {
+            hideLoading();
+        }
+    }
+
+    async function saveErrorStatus(rowIndex, newStatus, newMessage) {
+        showLoading();
+        try {
+            const response = await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'updateErrorStatus',
+                    orderId: errorLogEntries.find(e => e.rowIndex === rowIndex).id, // Use ID for lookup
+                    rowIndex: rowIndex,
+                    newStatus: newStatus,
+                    newMessage: newMessage
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showNotification(`Order ${errorLogEntries.find(e => e.rowIndex === rowIndex).id} status updated to ${newStatus}.`);
+                closeModal();
+                // Re-fetch data to refresh all tables and metrics
+                await fetchData();
+            } else {
+                throw new Error(result.error || 'Unknown error during update.');
+            }
+        } catch (error) {
+            console.error('Error updating status:', error);
+            showNotification(`Failed to update status: ${error.message}`, true);
+        } finally {
+            hideLoading();
+        }
+    }
+
+    // --- Data Calculation/Aggregation (Client-side) ---
+
+    function calculateAndPopulateAllData() {
+        if (errorLogEntries.length === 0) {
+            // Handle empty state gracefully
+            document.getElementById('kpi-overall').textContent = 'N/A';
+            document.getElementById('kpi-highest').textContent = 'N/A';
+            document.getElementById('kpi-transactions').textContent = '0';
+            document.getElementById('kpi-errors').textContent = '0';
+            
+            // Clear tables with loading messages
+            document.querySelector('#stageTable tbody').innerHTML = '<tr><td colspan="5" class="text-center text-muted">No data available in Error Log.</td></tr>';
+            document.querySelector('#oldestErrorLogTable tbody').innerHTML = '<tr><td colspan="5" class="text-center text-muted">No data available in Error Log.</td></tr>';
+            document.getElementById('fullErrorLogTableBody').innerHTML = '<tr><td colspan="9" class="text-center text-muted">No data available in Error Log.</td></tr>';
+            
+            // Draw empty charts if needed, or skip
+            if (chartsReady) {
+              drawStageChart([]);
+              drawTrendChart(); // Still draws placeholder data
+              drawD1ToD13Chart([]);
+              drawOrderFlowChart();
+            }
+            populateOrderFlowTable();
+            populateResolutionGuideTable();
+            return;
+        }
+
+        const uniqueTransactions = new Set(errorLogEntries.map(e => e.id)).size;
+        const totalErrors = errorLogEntries.filter(e => e.pass === 'Fail').length;
+
+        // 1. Calculate Stage Metrics
+        stageMetrics = errorLogEntries.reduce((acc, entry) => {
+            const stage = entry.stage;
+            if (!acc[stage]) {
+                acc[stage] = { total: 0, errors: 0 };
+            }
+            acc[stage].total++;
+            if (entry.pass === 'Fail') {
+                acc[stage].errors++;
+            }
+            return acc;
+        }, {});
+
+        // 2. Calculate KPIs
+        const overallRatio = uniqueTransactions > 0 ? totalErrors / uniqueTransactions : 0;
+        let highestStage = { name: 'N/A', r: 0 };
+        Object.entries(stageMetrics).forEach(([stage, metrics]) => {
+            const ratio = metrics.total > 0 ? metrics.errors / metrics.total : 0;
+            if (ratio > highestStage.r) {
+                highestStage = { name: stage, r: ratio };
+            }
+        });
+
+        document.getElementById('kpi-overall').textContent = fmtPct(overallRatio);
+        document.getElementById('kpi-highest').textContent = `${highestStage.name} • ${fmtPct(highestStage.r)}`;
+        document.getElementById('kpi-transactions').textContent = fmtNum(uniqueTransactions);
+        document.getElementById('kpi-errors').textContent = fmtNum(totalErrors);
+        
+        // 3. Populate Tables and Draw Charts
+        populateDashboardTables();
+        populateOrderFlowTable();
+        populateResolutionGuideTable();
+
+        if (chartsReady) {
+            const stageDataForChart = Object.entries(stageMetrics).map(([stage, metrics]) => ({
+                stage: stage,
+                transactions: metrics.total,
+                errors: metrics.errors
+            }));
+
+            // Prepare D1-D13 data: filter for D[number] stages
+            const d1ToD13ChartData = stageDataForChart.filter(d => d.stage.match(/^D\d{1,2}$/));
+
+            drawStageChart(stageDataForChart);
+            drawTrendChart(); // Keep placeholder trend data
+            drawD1ToD13Chart(d1ToD13ChartData);
+            drawOrderFlowChart();
+        }
+
+        // Apply filters/sort for the Error Log tab on initial load
+        applyFiltersAndSort(); 
+    }
+
+    // --- Chart Drawing Functions (Updated to accept dynamic data) ---
+
+    function drawStageChart(data) {
+      if (!chartsReady || !data) return;
+      const chartDataArray = [['Stage', 'Error Rate (%)', {role: 'style'}, {role: 'tooltip'}]];
+      data.forEach(s => {
+        const ratio = +(s.errors / s.transactions * 100).toFixed(2);
+        let color;
+        if (ratio < 1) color = '#28a745';
+        else if (ratio < 3) color = '#ffc107';
+        else color = '#dc3545';
+        chartDataArray.push([s.stage, ratio, color, `${s.stage}: ${ratio}% (${s.errors}/${s.transactions})`]);
+      });
+      const chartData = google.visualization.arrayToDataTable(chartDataArray);
+      const options = {
+        legend: { position: 'none' },
+        vAxis: { title: 'Error Rate (%)' },
+        hAxis: { title: 'Fulfillment Stage' },
+        colors: [BRAND_COLOR],
+        chartArea: { width: '80%', height: '70%' },
+        tooltip: { isHtml: true },
+        animation: { startup: true, duration: 800, easing: 'out' }
+      };
+      const chart = new google.visualization.ColumnChart(document.getElementById('stageChartContainer'));
+      chart.draw(chartData, options);
+    }
+
+    // Placeholder: This chart currently uses static data as the Apps Script doesn't provide historical averages.
+    function drawTrendChart() {
+      if (!chartsReady) return;
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const monthlyAverages = [0.95,0.92,0.88,0.82,0.78,0.75,0.76,0.74,0.70,0.68,0.65,0.60]; // Static Placeholder Data
+      const TARGET_RATE = 0.75;
+      const chartDataArray = [['Month','Monthly Avg Error Rate (%)','Target']];
+      months.forEach((m,i)=> chartDataArray.push([m, monthlyAverages[i], TARGET_RATE]));
+      const data = google.visualization.arrayToDataTable(chartDataArray);
+      const options = {
+        vAxis: { title: 'Error Rate (%)', format: '0.##%', minValue: 0.5, maxValue: 1.0 },
+        hAxis: { title: 'Month' },
+        chartArea: { width: '80%', height: '70%' },
+        pointSize: 5,
+        lineWidth: 3,
+        legend: { position: 'bottom' },
+        series: {
+          0: { type: 'line', color: BRAND_COLOR },
+          1: { type: 'line', color: '#28a745', lineDashStyle: [4,4], lineWidth: 2, pointSize: 0 }
+        },
+        animation: { startup: true, duration: 800, easing: 'out' }
+      };
+      const chart = new google.visualization.ComboChart(document.getElementById('trendChartContainer'));
+      chart.draw(data, options);
+    }
+
+    function drawOrderFlowChart() {
+      if (!chartsReady) return;
+      const chartDataArray = [['Stage','Threshold (Hours)',{role:'annotation'},{role:'tooltip'}]];
+      orderFlowData.forEach(d => {
+        const formattedDuration = formatDuration(d.min);
+        chartDataArray.push([d.stage, d.hr, formattedDuration, `${d.stage}: ${formattedDuration}`]);
+      });
+      const data = google.visualization.arrayToDataTable(chartDataArray);
+      const options = {
+        legend: { position: 'none' },
+        hAxis: { title: 'Threshold (Hours)', minValue: 0, maxValue: Math.max(...orderFlowData.map(d => d.hr)) + 10 },
+        vAxis: { title: 'Stage' },
+        colors: [BRAND_COLOR],
+        chartArea: { width: '80%', height: '85%' },
+        animation: { startup: true, duration: 800, easing: 'out' },
+        annotations: { alwaysOutside: true, textStyle: { fontSize: 11, color: '#333' } }
+      };
+      const chart = new google.visualization.BarChart(document.getElementById('orderFlowChartContainer'));
+      chart.draw(data, options);
+    }
+
+    function drawD1ToD13Chart(data) {
+      if (!chartsReady || !data) return;
+      const chartDataArray = [['Stage', 'Error Rate (%)', {role: 'style'}, {role: 'tooltip'}]];
+      data.forEach(s => {
+        const ratio = +(s.errors / s.transactions * 100).toFixed(2);
+        let color;
+        if (ratio < 1) color = '#28a745';
+        else if (ratio < 3) color = '#ffc107';
+        else color = '#dc3545';
+        chartDataArray.push([s.stage, ratio, color, `${s.stage}: ${ratio}% (${s.errors}/${s.transactions})`]);
+      });
+      const dataTable = google.visualization.arrayToDataTable(chartDataArray);
+      const options = {
+        legend: { position: 'none' },
+        vAxis: { title: 'Error Rate (%)' },
+        hAxis: { title: 'Stage' },
+        colors: [BRAND_COLOR],
+        chartArea: { width: '85%', height: '70%' },
+        tooltip: { isHtml: true },
+        animation: { startup: true, duration: 800, easing: 'out' }
+      };
+      const chart = new google.visualization.ColumnChart(document.getElementById('d1ToD13ChartContainer'));
+      chart.draw(dataTable, options);
+    }
+
+    // --- Table Population Functions ---
+
+    function populateDashboardTables() {
+      // Stage Table
+      const stageTbody = document.querySelector('#stageTable tbody');
+      stageTbody.innerHTML = '';
+      
+      Object.entries(stageMetrics).forEach(([stage, metrics]) => {
+        const r = metrics.total > 0 ? metrics.errors / metrics.total : 0;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${stage}</strong></td>
+          <td>${fmtNum(metrics.total)}</td>
+          <td>${fmtNum(metrics.errors)}</td>
+          <td><span class="ratio-badge ${ratioClass(r)}">${fmtPct(r)}</span></td>
+          <td>${statusDot(r < 0.01 ? 'Pass' : r < 0.03 ? 'Watch' : 'Fail')}</td>
+        `;
+        stageTbody.appendChild(tr);
+      });
+
+      populateOldestErrorTable();
+    }
+
+    function populateOldestErrorTable() {
+      // Filter for unresolved, sort by oldest timestamp
+      const oldestErrors = [...errorLogEntries]
+        .filter(e => e.status !== 'Resolved')
+        .sort((a,b) => a.timestamp - b.timestamp);
+      
+      const oldestLogTbody = document.querySelector('#oldestErrorLogTable tbody');
+      oldestLogTbody.innerHTML = '';
+      
+      if (oldestErrors.length === 0) {
+        oldestLogTbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No unresolved errors. Great job!</td></tr>';
+        return;
+      }
+
+      oldestErrors.slice(0, 5).forEach(e => {
+        const breachDisplay = e.breach > 0 ? formatDuration(e.breach) : '0m';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${e.id}</strong></td>
+          <td><span class="ratio-badge ${e.pass === 'Fail' ? 'ratio-red' : 'ratio-yellow'}">${e.stage}</span></td>
+          <td>${breachDisplay}</td>
+          <td>${e.timestamp.toLocaleDateString()} ${e.timestamp.toLocaleTimeString()}</td>
+          <td>${statusDot(e.status)}</td>
+        `;
+        oldestLogTbody.appendChild(tr);
+      });
+    }
+
+    function populateOrderFlowTable() {
+      const orderFlowTbody = document.getElementById('orderFlowTableBody');
+      orderFlowTbody.innerHTML = '';
+      
+      if (orderFlowData.length === 0) {
+        orderFlowTbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No Order Flow data available in Config sheet.</td></tr>';
+        return;
+      }
+
+      orderFlowData.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${d.stage}</strong></td>
+          <td>${d.min.toLocaleString()}</td>
+          <td>${d.hr}</td>
+          <td>${d.logic}</td>
+          <td>${d.remarks}</td>
+        `;
+        orderFlowTbody.appendChild(tr);
+      });
+    }
+
+    function populateResolutionGuideTable() {
+      const guideTbody = document.getElementById('resolutionGuideTableBody');
+      guideTbody.innerHTML = '';
+
+      if (resolutionGuideData.length === 0) {
+        guideTbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No Resolution Guide data available.</td></tr>';
+        return;
+      }
+
+      resolutionGuideData.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${d.stage}</strong></td>
+          <td>${d.error}</td>
+          <td>${d.cause}</td>
+          <td>${d.resolution}</td>
+        `;
+        guideTbody.appendChild(tr);
+      });
+    }
+
+
+    // --- Error Log Interaction ---
+
+    function editError(rowIndex) {
+      const error = errorLogEntries.find(e => e.rowIndex === rowIndex);
+      if (!error) return;
+
+      const content = `
+        <div class="form-group">
+          <label>Order ID</label>
+          <input type="text" value="${error.id}" disabled />
+        </div>
+        <div class="form-group">
+          <label>Stage</label>
+          <input type="text" value="${error.stage}" disabled />
+        </div>
+        <div class="form-group">
+          <label>Current Message</label>
+          <input type="text" value="${error.msg}" disabled />
+        </div>
+        <div class="form-group">
+          <label>New Status</label>
+          <select id="editStatus">
+            <option value="Unresolved" ${error.status === 'Unresolved' ? 'selected' : ''}>Unresolved</option>
+            <option value="Investigating" ${error.status === 'Investigating' ? 'selected' : ''}>Investigating</option>
+            <option value="Resolved" ${error.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+            <option value="Delayed" ${error.status === 'Delayed' ? 'selected' : ''}>Delayed</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>New Message / Remarks (Will overwrite old message)</label>
+          <textarea id="editMessage">${error.msg}</textarea>
+        </div>
+      `;
+
+      // The saveCallback now calls the save function with the necessary arguments
+      openModal('Update Error Entry', content, () => {
+          const newStatus = document.getElementById('editStatus').value;
+          const newMessage = document.getElementById('editMessage').value;
+          saveErrorStatus(error.rowIndex, newStatus, newMessage);
+      });
+    }
+
+
+    // --- Filter and Sort Functions ---
+
+    let filteredErrorLogEntries = [];
+
+    function applyFiltersAndSort() {
+      if (errorLogEntries.length === 0) return;
+      
+      const searchTerm = document.getElementById('errorSearchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value;
+      const sortBy = document.getElementById('sortBy').value;
+
+      // Filter
+      filteredErrorLogEntries = errorLogEntries.filter(entry => {
+        const matchesSearch = 
+          entry.id.toLowerCase().includes(searchTerm) ||
+          entry.stage.toLowerCase().includes(searchTerm) ||
+          entry.system.toLowerCase().includes(searchTerm) ||
+          entry.msg.toLowerCase().includes(searchTerm);
+        
+        const matchesStatus = statusFilter === 'all' || entry.status === statusFilter;
+        
+        return matchesSearch && matchesStatus;
+      });
+
+      // Sort
+      const [field, order] = sortBy.split('-');
+      filteredErrorLogEntries.sort((a, b) => {
+        let compareValue = 0;
+        
+        if (field === 'breach') {
+          compareValue = a.breach - b.breach;
+        } else if (field === 'status') {
+          compareValue = a.status.localeCompare(b.status);
+        } else if (field === 'id') {
+          compareValue = a.id.localeCompare(b.id);
+        } else if (field === 'stage') {
+          compareValue = a.stage.localeCompare(b.stage);
+        }
+        
+        return order === 'desc' ? -compareValue : compareValue;
+      });
+
+      populateErrorLogTable();
+    }
+
+    function populateErrorLogTable() {
+      const fullLogTbody = document.getElementById('fullErrorLogTableBody');
+      fullLogTbody.innerHTML = '';
+      
+      if (filteredErrorLogEntries.length === 0) {
+        fullLogTbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No error logs match your current filters.</td></tr>';
+        return;
+      }
+
+      filteredErrorLogEntries.forEach(e => {
+        const breachDisplay = e.breach > 0 ? formatDuration(e.breach) : '0m';
+        const passFailClass = e.pass === 'Fail' ? 'ratio-red' : 'ratio-green';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${e.id}</strong></td>
+          <td><span class="ratio-badge ${passFailClass}">${e.stage}</span></td>
+          <td>${e.expected || '—'} → ${e.actual || '—'}</td>
+          <td>${statusDot(e.pass)}</td>
+          <td>${breachDisplay}</td>
+          <td>${e.system}</td>
+          <td>${e.msg}</td>
+          <td>${statusDot(e.status)}</td>
+          <td><button class="action-button" onclick="editError(${e.rowIndex})">Edit</button></td>
+        `;
+        fullLogTbody.appendChild(tr);
+      });
+    }
+
+    // --- Tab Switching & Initialization ---
+    
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const portalTitle = document.getElementById('portalTitle');
+    
+    const tabTitles = {
+      'error-rate-ratio': 'Error Rate Ratio',
+      'error-log': 'Error Log',
+      'order-flow': 'Order Flow',
+      'legend': 'Resolution Guide'
+    };
+
+    function switchTab(tabName) {
+      // No loading spinner on switch if data is already loaded
+      tabContents.forEach(t => t.classList.remove('active'));
+      tabButtons.forEach(b => b.classList.remove('active'));
+      
+      const target = document.getElementById('tab-' + tabName);
+      if (target) target.classList.add('active');
+      
+      const btn = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
+      if (btn) btn.classList.add('active');
+      
+      portalTitle.textContent = tabTitles[tabName];
+      
+      // Re-draw charts/apply filters only on specific tab view
+      if (tabName === 'error-rate-ratio' && chartsReady) {
+        // Data is already processed in calculateAndPopulateAllData (called by fetchData)
+        const stageDataForChart = Object.entries(stageMetrics).map(([stage, metrics]) => ({
+            stage: stage,
+            transactions: metrics.total,
+            errors: metrics.errors
+        }));
+        const d1ToD13ChartData = stageDataForChart.filter(d => d.stage.match(/^D\d{1,2}$/));
+
+        drawStageChart(stageDataForChart);
+        drawTrendChart();
+        drawD1ToD13Chart(d1ToD13ChartData);
+      } else if (tabName === 'order-flow' && chartsReady) {
+        drawOrderFlowChart();
+      } else if (tabName === 'error-log') {
+        applyFiltersAndSort();
+      }
+    }
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    // Event Listeners for Error Log Filters
+    document.getElementById('errorSearchInput').addEventListener('input', applyFiltersAndSort);
+    document.getElementById('statusFilter').addEventListener('change', applyFiltersAndSort);
+    document.getElementById('sortBy').addEventListener('change', applyFiltersAndSort);
+
+    // Close modal on overlay click
+    document.getElementById('modalOverlay').addEventListener('click', (e) => {
+      if (e.target.id === 'modalOverlay') closeModal();
+    });
+
+    // Google Charts Setup & Initial Data Load
+    let chartsReady = false;
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(() => {
+      chartsReady = true;
+      fetchData().then(() => {
+        // Ensure initial tab is rendered after data is fetched
+        switchTab('error-rate-ratio');
+      });
+    });
+  </script>
+</body>
+</html>
