@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Performance & Disciplinary Logs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Roboto', 'sans-serif'],
+          },
+          colors: {
+            'google-blue': '#4285F4',
+            'brand-accent': '#CBEB33',
+            'brand-dark': '#B5D12F',
+            'bg-dark': '#0f172a',
+            'text-dark': '#f1f5f9',
+            'card-dark': '#1e293b',
+            'border-dark': '#334155',
+            'danger': '#ef4444',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .animate-spin-slow {
+      animation: spin 2.5s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .modal {
+      transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    }
+
+    @media print {
+      @page {
+        size: letter;
+        margin: 0.3in 0.4in;
+      }
+
+      // Generate NTE Document HTML
+      function generateNTEHTML(log, referenceId, dateFormatted) {
+        const nteCode = 'DMI-NTE-NETCAP-[ ]';
+        const emp = log.Employee || 'test name';
+        const dateIssued = dateFormatted || '[ ]';
+        const positionDept = (log.Position && log.Department) ? `${log.Position} / ${log.Department}` : (log.Position || log.Department || '[ ]');
+        const narration = (log.Performance && log.Performance.trim()) ? log.Performance : '(No narration provided)';
+
+        return `
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #222; margin: 0; padding: 30px 25px; background: white; max-width: 900px; margin: 0 auto;">
+            <div style="text-align: center; margin-bottom: 20px;">
+              <img src="${LOGO_URL}" alt="Digital Minds BPO" style="height: 60px; margin-bottom: 12px; object-fit: contain;" onerror="this.style.display='none'" />
+              <h1 style="font-size: 16px; text-transform: uppercase; font-weight: bold; margin: 6px 0 10px 0;">NOTICE TO EXPLAIN</h1>
+              <div style="font-size:12px; margin-bottom:12px;"><strong>NTE Reference Code:</strong> ${nteCode}</div>
+            </div>
+
+            <div style="font-size:12px; line-height:1.5;">
+              <p><strong>Employee Name:</strong> ${emp}</p>
+              <p><strong>Date Issued:</strong> ${dateIssued}</p>
+              <p><strong>Position / Department:</strong> ${positionDept}</p>
+              <p>Dear Mr./Ms. [ ]</p>
+
+              <p>This Notice is being issued to require you to explain in writing why no disciplinary action should be imposed on you for the following
+  incident(s):</p>
+
+              <pre style="border:1px solid #ddd; background:#fafafa; padding:10px; white-space:pre-wrap;">${narration}</pre>
+
+              <p>You are hereby directed to submit your written explanation regarding the above-mentioned matters within five (5) working days from receipt
+  of this Notice. You may also submit any supporting evidence to substantiate your explanation.</p>
+
+              <p>You may be invited to attend an administrative hearing to ensure that due process is observed, in accordance with existing labor laws.</p>
+
+              <p>Failure to submit your written explanation within the prescribed period will be considered a waiver of your right to be heard, and the Company
+  shall proceed to evaluate the case based on the information available.</p>
+
+              <p>Please be advised that, depending on the outcome of the investigation, you may be subject to disciplinary action, up to and including
+  termination of employment, in accordance with company policies and the Labor Code of the Philippines.</p>
+
+              <h3 style="margin-top:18px;">ACKNOWLEDGMENT OF RECEIPT OF THE NOTICE TO EXPLAIN</h3>
+
+              <p>I, [ ] confirm that I have received the Notice to Explain dated ${dateIssued} and that I am given a period of five (5) working days from today
+      gap: 10px;
+            </div>
+
+            <div style="margin-top:20px; border-top:1px solid #999; padding-top:10px; font-size:10px; color:#666; text-align:center;">
+              <p style="margin:0;"><strong>Reference ID:</strong> ${referenceId}</p>
+              <p style="margin:4px 0 0 0;">Digital Minds BPO Services Inc. | Confidential</p>
+            </div>
+          </div>
+        `;
+      }
+      align-items: center;
+      pointer-events: auto;
+      font-size: 14px;
+    }
+
+    .toast.success { background: #065f46; }
+    .toast.error { background: #7f1d1d; }
+    .toast.warning { background: #78350f; }
+
+    .toast .title {
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .confirm-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+
+    .confirm-modal {
+      background: white;
+      color: #111827;
+      border-radius: 10px;
+      width: 460px;
+      max-width: 90%;
+      padding: 18px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .confirm-modal h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .confirm-modal p {
+      margin: 0 0 14px;
+      color: #374151;
+    }
+
+    .confirm-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .confirm-btn {
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .confirm-btn.primary {
+      background: #065f46;
+      color: white;
+    }
+
+    .confirm-btn.ghost {
+      background: #f3f4f6;
+      color: #111827;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gray-100 text-gray-800 font-sans dark:bg-bg-dark dark:text-text-dark">
+
+  <header class="flex items-center gap-4 bg-white dark:bg-card-dark p-4 shadow-md sticky top-0 z-30 border-b border-gray-100 dark:border-border-dark">
+    <img src="https://digitalmindsbpo.com/storage/2021/11/cropped-Digital_Minds_Logo_Original.png" alt="Digital Minds BPO Logo" class="h-8 object-contain" onerror="this.style.display='none'" />
+    <h1 class="text-2xl font-extrabold text-gray-900 dark:text-text-dark">Performance & Disciplinary Records</h1>
+    <button id="themeToggle"
+      class="ml-auto p-2 rounded-full text-gray-800 dark:text-text-dark bg-gray-100 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark transition-all duration-300 transform hover:scale-105"
+      aria-label="Toggle Dark Mode">
+    </button>
+  </header>
+
+  <main id="mainContent" class="max-w-[1600px] mx-auto p-6 lg:p-10 space-y-6">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+      <div class="relative w-full md:w-1/3">
+        <input type="text" id="coachingSearch" onkeyup="handleCoachingSearch()"
+          placeholder="Search by employee, supervisor, or document type..."
+          class="w-full p-3 pl-10 border-2 border-gray-300 rounded-full focus:ring-2 focus:ring-brand-accent focus:border-black dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition shadow-md">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">search</span>
+      </div>
+
+      <button id="newCoachingBtn"
+        class="inline-flex items-center bg-brand-accent hover:bg-brand-dark text-bg-dark px-6 py-3 rounded-full shadow-lg font-bold transition duration-300 transform hover:scale-[1.03] text-lg">
+        <i class="fas fa-file-medical mr-3"></i>New Record
+      </button>
+    </div>
+
+    <div class="relative bg-white dark:bg-card-dark rounded-2xl shadow-2xl shadow-gray-200/50 dark:shadow-xl dark:shadow-black/50 overflow-hidden border border-gray-100 dark:border-border-dark">
+
+      <div id="coachingLoadingSpinner" class="hidden absolute inset-0 bg-white/90 dark:bg-card-dark/90 backdrop-blur-sm flex justify-center items-center z-40">
+        <div class="flex flex-col items-center">
+          <i class="fas fa-sync-alt fa-3x text-brand-accent animate-spin-slow"></i>
+          <p id="coachingLoadingText" class="mt-3 text-lg text-gray-700 dark:text-text-dark font-medium">Loading records...</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-slate-900 dark:bg-border-dark text-white dark:text-text-dark uppercase tracking-wider">
+            <tr>
+              <th class="px-4 py-4 text-left font-semibold">Date</th>
+              <th class="px-4 py-4 text-left font-semibold">Document Type</th>
+              <th class="px-4 py-4 text-left font-semibold">Supervisor</th>
+              <th class="px-4 py-4 text-left font-semibold">Employee</th>
+              <th class="px-4 py-4 text-left font-semibold">Emp #</th>
+              <th class="px-4 py-4 text-center font-semibold">Ack</th>
+              <th class="px-4 py-4 text-center font-semibold">Signature</th>
+              <th class="px-4 py-4 text-center font-semibold">Form</th>
+              <th class="px-4 py-4 text-center font-semibold">Evidence</th>
+              <th class="px-4 py-4 text-center font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="coachingTable" class="divide-y divide-gray-200 dark:divide-border-dark bg-white dark:bg-card-dark text-gray-700 dark:text-gray-300">
+            <tr>
+              <td colspan="10" class="text-center py-6 text-gray-500 dark:text-gray-400">Loading records...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <div id="confirmModalBackdrop" class="confirm-modal-backdrop" style="display:none;" role="dialog" aria-modal="true">
+    <div class="confirm-modal" role="document">
+      <h3 id="confirmModalTitle">Confirm</h3>
+      <p id="confirmModalMessage">Are you sure?</p>
+      <div class="confirm-actions">
+        <button id="confirmCancelBtn" class="confirm-btn ghost">Cancel</button>
+        <button id="confirmOkBtn" class="confirm-btn primary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paper View Modal -->
+  <div id="paperViewModal" class="modal hidden fixed inset-0 z-[100] bg-gray-100 overflow-y-auto" role="dialog" aria-modal="true">
+    <header class="no-print flex items-center gap-4 bg-white dark:bg-card-dark p-4 shadow-md sticky top-0 z-30 border-b border-gray-100 dark:border-border-dark">
+      <button id="backBtn" class="inline-flex items-center p-2 rounded-full text-gray-800 dark:text-text-dark bg-gray-100 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark transition-all duration-300 transform hover:scale-105">
+        <i class="fas fa-arrow-left text-xl"></i>
+      </button>
+      <img src="https://digitalmindsbpo.com/storage/2021/11/cropped-Digital_Minds_Logo_Original.png" alt="Digital Minds BPO Logo" class="h-8 object-contain" onerror="this.style.display='none'" />
+      <h1 class="text-2xl font-extrabold text-gray-900 dark:text-text-dark">Document Preview</h1>
+      <button id="printDashboard" class="ml-auto inline-flex items-center p-2 rounded-full text-gray-800 dark:text-text-dark bg-gray-100 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark transition-all duration-300 transform hover:scale-105">
+        <i class="fas fa-print text-xl"></i>
+      </button>
+    </header>
+
+    <div class="min-h-screen p-6 lg:p-10">
+      <div id="paperDocument" class="print-document max-w-6xl mx-auto bg-white shadow-md rounded-lg p-8"></div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div id="coachingModal" class="modal hidden fixed inset-0 z-[100] bg-black bg-opacity-50 flex items-center justify-center opacity-0 scale-95" role="dialog" aria-modal="true">
+    <div class="bg-white dark:bg-card-dark rounded-xl shadow-3xl w-full max-w-4xl transform transition-all p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-3 mb-4 dark:border-border-dark">
+        <h3 id="modalTitle" class="text-2xl font-extrabold text-gray-900 dark:text-text-dark">New Record</h3>
+        <button id="coachingCloseBtn" class="p-2 rounded-full text-gray-500 hover:text-gray-800 dark:hover:text-text-dark dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-border-dark transition">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="coachingForm">
+        <input type="hidden" id="rowIndex" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="coachingDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
+            <input type="date" id="coachingDate" name="Date" required
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition">
+          </div>
+          <div>
+            <label for="documentType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Document Type</label>
+            <select id="documentType" name="DocumentType" required onchange="handleDocumentTypeChange()"
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition">
+              <option value="Coaching Log">Coaching Session</option>
+              <option value="Verbal Warning">Verbal Warning</option>
+              <option value="Written Warning">Written Warning Letter</option>
+              <option value="Final Warning">Final Written Warning Letter</option>
+              <option value="4th Written Warning">4th Written Warning</option>
+              <option value="1 Day Suspension">1-Day Suspension</option>
+              <option value="3 Day Suspension">3-Day Suspension</option>
+              <option value="Dismissal">Dismissal</option>
+              <option value="Performance Improvement Plan">Performance Improvement Plan</option>
+              <option value="IR / NTE Log">Incident Report (IR)</option>
+              <option value="Notice to Explain">Notice to Explain (NTE)</option>
+            </select>
+          </div>
+          <div>
+            <label for="coach" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Supervisor/Coach</label>
+            <input type="text" id="coach" name="Coach" required
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition">
+          </div>
+          <div>
+            <label for="employee" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Employee Name</label>
+            <input type="text" id="employee" name="Employee" required
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition">
+          </div>
+          <div>
+            <label for="employeeNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Employee Number</label>
+            <input type="text" id="employeeNumber" name="EmployeeNumber" required
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition">
+          </div>
+          <div id="positionField" class="hidden">
+            <label for="position" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Position</label>
+            <input type="text" id="position" name="Position"
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition">
+          </div>
+          <div id="departmentField" class="hidden md:col-span-2">
+            <label for="department" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
+            <input type="text" id="department" name="Department"
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition">
+          </div>
+          <div id="subjectField" class="hidden md:col-span-2">
+            <label for="subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subject</label>
+            <input type="text" id="subject" name="Subject"
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition">
+          </div>
+          <div id="dateOfIncidentField" class="hidden">
+            <label for="dateOfIncident" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of Incident</label>
+            <input type="date" id="dateOfIncident" name="DateOfIncident"
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition">
+          </div>
+          <div id="placeOfIncidentField" class="hidden">
+            <label for="placeOfIncident" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Place of Incident</label>
+            <input type="text" id="placeOfIncident" name="PlaceOfIncident"
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition">
+          </div>
+
+        </div>
+        <div class="mt-4">
+          <label for="performance" id="performanceLabel" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Performance Issue / Behavior Observed</label>
+          <textarea id="performance" name="Performance" rows="2" required
+            class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition"></textarea>
+        </div>
+        <div class="mt-4" id="coachingProvidedContainer">
+          <label for="coachingProvided" id="coachingProvidedLabel" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Coaching / Corrective Action Provided</label>
+          <textarea id="coachingProvided" name="CoachingProvided" rows="3" required
+            class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition"></textarea>
+        </div>
+        <div class="mt-4" id="actionPlanContainer">
+          <label for="actionPlan" id="actionPlanLabel" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Action Plan / Expected Improvement</label>
+          <textarea id="actionPlan" name="ActionPlan" rows="3" required
+            class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition"></textarea>
+        </div>
+
+        <!-- Signature Pads -->
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Employee Signature</label>
+            <div class="border-2 border-gray-300 dark:border-border-dark rounded-lg p-3 bg-white dark:bg-card-dark">
+              <canvas id="signaturePad" class="w-full h-40 bg-white dark:bg-bg-dark border border-gray-200 dark:border-border-dark rounded" style="touch-action: none;"></canvas>
+              <button type="button" id="clearSignature"
+                class="mt-2 px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 dark:bg-border-dark dark:hover:bg-gray-700 text-sm font-medium transition w-full">
+                <i class="fas fa-eraser mr-1"></i> Clear
+              </button>
+            </div>
+            <input type="hidden" id="signedImage" name="SignedImage" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Supervisor Signature</label>
+            <div class="border-2 border-gray-300 dark:border-border-dark rounded-lg p-3 bg-white dark:bg-card-dark">
+              <canvas id="supervisorSignaturePad" class="w-full h-40 bg-white dark:bg-bg-dark border border-gray-200 dark:border-border-dark rounded" style="touch-action: none;"></canvas>
+              <button type="button" id="clearSupervisorSignature"
+                class="mt-2 px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 dark:bg-border-dark dark:hover:bg-gray-700 text-sm font-medium transition w-full">
+                <i class="fas fa-eraser mr-1"></i> Clear
+              </button>
+            </div>
+            <input type="hidden" id="supervisorSignedImage" name="SupervisorSignedImage" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div>
+            <label for="acknowledge" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Acknowledged</label>
+            <select id="acknowledge" name="Acknowledge" required
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition">
+              <option value="">Select...</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+              <option value="Draft">Draft</option>
+            </select>
+          </div>
+          <div>
+            <label for="signedForm" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Signed Form Link</label>
+            <input type="url" id="signedForm" name="SignedForm"
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition"
+              placeholder="https://...">
+          </div>
+          <div>
+            <label for="evidence" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Evidence Link</label>
+            <input type="url" id="evidence" name="Evidence"
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition"
+              placeholder="https://...">
+          </div>
+        </div>
+        <div class="mt-6 flex justify-end gap-3">
+          <button type="button" id="cancelBtn"
+            class="px-6 py-3 rounded-full border border-gray-300 dark:border-border-dark text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-border-dark transition">
+            Cancel
+          </button>
+          <button type="submit" id="submitBtn"
+            class="inline-flex items-center bg-google-blue hover:bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg font-bold transition duration-150 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
+            <i class="fas fa-save mr-2"></i> <span id="submitBtnText">Save Record</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="printContainer" style="display: none;"></div>
+
+  <script>
+    const COACHING_API_URL = "https://script.google.com/macros/s/AKfycbxSh0CXKZmUrmL433ZaT0EgfLQbOwa_Nn1yYBKiF0npJXrHjDppGjaOa5GadAHfom7X/exec";
+    const LOGO_URL = "https://digitalmindsbpo.com/storage/2021/11/cropped-Digital_Minds_Logo_Original.png";
+    let allCoachingLogs = [];
+    let isEditMode = false;
+    let currentViewLog = null;
+    let signaturePad = null;
+    let supervisorSignaturePad = null;
+
+    // Dark Mode
+    const themeToggle = document.getElementById('themeToggle');
+    function updateThemeIcon(isDark) {
+      themeToggle.innerHTML = isDark
+        ? '<span class="material-symbols-outlined text-xl">light_mode</span>'
+        : '<span class="material-symbols-outlined text-xl">dark_mode</span>';
+    }
+
+    function toggleTheme() {
+      const isDark = document.body.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      updateThemeIcon(isDark);
+    }
+
+    themeToggle.addEventListener('click', toggleTheme);
+
+    const storedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialDark = storedTheme === 'dark' || (storedTheme === null && prefersDark);
+    if (initialDark) {
+      document.body.classList.add('dark');
+    }
+    updateThemeIcon(initialDark);
+
+    // Loading Spinner
+    function showCoachingLoading(text = 'Loading records...') {
+      const spinner = document.getElementById('coachingLoadingSpinner');
+      const loadingText = document.getElementById('coachingLoadingText');
+      if (spinner && loadingText) {
+        loadingText.textContent = text;
+        spinner.classList.remove('hidden');
+      }
+    }
+
+    function hideCoachingLoading() {
+      const spinner = document.getElementById('coachingLoadingSpinner');
+      if (spinner) {
+        spinner.classList.add('hidden');
+      }
+    }
+
+    // Format Date
+    function formatDate(dateString) {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    // Generate Reference ID
+    function generateReferenceId(log) {
+      const date = new Date(log.Date);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const empNum = String(log.EmployeeNumber || '000').padStart(3, '0');
+      
+      const typePrefix = {
+        'Coaching Log': 'CS',
+        'Verbal Warning': 'VW',
+        'Written Warning': 'WW',
+        'Final Warning': 'FW',
+        '4th Written Warning': '4W',
+        '1 Day Suspension': '1S',
+        '3 Day Suspension': '3S',
+        'Dismissal': 'DM',
+        'Performance Improvement Plan': 'PIP',
+        'IR / NTE Log': 'IR',
+        'Notice to Explain': 'NTE'
+      };
+      
+      const prefix = typePrefix[log.DocumentType] || 'DOC';
+      return `DMI-${prefix}-NETCAP-${year}${month}${day}-${empNum}`;
+    }
+
+    // Get Document Type Badge Color
+    function getDocTypeColor(docType) {
+      const colors = {
+        'Coaching Log': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+        'Verbal Warning': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+        'Written Warning': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+        'Final Warning': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+        '4th Written Warning': 'bg-red-200 text-red-900 dark:bg-red-800 dark:text-red-100',
+        '1 Day Suspension': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+        '3 Day Suspension': 'bg-purple-200 text-purple-900 dark:bg-purple-800 dark:text-purple-100',
+        'Dismissal': 'bg-gray-900 text-white dark:bg-gray-800 dark:text-gray-100',
+        'Performance Improvement Plan': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+        'IR / NTE Log': 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
+        'Notice to Explain': 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200'
+      };
+      return colors[docType] || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    }
+
+    // Generate IR Document HTML
+    function generateIRHTML(log, referenceId, dateFormatted) {
+      const cleanNarration = (log.Performance || '').replace(/\\n/g, "\n");
+      const dateOfIncident = log.DateOfIncident ? new Date(log.DateOfIncident).toLocaleDateString('en-US') : '';
+      
+      return `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #222; margin: 0; padding: 40px 20px; background: white;">
+          <div style="margin-bottom: 16px;">
+            <h3 style="text-align: center; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">Coaching / Corrective Action Provided</h3>
+            <div style="border: 1px solid #999; padding: 10px; background: #f9f9f9; min-height: 50px; font-size: 11px; white-space: pre-wrap; line-height: 1.5;">${log.CoachingProvided || ''}</div>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <h3 style="text-align: center; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">Action Plan / Expected Improvement</h3>
+            <div style="border: 1px solid #999; padding: 10px; background: #f9f9f9; min-height: 50px; font-size: 11px; white-space: pre-wrap; line-height: 1.5;">${log.ActionPlan || ''}</div>
+          </div>
+
+          <div style="margin-top: 30px; border-top: 2px solid #333; padding-top: 20px;">
+            <p style="text-align: center; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 16px; letter-spacing: 0.5px;">Acknowledgment & Signatures</p>
+            <p style="text-align: center; font-size: 11px; margin-bottom: 16px; line-height: 1.6;">I acknowledge that this ${docType.toLowerCase()} was discussed with me and I understand the content.</p>
+            
+            <div style="display: flex; gap: 40px; margin-top: 20px;">
+              <div style="flex: 1; text-align: center;">
+                ${(log.SignedImage && log.SignedImage.length > 20)
+                  ? `<img src="${log.SignedImage}" alt="Employee Signature" style="max-height: 80px; max-width: 120px; display: block; margin: 0 auto 8px; object-fit: contain; border-bottom: 1px solid #999; padding-bottom: 8px;" />`
+                  : `<div style="border-bottom: 1px dashed #999; height: 50px; margin-bottom: 8px;"></div>`
+                }
+                <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">${log.Employee || ''}</div>
+                <div style="font-size: 10px; color: #666; margin-bottom: 12px;">Employee</div>
+                <div style="border-bottom: 1px dashed #999; height: 20px; margin-bottom: 4px;"></div>
+                <div style="font-size: 10px; color: #666;">Date</div>
+              </div>
+
+              <div style="flex: 1; text-align: center;">
+                ${(log.SupervisorSignedImage && log.SupervisorSignedImage.length > 20)
+                  ? `<img src="${log.SupervisorSignedImage}" alt="Supervisor Signature" style="max-height: 80px; max-width: 120px; display: block; margin: 0 auto 8px; object-fit: contain; border-bottom: 1px solid #999; padding-bottom: 8px;" />`
+                  : `<div style="border-bottom: 1px dashed #999; height: 50px; margin-bottom: 8px;"></div>`
+                }
+                <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">${log.Coach || ''}</div>
+                <div style="font-size: 10px; color: #666; margin-bottom: 12px;">Supervisor</div>
+                <div style="border-bottom: 1px dashed #999; height: 20px; margin-bottom: 4px;"></div>
+                <div style="font-size: 10px; color: #666;">Date</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #999; text-align: center; font-size: 10px; color: #666;">
+            <p style="margin: 0;"><strong>Digital Minds BPO Services Inc.</strong></p>
+            <p style="margin: 4px 0;">Confidential Document</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // View Log
+    function viewLog(rowIndex) {
+      const log = allCoachingLogs.find(l => l.rowIndex === rowIndex);
+      if (!log) return;
+
+      currentViewLog = log;
+      const paperDocument = document.getElementById('paperDocument');
+      paperDocument.innerHTML = generatePaperHTML(log);
+
+      const paperViewModal = document.getElementById('paperViewModal');
+      paperViewModal.classList.remove('hidden');
+    }
+
+    // Render Table
+    function renderCoachingTable(logsToRender) {
+      const table = document.getElementById("coachingTable");
+      table.innerHTML = "";
+
+      if (!Array.isArray(logsToRender) || logsToRender.length === 0) {
+        table.innerHTML = `<tr><td colspan="10" class="text-center py-6 text-gray-500 dark:text-gray-400">No records found.</td></tr>`;
+        return;
+      }
+
+      logsToRender.forEach(log => {
+        const signedFormLink = log.SignedForm && log.SignedForm.length > 5 && log.SignedForm !== '#' ? log.SignedForm : "#";
+        const evidenceLink = log.Evidence && log.Evidence.length > 5 && log.Evidence !== '#' ? log.Evidence : "#";
+        const hasSignature = log.SignedImage && log.SignedImage.length > 20;
+        const docType = log.DocumentType || 'Coaching Log';
+        const docTypeColor = getDocTypeColor(docType);
+
+        table.innerHTML += `
+          <tr class="hover:bg-gray-50 dark:hover:bg-card-dark transition duration-150">
+            <td class="px-4 py-3 whitespace-nowrap">${formatDate(log.Date)}</td>
+            <td class="px-4 py-3">
+              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${docTypeColor}">
+                ${docType}
+              </span>
+            </td>
+            <td class="px-4 py-3">${log.Coach || "N/A"}</td>
+            <td class="px-4 py-3 font-medium text-gray-900 dark:text-text-dark">${log.Employee || "N/A"}</td>
+            <td class="px-4 py-3">${log.EmployeeNumber || "N/A"}</td>
+            <td class="px-4 py-3 text-center">
+              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold
+                ${log.Acknowledge === 'Yes'
+                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                  : log.Acknowledge === 'Draft'
+                    ? 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}">
+                ${log.Acknowledge || "N/A"}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-center">
+              ${hasSignature
+                ? '<i class="fas fa-check-circle text-green-600 dark:text-green-400" title="Signature present"></i>'
+                : '<i class="fas fa-times-circle text-gray-400" title="No signature"></i>'}
+            </td>
+            <td class="px-4 py-3 text-center">
+              <a href="${signedFormLink}" target="_blank" 
+                class="${signedFormLink === '#' ? 'text-gray-400 cursor-default' : 'text-google-blue hover:text-blue-600'}" 
+                title="${signedFormLink === '#' ? 'No form' : 'View signed form'}">
+                <i class="fas fa-file-signature"></i>
+              </a>
+            </td>
+            <td class="px-4 py-3 text-center">
+              <a href="${evidenceLink}" target="_blank" 
+                class="${evidenceLink === '#' ? 'text-gray-400 cursor-default' : 'text-google-blue hover:text-blue-600'}" 
+                title="${evidenceLink === '#' ? 'No evidence' : 'View evidence'}">
+                <i class="fas fa-paperclip"></i>
+              </a>
+            </td>
+            <td class="px-4 py-3 text-center whitespace-nowrap">
+              <button onclick="viewLog(${log.rowIndex})" class="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 mr-2" title="View Document">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button onclick="editLog(${log.rowIndex})" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mr-2" title="Edit">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="deleteLog(${log.rowIndex})" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300" title="Delete">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>`;
+      });
+    }
+
+    // Search
+    function handleCoachingSearch() {
+      const query = document.getElementById('coachingSearch').value.toLowerCase().trim();
+
+      if (!query) {
+        renderCoachingTable(allCoachingLogs);
+        return;
+      }
+
+      const filteredLogs = allCoachingLogs.filter(log => {
+        return (log.Employee && log.Employee.toLowerCase().includes(query)) ||
+          (log.Coach && log.Coach.toLowerCase().includes(query)) ||
+          (log.Performance && log.Performance.toLowerCase().includes(query)) ||
+          (log.DocumentType && log.DocumentType.toLowerCase().includes(query)) ||
+          (log.EmployeeNumber && String(log.EmployeeNumber).toLowerCase().includes(query));
+      });
+
+      renderCoachingTable(filteredLogs);
+    }
+
+    // Load Data
+    async function loadCoachingLogs() {
+      showCoachingLoading();
+
+      try {
+        const fetchUrl = COACHING_API_URL + '?action=getCoachingData&t=' + Date.now();
+        const res = await fetch(fetchUrl);
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const apiData = await res.json();
+
+        if (apiData.error) {
+          throw new Error(apiData.error);
+        }
+
+        allCoachingLogs = Array.isArray(apiData) ? apiData : apiData.data || [];
+        renderCoachingTable(allCoachingLogs);
+
+      } catch (error) {
+        console.error("Error loading records:", error);
+        const errorMessage = `Failed to load records. (Error: ${error.message})`;
+        document.getElementById("coachingTable").innerHTML = `<tr><td colspan="10" class="text-center py-6 text-danger font-semibold dark:text-red-400">${errorMessage}</td></tr>`;
+      }
+      hideCoachingLoading();
+    }
+
+    // Modal Functions
+    const coachingModal = document.getElementById('coachingModal');
+
+    function openModal(modal) {
+      modal.classList.remove('hidden');
+      void modal.offsetWidth;
+      modal.classList.add('opacity-100', 'scale-100');
+    }
+
+    function closeModal(modal) {
+      modal.classList.remove('opacity-100', 'scale-100');
+      modal.classList.add('opacity-0', 'scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    document.getElementById('newCoachingBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      isEditMode = false;
+      document.getElementById('modalTitle').textContent = 'New Record';
+      document.getElementById('submitBtnText').textContent = 'Save Record';
+      document.getElementById('coachingForm').reset();
+      const signedInput = document.getElementById('signedImage');
+      if (signedInput) signedInput.value = '';
+      const supervisorSignedInput = document.getElementById('supervisorSignedImage');
+      if (supervisorSignedInput) supervisorSignedInput.value = '';
+      handleDocumentTypeChange();
+      openModal(coachingModal);
+      setTimeout(() => initSignaturePad(), 50);
+    });
+
+    // Handle document type change
+    function handleDocumentTypeChange() {
+      const docType = document.getElementById('documentType').value;
+      const positionField = document.getElementById('positionField');
+      const departmentField = document.getElementById('departmentField');
+      const subjectField = document.getElementById('subjectField');
+      const dateOfIncidentField = document.getElementById('dateOfIncidentField');
+      const placeOfIncidentField = document.getElementById('placeOfIncidentField');
+      const performanceLabel = document.getElementById('performanceLabel');
+      const coachingProvidedLabel = document.getElementById('coachingProvidedLabel');
+      const coachingProvidedContainer = document.getElementById('coachingProvidedContainer');
+      const actionPlanLabel = document.getElementById('actionPlanLabel');
+      const actionPlanContainer = document.getElementById('actionPlanContainer');
+      const coachingProvidedField = document.getElementById('coachingProvided');
+
+      // Reset visibility
+      positionField.classList.add('hidden');
+      departmentField.classList.add('hidden');
+      subjectField.classList.add('hidden');
+      dateOfIncidentField.classList.add('hidden');
+      placeOfIncidentField.classList.add('hidden');
+      coachingProvidedContainer.classList.remove('hidden');
+      actionPlanContainer.classList.remove('hidden');
+      coachingProvidedField.required = true;
+
+      if (docType === 'Verbal Warning') {
+        positionField.classList.remove('hidden');
+        departmentField.classList.remove('hidden');
+        performanceLabel.textContent = 'Type of Violation / Incident';
+        coachingProvidedLabel.textContent = 'Details of the Incident';
+        actionPlanLabel.textContent = 'Employee Statement / Action Plan';
+      } else if (docType === 'IR / NTE Log') {
+        departmentField.classList.remove('hidden');
+        dateOfIncidentField.classList.remove('hidden');
+        placeOfIncidentField.classList.remove('hidden');
+        performanceLabel.textContent = 'Narration of Incident';
+        coachingProvidedContainer.classList.add('hidden');
+        actionPlanContainer.classList.add('hidden');
+        coachingProvidedField.required = false;
+      } else if (docType === 'Notice to Explain') {
+        departmentField.classList.remove('hidden');
+        subjectField.classList.remove('hidden');
+        performanceLabel.textContent = 'Subject';
+        coachingProvidedLabel.textContent = 'Details / Explanation';
+        actionPlanLabel.textContent = 'Possible Consequence';
+      } else {
+        performanceLabel.textContent = 'Performance Issue / Behavior Observed';
+        coachingProvidedLabel.textContent = 'Coaching / Corrective Action Provided';
+        actionPlanLabel.textContent = 'Action Plan / Expected Improvement';
+      }
+    }
+
+    coachingModal.addEventListener('click', (e) => {
+      if (e.target === coachingModal || e.target.closest('#coachingCloseBtn')) {
+        closeModal(coachingModal);
+      }
+    });
+
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+      closeModal(coachingModal);
+    });
+
+    // Edit Log
+    function editLog(rowIndex) {
+      const log = allCoachingLogs.find(l => l.rowIndex === rowIndex);
+      if (!log) return;
+
+      isEditMode = true;
+      document.getElementById('modalTitle').textContent = 'Edit Record';
+      document.getElementById('submitBtnText').textContent = 'Update Record';
+
+      document.getElementById('rowIndex').value = log.rowIndex;
+      document.getElementById('coachingDate').value = log.Date ? new Date(log.Date).toISOString().split('T')[0] : '';
+      document.getElementById('documentType').value = log.DocumentType || 'Coaching Log';
+      document.getElementById('coach').value = log.Coach || '';
+      document.getElementById('employee').value = log.Employee || '';
+      document.getElementById('employeeNumber').value = log.EmployeeNumber || '';
+      document.getElementById('position').value = log.Position || '';
+      document.getElementById('department').value = log.Department || '';
+      document.getElementById('subject').value = log.Subject || '';
+      document.getElementById('dateOfIncident').value = log.DateOfIncident ? new Date(log.DateOfIncident).toISOString().split('T')[0] : '';
+      document.getElementById('placeOfIncident').value = log.PlaceOfIncident || '';
+      document.getElementById('performance').value = log.Performance || '';
+      document.getElementById('coachingProvided').value = log.CoachingProvided || '';
+      document.getElementById('actionPlan').value = log.ActionPlan || '';
+      document.getElementById('acknowledge').value = log.Acknowledge || '';
+      document.getElementById('signedForm').value = log.SignedForm || '';
+      document.getElementById('evidence').value = log.Evidence || '';
+
+      const signedInput = document.getElementById('signedImage');
+      if (signedInput) signedInput.value = log.SignedImage || '';
+
+      const supervisorSignedInput = document.getElementById('supervisorSignedImage');
+      if (supervisorSignedInput) supervisorSignedInput.value = log.SupervisorSignedImage || '';
+
+      handleDocumentTypeChange();
+      openModal(coachingModal);
+      setTimeout(() => initSignaturePad(), 50);
+    }
+
+    // Delete Log
+    async function deleteLog(rowIndex) {
+      const confirmed = await showConfirm(
+        'Delete Record',
+        'Are you sure you want to delete this record? This action cannot be undone.'
+      );
+
+      if (!confirmed) return;
+
+      showCoachingLoading('Deleting...');
+
+      try {
+        const res = await fetch(COACHING_API_URL + '?action=deleteCoachingRecord&rowIndex=' + rowIndex);
+        const result = await res.json();
+
+        showToast('Record deleted successfully!', 'success');
+        await loadCoachingLogs();
+      } catch (error) {
+        console.error('Error deleting record:', error);
+        showToast('Failed to delete record: ' + error.message, 'error');
+        hideCoachingLoading();
+      }
+    }
+
+    // Form Submission
+    async function submitCoachingForm(e) {
+      e.preventDefault();
+      const form = e.target;
+      const submitButton = document.getElementById('submitBtn');
+      const originalButtonHtml = submitButton.innerHTML;
+
+      submitButton.disabled = true;
+      submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
+
+      let employeeSignature = '';
+      let supervisorSignature = '';
+
+      if (signaturePad && !signaturePad.isEmpty()) {
+        employeeSignature = signaturePad.toDataURL('image/png');
+      }
+      if (supervisorSignaturePad && !supervisorSignaturePad.isEmpty()) {
+        supervisorSignature = supervisorSignaturePad.toDataURL('image/png');
+      }
+
+      const formData = {
+        Date: document.getElementById('coachingDate').value,
+        DocumentType: document.getElementById('documentType').value,
+        Coach: document.getElementById('coach').value,
+        Employee: document.getElementById('employee').value,
+        EmployeeNumber: document.getElementById('employeeNumber').value,
+        Position: document.getElementById('position').value,
+        Department: document.getElementById('department').value,
+        Subject: document.getElementById('subject') ? document.getElementById('subject').value : '',
+        DateOfIncident: document.getElementById('dateOfIncident') ? document.getElementById('dateOfIncident').value : '',
+        PlaceOfIncident: document.getElementById('placeOfIncident') ? document.getElementById('placeOfIncident').value : '',
+        Performance: document.getElementById('performance').value,
+        CoachingProvided: document.getElementById('coachingProvided').value,
+        ActionPlan: document.getElementById('actionPlan').value,
+        Acknowledge: document.getElementById('acknowledge').value,
+        SignedForm: document.getElementById('signedForm').value,
+        Evidence: document.getElementById('evidence').value,
+        SignedImage: employeeSignature || (document.getElementById('signedImage') ? document.getElementById('signedImage').value : ''),
+        SupervisorSignedImage: supervisorSignature || (document.getElementById('supervisorSignedImage') ? document.getElementById('supervisorSignedImage').value : '')
+      };
+
+      if (isEditMode) {
+        formData.rowIndex = document.getElementById('rowIndex').value;
+      }
+
+      try {
+        const action = isEditMode ? 'updateCoachingRecord' : 'addCoachingRecord';
+        const res = await fetch(COACHING_API_URL + '?action=' + action, {
+          method: 'POST',
+          body: JSON.stringify(formData)
+        });
+
+        const result = await res.json();
+
+        showToast(isEditMode ? 'Record updated successfully!' : 'Record added successfully!', 'success');
+        closeModal(coachingModal);
+        form.reset();
+        await loadCoachingLogs();
+      } catch (error) {
+        console.error('Error saving record:', error);
+        showToast('Failed to save record: ' + error.message, 'error');
+      } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalButtonHtml;
+      }
+    }
+
+    document.getElementById('coachingForm').addEventListener('submit', submitCoachingForm);
+
+    // Signature Pad utilities
+    function resizeCanvasForDisplay(canvas) {
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      canvas.width = w * ratio;
+      canvas.height = h * ratio;
+      canvas.getContext('2d').scale(ratio, ratio);
+    }
+
+    function initSignaturePad() {
+      const canvas = document.getElementById('signaturePad');
+      const signedInput = document.getElementById('signedImage');
+      if (canvas) {
+        if (signaturePad) {
+          try { signaturePad.off && signaturePad.off(); } catch (e) { }
+          signaturePad = null;
+        }
+
+        resizeCanvasForDisplay(canvas);
+
+        signaturePad = new SignaturePad(canvas, {
+          backgroundColor: 'rgba(255,255,255,1)',
+          penColor: 'rgb(0, 0, 0)'
+        });
+
+        if (signedInput && signedInput.value && signedInput.value.length > 20) {
+          try {
+            signaturePad.fromDataURL(signedInput.value);
+          } catch (e) {
+            console.log('Could not load employee signature from data:', e);
+            signaturePad.clear();
+          }
+        } else {
+          signaturePad.clear();
+        }
+
+        const clearBtn = document.getElementById('clearSignature');
+        if (clearBtn) clearBtn.onclick = () => {
+          signaturePad.clear();
+          if (signedInput) signedInput.value = '';
+        };
+      }
+
+      const supervisorCanvas = document.getElementById('supervisorSignaturePad');
+      const supervisorSignedInput = document.getElementById('supervisorSignedImage');
+      if (supervisorCanvas) {
+        if (supervisorSignaturePad) {
+          try { supervisorSignaturePad.off && supervisorSignaturePad.off(); } catch (e) { }
+          supervisorSignaturePad = null;
+        }
+
+        resizeCanvasForDisplay(supervisorCanvas);
+
+        supervisorSignaturePad = new SignaturePad(supervisorCanvas, {
+          backgroundColor: 'rgba(255,255,255,1)',
+          penColor: 'rgb(0, 0, 0)'
+        });
+
+        if (supervisorSignedInput && supervisorSignedInput.value && supervisorSignedInput.value.length > 20) {
+          try {
+            supervisorSignaturePad.fromDataURL(supervisorSignedInput.value);
+          } catch (e) {
+            console.log('Could not load supervisor signature from data:', e);
+            supervisorSignaturePad.clear();
+          }
+        } else {
+          supervisorSignaturePad.clear();
+        }
+
+        const clearBtn = document.getElementById('clearSupervisorSignature');
+        if (clearBtn) clearBtn.onclick = () => {
+          supervisorSignaturePad.clear();
+          if (supervisorSignedInput) supervisorSignedInput.value = '';
+        };
+      }
+    }
+
+    // Toast utility
+    function showToast(message, type = '') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = 'toast ' + (type || '');
+      toast.innerHTML = `<div class="content">${message}</div>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.transition = 'opacity 0.25s';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 250);
+      }, 3200);
+    }
+
+    // Confirm utility
+    function showConfirm(title, message) {
+      return new Promise(resolve => {
+        const backdrop = document.getElementById('confirmModalBackdrop');
+        const t = document.getElementById('confirmModalTitle');
+        const m = document.getElementById('confirmModalMessage');
+        const ok = document.getElementById('confirmOkBtn');
+        const cancel = document.getElementById('confirmCancelBtn');
+        if (!backdrop || !t || !m || !ok || !cancel) return resolve(false);
+        t.textContent = title || 'Confirm';
+        m.textContent = message || '';
+        backdrop.style.display = 'flex';
+
+        function cleanup() {
+          ok.removeEventListener('click', onOk);
+          cancel.removeEventListener('click', onCancel);
+          backdrop.style.display = 'none';
+        }
+
+        function onOk() { cleanup(); resolve(true); }
+        function onCancel() { cleanup(); resolve(false); }
+
+        ok.addEventListener('click', onOk);
+        cancel.addEventListener('click', onCancel);
+      });
+    }
+
+    // Print functionality
+    function printDashboard() {
+      if (!currentViewLog) {
+        showToast('Please view a record first before printing.', 'warning');
+        return;
+      }
+
+      let printContainer = document.getElementById('printContainer');
+      if (!printContainer) {
+        printContainer = document.createElement('div');
+        printContainer.id = 'printContainer';
+        document.body.appendChild(printContainer);
+      }
+
+      const printHTML = generatePaperHTML(currentViewLog);
+      printContainer.innerHTML = printHTML;
+      printContainer.style.display = 'block';
+
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => {
+          printContainer.style.display = 'none';
+        }, 100);
+      }, 100);
+    }
+
+    document.getElementById('printDashboard').addEventListener('click', printDashboard);
+
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        printDashboard();
+      }
+    });
+
+    // Paper View Modal Controls
+    document.getElementById('backBtn').addEventListener('click', () => {
+      document.getElementById('paperViewModal').classList.add('hidden');
+      currentViewLog = null;
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCoachingLogs();
+    });
+    // Generate IR Document HTML
+    function generateIRHTML(log, referenceId, dateFormatted) {
+      const cleanNarration = (log.Performance || '').replace(/\\n/g, "\n");
+      const dateOfIncident = log.DateOfIncident ? new Date(log.DateOfIncident).toLocaleDateString('en-US') : '';
+      
+      return `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #222; margin: 0; padding: 30px 25px; background: white; max-width: 900px; margin: 0 auto;">
+          <div style="text-align: center; margin-bottom: 25px;">
+            <img src="${LOGO_URL}" alt="Digital Minds BPO" style="height: 60px; margin-bottom: 15px; object-fit: contain;" onerror="this.style.display='none'" />
+            <h1 style="font-size: 14px; text-transform: uppercase; font-weight: bold; margin: 0 0 15px 0; letter-spacing: 0.5px; border-bottom: 2px solid #333; padding-bottom: 10px; line-height: 1.4;">INCIDENT REPORT / NOTICE TO EXPLAIN LOG</h1>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+              <tr>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold; width: 25%;">Concerned Employee:</td>
+                <td style="padding: 6px; border: 1px solid #999;">${log.Employee || ''}</td>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold; width: 25%;">Position:</td>
+                <td style="padding: 6px; border: 1px solid #999;">${log.Position || ''}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold;">Department:</td>
+                <td style="padding: 6px; border: 1px solid #999;">${log.Department || ''}</td>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold;">Date of Warning:</td>
+                <td style="padding: 6px; border: 1px solid #999;">${dateFormatted}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold;">Supervisor / Issuer:</td>
+                <td colspan="3" style="padding: 6px; border: 1px solid #999;">${log.Coach || ''}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <h3 style="font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 12px 0 6px 0; border-left: 3px solid #333; padding-left: 6px; color: #333;">Type of Violation / Incident</h3>
+            <div style="border: 1px solid #999; padding: 8px; background: #fafafa; min-height: 45px; font-size: 11px; white-space: pre-wrap; line-height: 1.4;">${cleanNarration}</div>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <h3 style="font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 12px 0 6px 0; border-left: 3px solid #333; padding-left: 6px; color: #333;">Details of the Incident</h3>
+            <div style="border: 1px solid #999; padding: 8px; background: #fafafa; min-height: 45px; font-size: 11px; white-space: pre-wrap; line-height: 1.4;">${cleanNarration}</div>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <h3 style="font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 12px 0 6px 0; border-left: 3px solid #333; padding-left: 6px; color: #333;">Coaching Provided</h3>
+            <div style="border: 1px solid #999; padding: 8px; background: #fafafa; min-height: 45px; font-size: 11px; white-space: pre-wrap; line-height: 1.4;">${log.CoachingProvided || ''}</div>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <h3 style="font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 12px 0 6px 0; border-left: 3px solid #333; padding-left: 6px; color: #333;">Action Plan / Expected Improvement</h3>
+            <div style="border: 1px solid #999; padding: 8px; background: #fafafa; min-height: 45px; font-size: 11px; white-space: pre-wrap; line-height: 1.4;">${log.ActionPlan || ''}</div>
+          </div>
+
+          <div style="margin-top: 30px; border-top: 2px solid #333; padding-top: 20px;">
+            <h3 style="text-align: center; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.5px;">Acknowledgment by Employee</h3>
+            <p style="margin: 0 0 20px 0; font-size: 11px; line-height: 1.5; text-align: center;">I confirm that the contents of this document have been explained to me, and I fully understand the reason for its issuance.</p>
+
+            <table style="width: 100%; table-layout: fixed; border-collapse: collapse;">
+              <tr>
+                <td style="text-align: center; vertical-align: bottom; padding: 30px 15px 10px 15px; width: 50%;">
+                  ${(log.SignedImage && log.SignedImage.length > 20)
+                    ? `<img src="${log.SignedImage}" alt="Employee Signature" style="max-height: 70px; max-width: 110px; display: block; margin: 0 auto 8px; object-fit: contain; border-bottom: 1px solid #000;" />`
+                    : `<div style="height: 50px; border-bottom: 1px solid #000; margin-bottom: 8px;"></div>`
+                  }
+                  <div style="font-weight: bold; font-size: 11px; margin-top: 6px;">${log.Employee || ''}</div>
+                  <div style="font-size: 10px; color: #555; margin-top: 2px;">Employee Signature</div>
+                </td>
+                <td style="text-align: center; vertical-align: bottom; padding: 30px 15px 10px 15px; width: 50%;">
+                  ${(log.SupervisorSignedImage && log.SupervisorSignedImage.length > 20)
+                    ? `<img src="${log.SupervisorSignedImage}" alt="Supervisor Signature" style="max-height: 70px; max-width: 110px; display: block; margin: 0 auto 8px; object-fit: contain; border-bottom: 1px solid #000;" />`
+                    : `<div style="height: 50px; border-bottom: 1px solid #000; margin-bottom: 8px;"></div>`
+                  }
+                  <div style="font-weight: bold; font-size: 11px; margin-top: 6px;">${log.Coach || ''}</div>
+                  <div style="font-size: 10px; color: #555; margin-top: 2px;">Supervisor Signature</div>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-top: 25px; padding-top: 12px; border-top: 1px solid #999; font-size: 10px; color: #666; text-align: center;">
+            <p style="margin: 0;"><strong>Reference ID:</strong> ${referenceId}</p>
+            <p style="margin: 4px 0 0 0;">Digital Minds BPO Services Inc. | Confidential</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Generate NTE Document HTML
+    function generateNTEHTML(log, referenceId, dateFormatted) {
+      const cleanExplanation = (log.CoachingProvided || '').replace(/\\n/g, "\n");
+      const cleanConsequence = (log.ActionPlan || '').replace(/\\n/g, "\n");
+      const cleanSubject = (log.Subject || '').replace(/\\n/g, "\n");
+      
+      return `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #222; margin: 0; padding: 30px 25px; background: white; max-width: 900px; margin: 0 auto;">
+          <div style="text-align: center; margin-bottom: 25px;">
+            <img src="${LOGO_URL}" alt="Digital Minds BPO" style="height: 60px; margin-bottom: 15px; object-fit: contain;" onerror="this.style.display='none'" />
+            <h1 style="font-size: 14px; text-transform: uppercase; font-weight: bold; margin: 0 0 15px 0; letter-spacing: 0.5px; border-bottom: 2px solid #333; padding-bottom: 10px; line-height: 1.4;">NOTICE TO EXPLAIN</h1>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+              <tr>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold; width: 25%;">Concerned Employee:</td>
+                <td style="padding: 6px; border: 1px solid #999;">${log.Employee || ''}</td>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold; width: 25%;">Position:</td>
+                <td style="padding: 6px; border: 1px solid #999;">${log.Position || ''}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold;">Department:</td>
+                <td style="padding: 6px; border: 1px solid #999;">${log.Department || ''}</td>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold;">Date Issued:</td>
+                <td style="padding: 6px; border: 1px solid #999;">${dateFormatted}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold;">Supervisor / Issuer:</td>
+                <td colspan="3" style="padding: 6px; border: 1px solid #999;">${log.Coach || ''}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <h3 style="font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 12px 0 6px 0; border-left: 3px solid #333; padding-left: 6px; color: #333;">Subject</h3>
+            <div style="border: 1px solid #999; padding: 8px; background: #fafafa; min-height: 45px; font-size: 11px; white-space: pre-wrap; line-height: 1.4;">${cleanSubject}</div>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <h3 style="font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 12px 0 6px 0; border-left: 3px solid #333; padding-left: 6px; color: #333;">Details / Explanation</h3>
+            <div style="border: 1px solid #999; padding: 8px; background: #fafafa; min-height: 45px; font-size: 11px; white-space: pre-wrap; line-height: 1.4;">${cleanExplanation}</div>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <h3 style="font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 12px 0 6px 0; border-left: 3px solid #333; padding-left: 6px; color: #333;">Possible Consequence</h3>
+            <div style="border: 1px solid #999; padding: 8px; background: #fafafa; min-height: 45px; font-size: 11px; white-space: pre-wrap; line-height: 1.4;">${cleanConsequence}</div>
+          </div>
+
+          <div style="margin-top: 30px; border-top: 2px solid #333; padding-top: 20px;">
+            <h3 style="text-align: center; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.5px;">Acknowledgment by Employee</h3>
+            <p style="margin: 0 0 20px 0; font-size: 11px; line-height: 1.5; text-align: center;">I confirm that the contents of this document have been explained to me, and I fully understand the reason for its issuance.</p>
+
+            <table style="width: 100%; table-layout: fixed; border-collapse: collapse;">
+              <tr>
+                <td style="text-align: center; vertical-align: bottom; padding: 30px 15px 10px 15px; width: 50%;">
+                  ${(log.SignedImage && log.SignedImage.length > 20)
+                    ? `<img src="${log.SignedImage}" alt="Employee Signature" style="max-height: 70px; max-width: 110px; display: block; margin: 0 auto 8px; object-fit: contain; border-bottom: 1px solid #000;" />`
+                    : `<div style="height: 50px; border-bottom: 1px solid #000; margin-bottom: 8px;"></div>`
+                  }
+                  <div style="font-weight: bold; font-size: 11px; margin-top: 6px;">${log.Employee || ''}</div>
+                  <div style="font-size: 10px; color: #555; margin-top: 2px;">Employee Signature</div>
+                </td>
+                <td style="text-align: center; vertical-align: bottom; padding: 30px 15px 10px 15px; width: 50%;">
+                  ${(log.SupervisorSignedImage && log.SupervisorSignedImage.length > 20)
+                    ? `<img src="${log.SupervisorSignedImage}" alt="Supervisor Signature" style="max-height: 70px; max-width: 110px; display: block; margin: 0 auto 8px; object-fit: contain; border-bottom: 1px solid #000;" />`
+                    : `<div style="height: 50px; border-bottom: 1px solid #000; margin-bottom: 8px;"></div>`
+                  }
+                  <div style="font-weight: bold; font-size: 11px; margin-top: 6px;">${log.Coach || ''}</div>
+                  <div style="font-size: 10px; color: #555; margin-top: 2px;">Supervisor Signature</div>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-top: 25px; padding-top: 12px; border-top: 1px solid #999; font-size: 10px; color: #666; text-align: center;">
+            <p style="margin: 0;"><strong>Reference ID:</strong> ${referenceId}</p>
+            <p style="margin: 4px 0 0 0;">Digital Minds BPO Services Inc. | Confidential</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Generate Verbal Warning HTML
+    function generateVerbalWarningHTML(log, referenceId, dateFormatted) {
+      const cleanPerformance = (log.Performance || '').replace(/\\n/g, "\n");
+      const cleanCoachingProvided = (log.CoachingProvided || '').replace(/\\n/g, "\n");
+      const cleanActionPlan = (log.ActionPlan || '').replace(/\\n/g, "\n");
+
+      return `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #222; margin: 0; padding: 30px 25px; background: white; max-width: 900px; margin: 0 auto;">
+          <div style="text-align: center; margin-bottom: 25px;">
+            <img src="${LOGO_URL}" alt="Digital Minds BPO" style="height: 60px; margin-bottom: 15px; object-fit: contain;" onerror="this.style.display='none'" />
+            <h1 style="font-size: 14px; text-transform: uppercase; font-weight: bold; margin: 0 0 15px 0; letter-spacing: 0.5px; border-bottom: 2px solid #333; padding-bottom: 10px; line-height: 1.4;">EMPLOYEE DISCIPLINARY ACTION DOCUMENTATION</h1>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+              <tr>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold; width: 25%;">Concerned Employee:</td>
+                <td style="padding: 6px; border: 1px solid #999;">${log.Employee || ''}</td>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold; width: 25%;">Position:</td>
+                <td style="padding: 6px; border: 1px solid #999;">${log.Position || ''}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold;">Department:</td>
+                <td style="padding: 6px; border: 1px solid #999;">${log.Department || ''}</td>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold;">Date of Warning:</td>
+                <td style="padding: 6px; border: 1px solid #999;">${dateFormatted}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold;">Supervisor / Issuer:</td>
+                <td colspan="3" style="padding: 6px; border: 1px solid #999;">${log.Coach || ''}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <h3 style="font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 12px 0 6px 0; border-left: 3px solid #333; padding-left: 6px; color: #333;">Type of Violation / Incident</h3>
+            <div style="border: 1px solid #999; padding: 8px; background: #fafafa; min-height: 45px; font-size: 11px; white-space: pre-wrap; line-height: 1.4;">${cleanPerformance}</div>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <h3 style="font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 12px 0 6px 0; border-left: 3px solid #333; padding-left: 6px; color: #333;">Details of the Incident</h3>
+            <div style="border: 1px solid #999; padding: 8px; background: #fafafa; min-height: 45px; font-size: 11px; white-space: pre-wrap; line-height: 1.4;">${cleanCoachingProvided}</div>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <h3 style="font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 12px 0 6px 0; border-left: 3px solid #333; padding-left: 6px; color: #333;">Coaching Provided</h3>
+            <div style="border: 1px solid #999; padding: 8px; background: #fafafa; min-height: 45px; font-size: 11px; white-space: pre-wrap; line-height: 1.4;">${log.CoachingProvided || ''}</div>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <h3 style="font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 12px 0 6px 0; border-left: 3px solid #333; padding-left: 6px; color: #333;">Action Plan / Employee Response</h3>
+            <div style="border: 1px solid #999; padding: 8px; background: #fafafa; min-height: 45px; font-size: 11px; white-space: pre-wrap; line-height: 1.4;">${cleanActionPlan}</div>
+          </div>
+
+          <div style="margin-top: 30px; border-top: 2px solid #333; padding-top: 20px;">
+            <h3 style="text-align: center; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.5px;">Acknowledgment by Employee</h3>
+            <p style="margin: 0 0 20px 0; font-size: 11px; line-height: 1.5; text-align: center;">I confirm that the contents of this document have been explained to me, and I fully understand the reason for its issuance.</p>
+
+            <table style="width: 100%; table-layout: fixed; border-collapse: collapse;">
+              <tr>
+                <td style="text-align: center; vertical-align: bottom; padding: 30px 15px 10px 15px; width: 50%;">
+                  ${(log.SignedImage && log.SignedImage.length > 20)
+                    ? `<img src="${log.SignedImage}" alt="Employee Signature" style="max-height: 70px; max-width: 110px; display: block; margin: 0 auto 8px; object-fit: contain; border-bottom: 1px solid #000;" />`
+                    : `<div style="height: 50px; border-bottom: 1px solid #000; margin-bottom: 8px;"></div>`
+                  }
+                  <div style="font-weight: bold; font-size: 11px; margin-top: 6px;">${log.Employee || ''}</div>
+                  <div style="font-size: 10px; color: #555; margin-top: 2px;">Employee Signature</div>
+                </td>
+                <td style="text-align: center; vertical-align: bottom; padding: 30px 15px 10px 15px; width: 50%;">
+                  ${(log.SupervisorSignedImage && log.SupervisorSignedImage.length > 20)
+                    ? `<img src="${log.SupervisorSignedImage}" alt="Supervisor Signature" style="max-height: 70px; max-width: 110px; display: block; margin: 0 auto 8px; object-fit: contain; border-bottom: 1px solid #000;" />`
+                    : `<div style="height: 50px; border-bottom: 1px solid #000; margin-bottom: 8px;"></div>`
+                  }
+                  <div style="font-weight: bold; font-size: 11px; margin-top: 6px;">${log.Coach || ''}</div>
+                  <div style="font-size: 10px; color: #555; margin-top: 2px;">Supervisor Signature</div>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-top: 25px; padding-top: 12px; border-top: 1px solid #999; font-size: 10px; color: #666; text-align: center;">
+            <p style="margin: 0;"><strong>Reference ID:</strong> ${referenceId}</p>
+            <p style="margin: 4px 0 0 0;">Digital Minds BPO Services Inc. | Confidential</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Generate Paper Document HTML
+    function generatePaperHTML(log) {
+      const referenceId = generateReferenceId(log);
+      const docType = log.DocumentType || 'Coaching Log';
+      const dateFormatted = log.Date ? new Date(log.Date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
+
+      if (docType === 'IR / NTE Log') {
+        return generateIRHTML(log, referenceId, dateFormatted);
+      }
+      
+      if (docType === 'Notice to Explain') {
+        return generateNTEHTML(log, referenceId, dateFormatted);
+      }
+
+      if (docType === 'Verbal Warning') {
+        return generateVerbalWarningHTML(log, referenceId, dateFormatted);
+      }
+
+      // Default format for other document types (Coaching Log, Written Warning, etc.)
+      return `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #222; margin: 0; padding: 30px 25px; background: white; max-width: 900px; margin: 0 auto;">
+          <div style="text-align: center; margin-bottom: 25px;">
+            <img src="${LOGO_URL}" alt="Digital Minds BPO" style="height: 60px; margin-bottom: 15px; object-fit: contain;" onerror="this.style.display='none'" />
+            <h1 style="font-size: 14px; text-transform: uppercase; font-weight: bold; margin: 0 0 15px 0; letter-spacing: 0.5px; border-bottom: 2px solid #333; padding-bottom: 10px; line-height: 1.4;">${docType}</h1>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+              <tr>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold; width: 25%;">Concerned Employee:</td>
+                <td style="padding: 6px; border: 1px solid #999;">${log.Employee || ''}</td>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold; width: 25%;">Position:</td>
+                <td style="padding: 6px; border: 1px solid #999;">${log.Position || ''}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold;">Department:</td>
+                <td style="padding: 6px; border: 1px solid #999;">${log.Department || ''}</td>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold;">Date of Warning:</td>
+                <td style="padding: 6px; border: 1px solid #999;">${dateFormatted}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px; border: 1px solid #999; background: #e8e8e8; font-weight: bold;">Supervisor / Issuer:</td>
+                <td colspan="3" style="padding: 6px; border: 1px solid #999;">${log.Coach || ''}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <h3 style="font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 12px 0 6px 0; border-left: 3px solid #333; padding-left: 6px; color: #333;">Performance Issue / Behavior Observed</h3>
+            <div style="border: 1px solid #999; padding: 8px; background: #fafafa; min-height: 45px; font-size: 11px; white-space: pre-wrap; line-height: 1.4;">${log.Performance || ''}</div>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <h3 style="font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 12px 0 6px 0; border-left: 3px solid #333; padding-left: 6px; color: #333;">Coaching / Corrective Action Provided</h3>
+            <div style="border: 1px solid #999; padding: 8px; background: #fafafa; min-height: 45px; font-size: 11px; white-space: pre-wrap; line-height: 1.4;">${log.CoachingProvided || ''}</div>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <h3 style="font-size: 11px; font-weight: bold; text-transform: uppercase; margin: 12px 0 6px 0; border-left: 3px solid #333; padding-left: 6px; color: #333;">Action Plan / Expected Improvement</h3>
+            <div style="border: 1px solid #999; padding: 8px; background: #fafafa; min-height: 45px; font-size: 11px; white-space: pre-wrap; line-height: 1.4;">${log.ActionPlan || ''}</div>
+          </div>
+
+          <div style="margin-top: 30px; border-top: 2px solid #333; padding-top: 20px;">
+            <h3 style="text-align: center; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.5px;">Acknowledgment by Employee</h3>
+            <p style="margin: 0 0 20px 0; font-size: 11px; line-height: 1.5; text-align: center;">I confirm that the contents of this document have been explained to me, and I fully understand the reason for its issuance.</p>
+
+            <table style="width: 100%; table-layout: fixed; border-collapse: collapse;">
+              <tr>
+                <td style="text-align: center; vertical-align: bottom; padding: 30px 15px 10px 15px; width: 50%;">
+                  ${(log.SignedImage && log.SignedImage.length > 20)
+                    ? `<img src="${log.SignedImage}" alt="Employee Signature" style="max-height: 70px; max-width: 110px; display: block; margin: 0 auto 8px; object-fit: contain; border-bottom: 1px solid #000;" />`
+                    : `<div style="height: 50px; border-bottom: 1px solid #000; margin-bottom: 8px;"></div>`
+                  }
+                  <div style="font-weight: bold; font-size: 11px; margin-top: 6px;">${log.Employee || ''}</div>
+                  <div style="font-size: 10px; color: #555; margin-top: 2px;">Employee Signature</div>
+                </td>
+                <td style="text-align: center; vertical-align: bottom; padding: 30px 15px 10px 15px; width: 50%;">
+                  ${(log.SupervisorSignedImage && log.SupervisorSignedImage.length > 20)
+                    ? `<img src="${log.SupervisorSignedImage}" alt="Supervisor Signature" style="max-height: 70px; max-width: 110px; display: block; margin: 0 auto 8px; object-fit: contain; border-bottom: 1px solid #000;" />`
+                    : `<div style="height: 50px; border-bottom: 1px solid #000; margin-bottom: 8px;"></div>`
+                  }
+                  <div style="font-weight: bold; font-size: 11px; margin-top: 6px;">${log.Coach || ''}</div>
+                  <div style="font-size: 10px; color: #555; margin-top: 2px;">Supervisor Signature</div>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-top: 25px; padding-top: 12px; border-top: 1px solid #999; font-size: 10px; color: #666; text-align: center;">
+            <p style="margin: 0;"><strong>Reference ID:</strong> ${referenceId}</p>
+            <p style="margin: 4px 0 0 0;">Digital Minds BPO Services Inc. | Confidential</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCoachingLogs();
+    });
+  </script>
+</body>
+</html>
