@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coaching Logs Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Roboto', 'sans-serif'],
+          },
+          colors: {
+            'google-blue': '#4285F4',
+            'brand-accent': '#CBEB33',
+            'brand-dark': '#B5D12F',
+            'bg-dark': '#0f172a',
+            'text-dark': '#f1f5f9',
+            'card-dark': '#1e293b',
+            'border-dark': '#334155',
+            'danger': '#ef4444',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .animate-spin-slow {
+        animation: spin 2.5s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .modal {
+        transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    }
+    
+    @media print {
+      @page {
+        margin: 20mm;
+      }
+
+      /* Force browsers to print background colors and images */
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      
+      /* Hide non-printable elements */
+      .no-print, 
+      #themeToggle,
+      #printDashboard,
+      #newCoachingBtn,
+      #coachingSearch,
+      .modal,
+      button[onclick*="viewLog"],
+      button[onclick*="editLog"],
+      button[onclick*="deleteLog"] {
+        display: none !important;
+      }
+      
+      body {
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 11pt;
+      }
+
+      main {
+        padding: 0 !important;
+      }
+      
+      /* Table styles for print */
+      table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        page-break-inside: auto !important;
+      }
+
+      tr {
+        page-break-inside: avoid !important;
+        page-break-after: auto !important;
+      }
+
+      th {
+        background-color: #f3f4f6 !important;
+        color: black !important;
+        font-weight: bold !important;
+        text-align: left !important;
+        padding: 8px !important;
+        border: 1px solid #ddd !important;
+      }
+
+      td {
+        border: 1px solid #ddd !important;
+        padding: 8px !important;
+        text-align: left !important;
+      }
+
+      /* Print header and footer */
+      .print-header {
+        text-align: center;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #333;
+      }
+
+      .print-footer {
+        text-align: center;
+        padding-top: 20px;
+        margin-top: 20px;
+        border-top: 2px solid #333;
+        font-size: 9pt;
+      }
+    }
+    /* Toast notifications and confirm modal */
+    .toast-container {
+      position: fixed;
+      right: 20px;
+      bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .toast {
+      min-width: 220px;
+      max-width: 360px;
+      background: #111827;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      pointer-events: auto;
+      font-size: 14px;
+    }
+    .toast.success { background: #065f46; }
+    .toast.error { background: #7f1d1d; }
+    .toast.warning { background: #78350f; }
+    .toast .title { font-weight:700; margin-bottom:2px; }
+
+    /* Confirm modal */
+    .confirm-modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:10000;
+    }
+    .confirm-modal {
+      background: white; color: #111827; border-radius: 10px; width: 460px; max-width:90%; padding: 18px; box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    }
+    .confirm-modal h3 { margin:0 0 8px; font-size:18px; }
+    .confirm-modal p { margin:0 0 14px; color:#374151; }
+    .confirm-actions { display:flex; gap:10px; justify-content:flex-end; }
+    .confirm-btn { padding:8px 12px; border-radius:8px; cursor:pointer; }
+    .confirm-btn.primary { background:#065f46; color:white; }
+    .confirm-btn.ghost { background:#f3f4f6; color:#111827; }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-100 text-gray-800 font-sans dark:bg-bg-dark dark:text-text-dark">
+
+  <header class="flex items-center gap-4 bg-white dark:bg-card-dark p-4 shadow-md sticky top-0 z-30 border-b border-gray-100 dark:border-border-dark">
+    <img src="dmi_logo.png" alt="Digital Minds BPO Logo" class="h-10 object-contain" onerror="this.style.display='none'" />
+    <h1 class="text-2xl font-extrabold text-gray-900 dark:text-text-dark">Coaching Logs</h1>
+    <button id="themeToggle"
+          class="ml-auto p-2 rounded-full text-gray-800 dark:text-text-dark bg-gray-100 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark transition-all duration-300 transform hover:scale-105"
+          aria-label="Toggle Dark Mode">
+    </button>
+  </header>
+
+  <main id="mainContent" class="max-w-[1600px] mx-auto p-6 lg:p-10 space-y-6">
+    <!-- Print Header (only visible when printing) -->
+    <div class="print-header hidden">
+      <img src="dmi_logo.png" alt="Digital Minds BPO Logo" class="h-16 mx-auto mb-4">
+      <h2 class="text-xl font-bold">Coaching Logs Report</h2>
+      <p class="text-sm" id="printDate"></p>
+    </div>
+    
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+      <div class="relative w-full md:w-1/3">
+        <input type="text" id="coachingSearch" onkeyup="handleCoachingSearch()"
+          placeholder="Search by employee, coach, or performance..."
+          class="w-full p-3 pl-10 border-2 border-gray-300 rounded-full focus:ring-2 focus:ring-brand-accent focus:border-black dark:bg-card-dark dark:border-border-dark dark:text-text-dark transition shadow-md">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">search</span>
+      </div>
+
+      <button id="newCoachingBtn"
+        class="inline-flex items-center bg-brand-accent hover:bg-brand-dark text-bg-dark px-6 py-3 rounded-full shadow-lg font-bold transition duration-300 transform hover:scale-[1.03] text-lg">
+        <i class="fas fa-user-edit mr-3"></i>New Coaching Log
+      </button>
+    </div>
+
+    <div class="relative bg-white dark:bg-card-dark rounded-2xl shadow-2xl shadow-gray-200/50 dark:shadow-xl dark:shadow-black/50 overflow-hidden border border-gray-100 dark:border-border-dark">
+
+      <div id="coachingLoadingSpinner"
+        class="hidden absolute inset-0 bg-white/90 dark:bg-card-dark/90 backdrop-blur-sm flex justify-center items-center z-40">
+        <div class="flex flex-col items-center">
+          <i class="fas fa-sync-alt fa-3x text-brand-accent animate-spin-slow"></i>
+          <p id="coachingLoadingText" class="mt-3 text-lg text-gray-700 dark:text-text-dark font-medium">Loading coaching logs...</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-slate-900 dark:bg-border-dark text-white dark:text-text-dark uppercase tracking-wider">
+            <tr>
+              <th class="px-4 py-4 text-left font-semibold">Date</th>
+              <th class="px-4 py-4 text-left font-semibold">Coach</th>
+              <th class="px-4 py-4 text-left font-semibold">Employee</th>
+              <th class="px-4 py-4 text-left font-semibold">Emp #</th>
+              <th class="px-4 py-4 text-center font-semibold">Ack</th>
+              <th class="px-4 py-4 text-center font-semibold">Form</th>
+              <th class="px-4 py-4 text-center font-semibold">Evidence</th>
+              <th class="px-4 py-4 text-center font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="coachingTable" class="divide-y divide-gray-200 dark:divide-border-dark bg-white dark:bg-card-dark text-gray-700 dark:text-gray-300">
+            <tr>
+              <td colspan="8" class="text-center py-6 text-gray-500 dark:text-gray-400">Loading coaching logs...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Print Footer (only visible when printing) -->
+    <div class="print-footer hidden">
+      <p>Generated on: <span id="printFooterDate"></span></p>
+      <p>Digital Minds BPO - Confidential Document</p>
+    </div>
+  </main>
+
+  <!-- Toast container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Confirm Modal (hidden) -->
+  <div id="confirmModalBackdrop" class="confirm-modal-backdrop" style="display:none;" role="dialog" aria-modal="true">
+    <div class="confirm-modal" role="document">
+      <h3 id="confirmModalTitle">Confirm</h3>
+      <p id="confirmModalMessage">Are you sure?</p>
+      <div class="confirm-actions">
+        <button id="confirmCancelBtn" class="confirm-btn ghost">Cancel</button>
+        <button id="confirmOkBtn" class="confirm-btn primary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paper View Modal -->
+  <div id="paperViewModal" class="modal hidden fixed inset-0 z-[100] bg-gray-100 overflow-y-auto" role="dialog" aria-modal="true">
+    <!-- Header Bar -->
+    <header class="no-print flex items-center gap-4 bg-white dark:bg-card-dark p-4 shadow-md sticky top-0 z-30 border-b border-gray-100 dark:border-border-dark">
+      <button id="backBtn" class="inline-flex items-center p-2 rounded-full text-gray-800 dark:text-text-dark bg-gray-100 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark transition-all duration-300 transform hover:scale-105">
+        <i class="fas fa-arrow-left text-xl"></i>
+      </button>
+      <img src="dmi_logo.png" alt="Digital Minds BPO Logo" class="h-10 object-contain" onerror="this.style.display='none'" />
+      <h1 class="text-2xl font-extrabold text-gray-900 dark:text-text-dark">Coaching Session Preview</h1>
+      <button id="printDashboard" class="ml-auto inline-flex items-center p-2 rounded-full text-gray-800 dark:text-text-dark bg-gray-100 dark:bg-border-dark hover:bg-brand-accent hover:text-bg-dark transition-all duration-300 transform hover:scale-105">
+        <i class="fas fa-print text-xl"></i>
+      </button>
+    </header>
+
+    <div class="min-h-screen p-6 lg:p-10">
+      <!-- Paper Document -->
+      <div id="paperDocument" class="print-document max-w-6xl mx-auto bg-white shadow-md rounded-lg p-8">
+        <!-- Content will be inserted here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div id="coachingModal" class="modal hidden fixed inset-0 z-[100] bg-black bg-opacity-50 flex items-center justify-center opacity-0 scale-95" role="dialog" aria-modal="true">
+    <div class="bg-white dark:bg-card-dark rounded-xl shadow-3xl w-full max-w-3xl transform transition-all p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-3 mb-4 dark:border-border-dark">
+        <h3 id="modalTitle" class="text-2xl font-extrabold text-gray-900 dark:text-text-dark">New Coaching Log</h3>
+        <button id="coachingCloseBtn" class="p-2 rounded-full text-gray-500 hover:text-gray-800 dark:hover:text-text-dark dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-border-dark transition">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="coachingForm">
+        <input type="hidden" id="rowIndex" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="coachingDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
+            <input type="date" id="coachingDate" name="Date" required 
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition">
+          </div>
+          <div>
+            <label for="coach" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Coach</label>
+            <input type="text" id="coach" name="Coach" required
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition">
+          </div>
+          <div>
+            <label for="employee" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Employee</label>
+            <input type="text" id="employee" name="Employee" required
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition">
+          </div>
+          <div>
+            <label for="employeeNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Employee Number</label>
+            <input type="text" id="employeeNumber" name="EmployeeNumber" required
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition">
+          </div>
+        </div>
+        <div class="mt-4">
+          <label for="performance" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Performance Issue/Topic</label>
+          <textarea id="performance" name="Performance" rows="2" required
+            class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition"></textarea>
+        </div>
+        <div class="mt-4">
+          <label for="coachingProvided" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Coaching Provided</label>
+          <textarea id="coachingProvided" name="CoachingProvided" rows="3" required
+            class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition"></textarea>
+        </div>
+        <div class="mt-4">
+          <label for="actionPlan" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Action Plan</label>
+          <textarea id="actionPlan" name="ActionPlan" rows="3" required
+            class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition"></textarea>
+        </div>
+        <!-- Signature Pad -->
+        <div class="mt-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Signature</label>
+          <div class="border border-gray-300 rounded p-3 bg-white dark:bg-card-dark">
+            <canvas id="signaturePad" class="w-full h-36 bg-white dark:bg-bg-dark" style="touch-action: none;"></canvas>
+            <div class="mt-2 flex items-center gap-2">
+              <button type="button" id="clearSignature" class="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 text-sm">Clear</button>
+              <button type="button" id="saveSignatureBtn" class="px-4 py-2 rounded bg-google-blue hover:bg-blue-600 text-white text-sm">Save Signature</button>
+              <span id="signatureSavedText" class="text-sm text-green-600 hidden">Saved</span>
+            </div>
+            <input type="hidden" id="signedImage" name="SignedImage" />
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div>
+            <label for="acknowledge" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Acknowledged</label>
+            <select id="acknowledge" name="Acknowledge" required
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition">
+              <option value="">Select...</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div>
+            <label for="signedForm" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Signed Form Link</label>
+            <input type="url" id="signedForm" name="SignedForm"
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition" placeholder="https://...">
+          </div>
+          <div>
+            <label for="evidence" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Evidence Link</label>
+            <input type="url" id="evidence" name="Evidence"
+              class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg dark:bg-bg-dark dark:text-text-dark focus:ring-brand-accent focus:border-brand-accent transition" placeholder="https://...">
+          </div>
+        </div>
+        <div class="mt-6 flex justify-end gap-3">
+          <button type="button" id="cancelBtn"
+            class="px-6 py-3 rounded-full border border-gray-300 dark:border-border-dark text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-border-dark transition">
+            Cancel
+          </button>
+          <button type="submit" id="submitBtn"
+            class="inline-flex items-center bg-google-blue hover:bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg font-bold transition duration-150 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
+            <i class="fas fa-save mr-2"></i> <span id="submitBtnText">Save Coaching Log</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Hidden PDF Template -->
+  <div id="pdfTemplate" style="display: none;"></div>
+
+  <script>
+    const COACHING_API_URL = "https://script.google.com/macros/s/AKfycbx2i8hiPJfuxkl2e7gH0cNMc-hRZ7Z6wkmHbepp8sCg0uqLD6W5DsOptwnLB-yZXG8cPw/exec";
+    const LOGO_URL = "https://digitalmindsbpo.com/storage/2021/11/cropped-Digital_Minds_Logo_Original.png";
+    let allCoachingLogs = [];
+    let isEditMode = false;
+    let currentViewLog = null;
+
+    // Dark Mode
+    const themeToggle = document.getElementById('themeToggle');
+    function updateThemeIcon(isDark) {
+      themeToggle.innerHTML = isDark 
+        ? '<span class="material-symbols-outlined text-xl">light_mode</span>' 
+        : '<span class="material-symbols-outlined text-xl">dark_mode</span>';
+    }
+
+    function toggleTheme() {
+      const isDark = document.body.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      updateThemeIcon(isDark);
+    }
+
+    themeToggle.addEventListener('click', toggleTheme);
+
+    const storedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialDark = storedTheme === 'dark' || (storedTheme === null && prefersDark);
+    if (initialDark) {
+      document.body.classList.add('dark');
+    }
+    updateThemeIcon(initialDark);
+
+    // Loading Spinner
+    function showCoachingLoading(text = 'Loading coaching logs...') {
+      const spinner = document.getElementById('coachingLoadingSpinner');
+      const loadingText = document.getElementById('coachingLoadingText');
+      if (spinner && loadingText) {
+        loadingText.textContent = text;
+        spinner.classList.remove('hidden');
+        setTimeout(() => spinner.style.opacity = '1', 10);
+      }
+    }
+
+    function hideCoachingLoading() {
+      const spinner = document.getElementById('coachingLoadingSpinner');
+      if (spinner) {
+        spinner.style.opacity = '0';
+        setTimeout(() => spinner.classList.add('hidden'), 300);
+      }
+    }
+
+    // Format Date
+    function formatDate(dateString) {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    // Generate Reference ID
+    function generateReferenceId(log) {
+      const date = new Date(log.Date);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const empNum = String(log.EmployeeNumber || '000').padStart(3, '0');
+      return `CS-${year}${month}${day}-${empNum}`;
+    }
+
+    // Generate Paper Document HTML (matching preview coaching.html)
+    function generatePaperHTML(log) {
+      const referenceId = generateReferenceId(log);
+      const issuedDate = new Date(log.Date);
+      const signedFormLink = log.SignedForm && log.SignedForm.length > 5 && log.SignedForm !== '#' ? log.SignedForm : null;
+      
+      return `
+        <!-- Header with logo and title -->
+        <div class="text-center mb-6">
+          <img src="${LOGO_URL}" alt="Digital Minds BPO" class="mx-auto h-10 mb-2" onerror="this.style.display='none'" />
+          <h1 class="text-2xl font-bold uppercase tracking-wide">Coaching Session</h1>
+        </div>
+
+        <!-- Reference Code -->
+        <div class="text-right text-sm mb-4">
+          <span class="font-semibold">Reference Code:</span>
+          <span class="text-red-600 font-bold">${referenceId}</span>
+        </div>
+
+        <!-- Employee Info Table -->
+        <table class="w-full text-sm border border-gray-300 border-collapse mb-6">
+          <tbody>
+            <tr>
+              <td class="bg-gray-100 font-semibold border border-gray-300 p-2 w-1/3">Employee Name:</td>
+              <td class="border border-gray-300 p-2">${log.Employee || ''}</td>
+            </tr>
+            <tr>
+              <td class="bg-gray-100 font-semibold border border-gray-300 p-2">Date Issued:</td>
+              <td class="border border-gray-300 p-2">${issuedDate.toLocaleDateString('en-US')}</td>
+            </tr>
+            <tr>
+              <td class="bg-gray-100 font-semibold border border-gray-300 p-2">Employee Number:</td>
+              <td class="border border-gray-300 p-2">${log.EmployeeNumber || ''}</td>
+            </tr>
+            <tr>
+              <td class="bg-gray-100 font-semibold border border-gray-300 p-2">Supervisor:</td>
+              <td class="border border-gray-300 p-2">${log.Coach || ''}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Sections -->
+        <div class="space-y-6 text-sm">
+          <div>
+            <h2 class="text-center font-semibold uppercase text-sm mb-1 tracking-wide">Performance / Behavior Observed</h2>
+            <div class="border border-gray-300 rounded p-3 bg-gray-50 min-h-[60px] whitespace-pre-wrap">${log.Performance || ''}</div>
+          </div>
+
+          <div>
+            <h2 class="text-center font-semibold uppercase text-sm mb-1 tracking-wide">Coaching Provided</h2>
+            <div class="border border-gray-300 rounded p-3 bg-gray-50 min-h-[60px] whitespace-pre-wrap">${log.CoachingProvided || ''}</div>
+          </div>
+
+          <div>
+            <h2 class="text-center font-semibold uppercase text-sm mb-1 tracking-wide">Action Plan / Agreed Commitments</h2>
+            <div class="border border-gray-300 rounded p-3 bg-gray-50 min-h-[60px] whitespace-pre-wrap">${log.ActionPlan || ''}</div>
+          </div>
+        </div>
+
+        <!-- Acknowledgment -->
+        <div class="mt-8 text-center">
+          <h2 class="font-semibold uppercase text-sm mb-2 tracking-wide">Acknowledgment</h2>
+          <p class="text-sm mb-3">I acknowledge that this coaching session took place and that the above information was discussed.</p>
+          ${log.SignedImage && log.SignedImage.length > 20
+            ? `
+              <div class="mt-4 flex justify-center gap-8">
+                <div style="text-align:center;">
+                  <img src="${log.SignedImage}" alt="Employee signature" style="max-height:80px; display:block; margin:0 auto 6px; object-fit:contain;"/>
+                  <div style="font-weight:600;">${log.Employee || ''}</div>
+                  <div style="font-size:11px; color:#6b7280;">Employee</div>
+                </div>
+                <div style="text-align:center;">
+                  <div style="border-top:2px solid #e5e7eb; height:42px; margin-bottom:8px; border-style:dashed;"></div>
+                  <div style="font-weight:600;">${log.Coach || ''}</div>
+                  <div style="font-size:11px; color:#6b7280;">Supervisor</div>
+                </div>
+              </div>
+            `
+            : (signedFormLink
+                ? `<a href="${signedFormLink}" target="_blank" class="text-blue-600 font-semibold hover:underline text-sm no-print">View Signed Form</a>`
+                : `<p class="text-gray-500 text-sm italic">No signed form available.</p>`)
+          }
+        </div>
+
+        <!-- Footer with extra space for print -->
+        <footer class="mt-8 pt-4 border-t text-xs flex justify-between text-gray-600">
+          <div><strong>Reference:</strong> ${referenceId}</div>
+          <div>Digital Minds BPO Services Inc. | Confidential</div>
+        </footer>
+      `;
+    }
+
+    // View Log
+    function viewLog(rowIndex) {
+      const log = allCoachingLogs.find(l => l.rowIndex === rowIndex);
+      if (!log) return;
+
+      currentViewLog = log;
+      const paperDocument = document.getElementById('paperDocument');
+      paperDocument.innerHTML = generatePaperHTML(log);
+
+      const paperViewModal = document.getElementById('paperViewModal');
+      paperViewModal.classList.remove('hidden');
+    }
+
+    // Generate PDF HTML Template
+    function generatePDFHTML(log) {
+      const referenceId = generateReferenceId(log);
+      const issuedDate = new Date(log.Date);
+      const signedFormLink = log.SignedForm && log.SignedForm.length > 5 && log.SignedForm !== '#' ? log.SignedForm : null;
+      
+      return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @page {
+      size: 8.5in 11in;
+      margin: 0.75in;
+    }
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; 
+      font-size: 12px; 
+      margin: 0;
+      padding: 0;
+      color: #1f2937;
+      background: #fff;
+    }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .mb-2 { margin-bottom: 8px; }
+    .mb-3 { margin-bottom: 12px; }
+    .mb-4 { margin-bottom: 16px; }
+    .mb-6 { margin-bottom: 24px; }
+    .mt-8 { margin-top: 32px; }
+    .pt-4 { padding-top: 16px; }
+    .p-2 { padding: 8px; }
+    .p-3 { padding: 12px; }
+    .logo {
+      display: block;
+      margin: 0 auto 8px;
+      max-height: 40px;
+      height: auto;
+    }
+    h1 {
+      text-align: center; 
+      font-size: 24px; 
+      margin-bottom: 24px; 
+      text-transform: uppercase; 
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    h2 {
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+    }
+    .reference {
+      font-size: 12px;
+      text-align: right;
+      margin-bottom: 16px;
+    }
+    .reference .font-semibold { font-weight: 600; }
+    .reference .text-red-600 { 
+      color: #dc2626; 
+      font-weight: bold; 
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-bottom: 24px;
+    }
+    table td {
+      padding: 8px;
+      border: 1px solid #d1d5db;
+      vertical-align: top;
+    }
+    table .bg-gray-100 {
+      background: #f3f4f6 !important;
+      font-weight: 600;
+      width: 33.333%;
+    }
+    .content-box {
+      border: 1px solid #d1d5db; 
+      padding: 12px; 
+      min-height: 60px; 
+      background: #f9fafb !important; 
+      border-radius: 4px; 
+      margin-bottom: 24px;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .space-y-6 > div:not(:last-child) {
+      margin-bottom: 24px;
+    }
+    footer {
+      border-top: 1px solid #d1d5db; 
+      margin-top: 32px; 
+      padding-top: 16px; 
+      font-size: 10px;
+      display: flex;
+      justify-content: space-between;
+      color: #6b7280;
+    }
+    .text-gray-500 { color: #6b7280; }
+    .text-gray-600 { color: #4b5563; }
+    .italic { font-style: italic; }
+    .text-blue-600 { color: #2563eb; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="text-center mb-6">
+    <img src="${LOGO_URL}" alt="Digital Minds BPO" class="logo">
+    <h1>Coaching Session</h1>
+  </div>
+
+  <div class="text-right reference">
+    <span class="font-semibold">Reference Code:</span>
+    <span class="text-red-600">${referenceId}</span>
+  </div>
+
+  <table>
+    <tbody>
+      <tr>
+        <td class="bg-gray-100">Employee Name:</td>
+        <td>${log.Employee || ''}</td>
+      </tr>
+      <tr>
+        <td class="bg-gray-100">Date Issued:</td>
+        <td>${issuedDate.toLocaleDateString('en-US')}</td>
+      </tr>
+      <tr>
+        <td class="bg-gray-100">Employee Number:</td>
+        <td>${log.EmployeeNumber || ''}</td>
+      </tr>
+      <tr>
+        <td class="bg-gray-100">Supervisor:</td>
+        <td>${log.Coach || ''}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="space-y-6">
+    <div>
+      <h2>Performance / Behavior Observed</h2>
+      <div class="content-box">${log.Performance || ''}</div>
+    </div>
+
+    <div>
+      <h2>Coaching Provided</h2>
+      <div class="content-box">${log.CoachingProvided || ''}</div>
+    </div>
+
+    <div>
+      <h2>Action Plan / Agreed Commitments</h2>
+      <div class="content-box">${log.ActionPlan || ''}</div>
+    </div>
+  </div>
+
+  <div class="mt-8 text-center">
+    <h2 class="mb-2">Acknowledgment</h2>
+    <p class="mb-3" style="font-size: 12px;">I acknowledge that this coaching session took place and that the above information was discussed.</p>
+    ${log.SignedImage && log.SignedImage.length > 20
+      ? `
+        <div style="display:flex; gap:24px; justify-content:center; margin-top:8px;">
+          <div style="text-align:center;">
+            <img src="${log.SignedImage}" alt="Employee signature" style="max-height:80px; display:block; margin:0 auto 6px; object-fit:contain;"/>
+            <div style="font-weight:600;">${log.Employee || ''}</div>
+            <div style="font-size:11px; color:#6b7280;">Employee</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="border-top:2px solid #e5e7eb; height:42px; margin-bottom:8px; border-style:dashed;"></div>
+            <div style="font-weight:600;">${log.Coach || ''}</div>
+            <div style="font-size:11px; color:#6b7280;">Supervisor</div>
+          </div>
+        </div>
+      `
+      : (signedFormLink
+          ? `<p class="text-blue-600" style="font-size: 12px;">View Signed Form</p>`
+          : `<p class="text-gray-500 italic" style="font-size: 12px;">No signed form available.</p>`)
+    }
+  </div>
+
+  <footer>
+    <div class="text-gray-600"><strong>Reference:</strong> ${referenceId}</div>
+    <div class="text-gray-600">Digital Minds BPO Services Inc. | Confidential</div>
+  </footer>
+</body>
+</html>`;
+    }
+
+    // Download PDF
+    async function downloadPDF(rowIndex) {
+      const log = allCoachingLogs.find(l => l.rowIndex === rowIndex);
+      if (!log) return;
+
+      const referenceId = generateReferenceId(log);
+      
+      // Create a temporary container with the same content as preview
+      const tempContainer = document.createElement('div');
+      tempContainer.style.cssText = 'position: absolute; left: -9999px; width: 800px; background: white; padding: 40px;';
+      tempContainer.innerHTML = generatePaperHTML(log);
+      document.body.appendChild(tempContainer);
+
+      const opt = {
+        margin: [0.5, 0.5, 0.5, 0.5],
+        filename: `Coaching_Session_${referenceId}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff'
+        },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      try {
+        await html2pdf().set(opt).from(tempContainer).save();
+        document.body.removeChild(tempContainer);
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Failed to generate PDF. Please try again.');
+        if (document.body.contains(tempContainer)) {
+          document.body.removeChild(tempContainer);
+        }
+      }
+    }
+
+    // Download PDF from Paper View
+    async function downloadPDFFromView() {
+      if (!currentViewLog) return;
+      
+      const referenceId = generateReferenceId(currentViewLog);
+      
+      // Clone the visible paper document
+      const paperDoc = document.getElementById('paperDocument');
+      const clone = paperDoc.cloneNode(true);
+      
+      const tempContainer = document.createElement('div');
+      tempContainer.style.cssText = 'position: absolute; left: -9999px; width: 800px; background: white; padding: 40px;';
+      tempContainer.appendChild(clone);
+      document.body.appendChild(tempContainer);
+
+      const opt = {
+        margin: [0.5, 0.5, 0.5, 0.5],
+        filename: `Coaching_Session_${referenceId}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true, 
+          logging: false,
+          backgroundColor: '#ffffff'
+        },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      try {
+        await html2pdf().set(opt).from(tempContainer).save();
+        document.body.removeChild(tempContainer);
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Failed to generate PDF. Please try again.');
+        if (document.body.contains(tempContainer)) {
+          document.body.removeChild(tempContainer);
+        }
+      }
+    }
+
+    // Email functionality
+    function emailDocument() {
+      if (!currentViewLog) return;
+      
+      const referenceId = generateReferenceId(currentViewLog);
+      const subject = encodeURIComponent(`Coaching Session - ${referenceId} - ${currentViewLog.Employee}`);
+      const body = encodeURIComponent(`Dear Team,
+
+Please find the coaching session details below:
+
+Reference Code: ${referenceId}
+Employee: ${currentViewLog.Employee}
+Date: ${formatDate(currentViewLog.Date)}
+Coach: ${currentViewLog.Coach}
+
+Performance/Behavior Observed:
+${currentViewLog.Performance}
+
+Coaching Provided:
+${currentViewLog.CoachingProvided}
+
+Action Plan:
+${currentViewLog.ActionPlan}
+
+Acknowledged: ${currentViewLog.Acknowledge}
+
+Best regards,
+Digital Minds BPO Services Inc.`);
+      
+      window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    }
+
+    // Print functionality
+    function printDocument() {
+      window.print();
+    }
+
+    // Paper View Modal Controls
+    document.getElementById('backBtn').addEventListener('click', () => {
+      document.getElementById('paperViewModal').classList.add('hidden');
+      currentViewLog = null;
+    });
+
+    // Render Table
+    function renderCoachingTable(logsToRender) {
+      const table = document.getElementById("coachingTable");
+      table.innerHTML = ""; 
+
+      if (!Array.isArray(logsToRender) || logsToRender.length === 0) {
+        table.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-gray-500 dark:text-gray-400">No coaching logs found.</td></tr>`;
+        return;
+      }
+
+      logsToRender.forEach(log => {
+        const signedFormLink = log.SignedForm && log.SignedForm.length > 5 && log.SignedForm !== '#' ? log.SignedForm : "#";
+        const evidenceLink = log.Evidence && log.Evidence.length > 5 && log.Evidence !== '#' ? log.Evidence : "#";
+        
+        table.innerHTML += `
+          <tr class="hover:bg-gray-50 dark:hover:bg-card-dark transition duration-150">
+            <td class="px-4 py-3 whitespace-nowrap">${formatDate(log.Date)}</td>
+            <td class="px-4 py-3">${log.Coach || "N/A"}</td>
+            <td class="px-4 py-3 font-medium text-gray-900 dark:text-text-dark">${log.Employee || "N/A"}</td>
+            <td class="px-4 py-3">${log.EmployeeNumber || "N/A"}</td>
+            <td class="px-4 py-3 text-center">
+              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${log.Acknowledge === 'Yes' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}">
+                ${log.Acknowledge || "N/A"}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-center">
+              <a href="${signedFormLink}" target="_blank" 
+                class="${signedFormLink === '#' ? 'text-gray-400 cursor-default' : 'text-google-blue hover:text-blue-600'}" 
+                title="${signedFormLink === '#' ? 'No form' : 'View signed form'}">
+                <i class="fas fa-file-signature"></i>
+              </a>
+            </td>
+            <td class="px-4 py-3 text-center">
+              <a href="${evidenceLink}" target="_blank" 
+                class="${evidenceLink === '#' ? 'text-gray-400 cursor-default' : 'text-google-blue hover:text-blue-600'}" 
+                title="${evidenceLink === '#' ? 'No evidence' : 'View evidence'}">
+                <i class="fas fa-paperclip"></i>
+              </a>
+            </td>
+            <td class="px-4 py-3 text-center whitespace-nowrap">
+              <button onclick="viewLog(${log.rowIndex})" class="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 mr-2" title="View Document">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button onclick="editLog(${log.rowIndex})" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mr-2" title="Edit">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="deleteLog(${log.rowIndex})" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300" title="Delete">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>`;
+      });
+    }
+
+    // Search
+    function handleCoachingSearch() {
+      const query = document.getElementById('coachingSearch').value.toLowerCase().trim();
+      
+      if (!query) {
+        renderCoachingTable(allCoachingLogs); 
+        return;
+      }
+
+      const filteredLogs = allCoachingLogs.filter(log => {
+        return (log.Employee && log.Employee.toLowerCase().includes(query)) ||
+               (log.Coach && log.Coach.toLowerCase().includes(query)) ||
+               (log.Performance && log.Performance.toLowerCase().includes(query)) ||
+               (log.EmployeeNumber && String(log.EmployeeNumber).toLowerCase().includes(query));
+      });
+
+      renderCoachingTable(filteredLogs);
+    }
+
+    // Load Data
+    async function loadCoachingLogs() {
+      showCoachingLoading();
+      
+      try {
+        const fetchUrl = COACHING_API_URL + '?action=getCoachingData';
+        const res = await fetch(fetchUrl);
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
+        const apiData = await res.json();
+        
+        if (apiData.error) {
+          throw new Error(apiData.error);
+        }
+
+        allCoachingLogs = Array.isArray(apiData) ? apiData : apiData.data || [];
+        renderCoachingTable(allCoachingLogs);
+
+      } catch (error) {
+        console.error("Error loading coaching logs:", error);
+        const errorMessage = `Failed to load coaching logs. (Error: ${error.message})`;
+        document.getElementById("coachingTable").innerHTML = `<tr><td colspan="8" class="text-center py-6 text-danger font-semibold dark:text-red-400">${errorMessage}</td></tr>`;
+      }
+      hideCoachingLoading();
+    }
+
+    // Modal Functions
+    const coachingModal = document.getElementById('coachingModal');
+
+    function openModal(modal) {
+      modal.classList.remove('hidden');
+      void modal.offsetWidth; 
+      modal.classList.add('opacity-100', 'scale-100');
+    }
+
+    function closeModal(modal) {
+      modal.classList.remove('opacity-100', 'scale-100');
+      modal.classList.add('opacity-0', 'scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    document.getElementById('newCoachingBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      isEditMode = false;
+      document.getElementById('modalTitle').textContent = 'New Coaching Log';
+      document.getElementById('submitBtnText').textContent = 'Save Coaching Log';
+      document.getElementById('coachingForm').reset();
+      // clear any previous signature
+      const signedInput = document.getElementById('signedImage');
+      if (signedInput) signedInput.value = '';
+      openModal(coachingModal);
+      // initialize signature pad for new entry
+      setTimeout(() => initSignaturePad(), 50);
+    });
+
+    coachingModal.addEventListener('click', (e) => {
+      if (e.target === coachingModal || e.target.closest('#coachingCloseBtn')) {
+        closeModal(coachingModal);
+      }
+    });
+
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+      closeModal(coachingModal);
+    });
+
+    // Edit Log
+    function editLog(rowIndex) {
+      const log = allCoachingLogs.find(l => l.rowIndex === rowIndex);
+      if (!log) return;
+
+      isEditMode = true;
+      document.getElementById('modalTitle').textContent = 'Edit Coaching Log';
+      document.getElementById('submitBtnText').textContent = 'Update Coaching Log';
+
+      document.getElementById('rowIndex').value = log.rowIndex;
+      document.getElementById('coachingDate').value = log.Date ? new Date(log.Date).toISOString().split('T')[0] : '';
+      document.getElementById('coach').value = log.Coach || '';
+      document.getElementById('employee').value = log.Employee || '';
+      document.getElementById('employeeNumber').value = log.EmployeeNumber || '';
+      document.getElementById('performance').value = log.Performance || '';
+      document.getElementById('coachingProvided').value = log.CoachingProvided || '';
+      document.getElementById('actionPlan').value = log.ActionPlan || '';
+      document.getElementById('acknowledge').value = log.Acknowledge || '';
+      document.getElementById('signedForm').value = log.SignedForm || '';
+      document.getElementById('evidence').value = log.Evidence || '';
+
+      // populate signature hidden input (will be rendered into canvas by initSignaturePad)
+      const signedInput = document.getElementById('signedImage');
+      if (signedInput) signedInput.value = log.SignedImage || '';
+
+      openModal(coachingModal);
+      // initialize signature pad and render existing signature if present
+      setTimeout(() => initSignaturePad(), 50);
+    }
+
+    // Delete Log
+    async function deleteLog(rowIndex) {
+      if (!confirm('Are you sure you want to delete this coaching log?')) return;
+
+      showCoachingLoading('Deleting...');
+      
+      try {
+        const res = await fetch(COACHING_API_URL + '?action=deleteCoachingRecord&rowIndex=' + rowIndex);
+        const result = await res.json();
+        
+        alert('Coaching log deleted successfully!');
+        await loadCoachingLogs();
+      } catch (error) {
+        console.error('Error deleting log:', error);
+        alert('Failed to delete coaching log: ' + error.message);
+        hideCoachingLoading();
+      }
+    }
+
+    // Form Submission
+    async function submitCoachingForm(e) {
+      e.preventDefault();
+      const form = e.target;
+      const submitButton = document.getElementById('submitBtn');
+      const originalButtonHtml = submitButton.innerHTML;
+
+      submitButton.disabled = true;
+      submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
+
+      const formData = {
+        Date: document.getElementById('coachingDate').value,
+        Coach: document.getElementById('coach').value,
+        Employee: document.getElementById('employee').value,
+        EmployeeNumber: document.getElementById('employeeNumber').value,
+        Performance: document.getElementById('performance').value,
+        CoachingProvided: document.getElementById('coachingProvided').value,
+        ActionPlan: document.getElementById('actionPlan').value,
+        Acknowledge: document.getElementById('acknowledge').value,
+        SignedForm: document.getElementById('signedForm').value,
+        Evidence: document.getElementById('evidence').value,
+        SignedImage: document.getElementById('signedImage') ? document.getElementById('signedImage').value : ''
+      };
+
+      if (isEditMode) {
+        formData.rowIndex = document.getElementById('rowIndex').value;
+      }
+
+      try {
+        const action = isEditMode ? 'updateCoachingRecord' : 'addCoachingRecord';
+        const res = await fetch(COACHING_API_URL + '?action=' + action, {
+          method: 'POST',
+          body: JSON.stringify(formData)
+        });
+        
+        const result = await res.json();
+        
+        alert(isEditMode ? 'Coaching log updated successfully!' : 'Coaching log added successfully!');
+        closeModal(coachingModal);
+        form.reset();
+        await loadCoachingLogs();
+      } catch (error) {
+        console.error('Error saving log:', error);
+        alert('Failed to save coaching log: ' + error.message);
+      } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalButtonHtml;
+      }
+    }
+
+    document.getElementById('coachingForm').addEventListener('submit', submitCoachingForm);
+
+    // Signature Pad utilities
+    let signaturePad = null;
+    function resizeCanvasForDisplay(canvas) {
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      canvas.width = w * ratio;
+      canvas.height = h * ratio;
+      canvas.getContext('2d').scale(ratio, ratio);
+    }
+
+    function initSignaturePad() {
+      const canvas = document.getElementById('signaturePad');
+      const signedInput = document.getElementById('signedImage');
+      if (!canvas) return;
+
+      // reset any previous pad
+      if (signaturePad) {
+        try { signaturePad.off && signaturePad.off(); } catch(e) {}
+        signaturePad = null;
+      }
+
+      // ensure canvas has correct size
+      resizeCanvasForDisplay(canvas);
+
+      signaturePad = new SignaturePad(canvas, {
+        backgroundColor: 'rgba(255,255,255,0)'
+      });
+
+      // load existing signature if present
+      if (signedInput && signedInput.value) {
+        try {
+          signaturePad.fromDataURL(signedInput.value);
+        } catch (e) {
+          // fallback: draw image onto canvas
+          const img = new Image();
+          img.onload = () => {
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width / (window.devicePixelRatio||1), canvas.height / (window.devicePixelRatio||1));
+          };
+          img.src = signedInput.value;
+        }
+      } else {
+        signaturePad.clear();
+      }
+
+      // wire buttons
+      const clearBtn = document.getElementById('clearSignature');
+      const saveBtn = document.getElementById('saveSignatureBtn');
+      const savedText = document.getElementById('signatureSavedText');
+
+      if (clearBtn) clearBtn.onclick = () => {
+        signaturePad.clear();
+        if (signedInput) signedInput.value = '';
+        if (savedText) savedText.classList.add('hidden');
+      };
+
+      if (saveBtn) saveBtn.onclick = () => {
+        if (signaturePad.isEmpty && signaturePad.isEmpty()) {
+          showToast('Please draw your signature first.', 'warning');
+          return;
+        }
+        const dataUrl = signaturePad.toDataURL('image/png');
+        if (signedInput) signedInput.value = dataUrl;
+        if (savedText) {
+          savedText.classList.remove('hidden');
+          setTimeout(() => savedText.classList.add('hidden'), 2000);
+        }
+      };
+
+      // handle resize
+      window.addEventListener('resize', () => resizeCanvasForDisplay(canvas));
+    }
+
+    // Toast and Confirm utilities
+    function showToast(message, type = '') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = 'toast ' + (type || '');
+      toast.innerHTML = `<div class="content">${message}</div>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.transition = 'opacity 0.25s';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 250);
+      }, 3200);
+    }
+
+    function showConfirm(title, message) {
+      return new Promise(resolve => {
+        const backdrop = document.getElementById('confirmModalBackdrop');
+        const t = document.getElementById('confirmModalTitle');
+        const m = document.getElementById('confirmModalMessage');
+        const ok = document.getElementById('confirmOkBtn');
+        const cancel = document.getElementById('confirmCancelBtn');
+        if (!backdrop || !t || !m || !ok || !cancel) return resolve(false);
+        t.textContent = title || 'Confirm';
+        m.textContent = message || '';
+        backdrop.style.display = 'flex';
+
+        function cleanup() {
+          ok.removeEventListener('click', onOk);
+          cancel.removeEventListener('click', onCancel);
+          backdrop.style.display = 'none';
+        }
+
+        function onOk() { cleanup(); resolve(true); }
+        function onCancel() { cleanup(); resolve(false); }
+
+        ok.addEventListener('click', onOk);
+        cancel.addEventListener('click', onCancel);
+      });
+    }
+
+    // Print functionality
+    async function printDashboard() {
+      if (!currentViewLog) {
+        alert('Please view a coaching record first before printing.');
+        return;
+      }
+
+      // Clone the paper document content so we don't modify the live DOM
+      const paperContent = document.getElementById('paperDocument').cloneNode(true);
+
+      // Create a print wrapper that will be the only visible element during print
+      const printWrapper = document.createElement('div');
+      printWrapper.id = 'printWrapper';
+      printWrapper.style.background = 'white';
+      printWrapper.style.padding = '0';
+      printWrapper.style.margin = '0';
+      printWrapper.appendChild(paperContent);
+
+      // Print-specific CSS: hide everything except the wrapper and make logo smaller
+      const printStyle = document.createElement('style');
+      printStyle.id = 'printWrapperStyles';
+      printStyle.textContent = `
+        @page { size: letter; margin: 0.75in; }
+        @media print {
+          html, body { height: auto !important; }
+          body * { visibility: hidden !important; }
+          #printWrapper, #printWrapper * { visibility: visible !important; }
+          #printWrapper { position: absolute !important; left: 0; top: 0; width: 100% !important; padding: 0 !important; margin: 0 !important; }
+          .print-document { box-shadow: none !important; padding: 0 !important; max-width: none !important; border-radius: 0 !important; }
+          .text-center img { height: 32px !important; width: auto !important; }
+          .no-print, button, #backBtn, #printDashboard, #themeToggle, #newCoachingBtn, #coachingSearch { display: none !important; }
+          table { page-break-inside: avoid !important; }
+        }
+      `;
+
+      // Temporarily clear document title so browser print header shows minimal info
+      const originalTitle = document.title;
+      try {
+        document.title = '';
+      } catch (e) {
+        /* ignore */
+      }
+
+      // Insert wrapper and styles into DOM (do not remove other DOM nodes)
+      document.body.appendChild(printWrapper);
+      document.head.appendChild(printStyle);
+
+      // Remove interactive elements inside the wrapper to be safe
+      printWrapper.querySelectorAll('.no-print, button').forEach(el => el.remove());
+
+      // Replace the acknowledgment section only for print (do not affect preview)
+      try {
+        const ackHeading = Array.from(printWrapper.querySelectorAll('h2')).find(h => /acknowledg/i.test(h.textContent || ''));
+        if (ackHeading) {
+          const ackContainer = ackHeading.parentElement;
+          if (ackContainer) {
+            ackContainer.innerHTML = `
+              <div style="text-align:center; margin-bottom:10px;">
+                <div style="font-weight:700; text-transform:uppercase; font-size:12px;">Acknowledgment</div>
+                <p style="font-size:12px; margin:6px 0 14px; color:#374151;">I acknowledge that this coaching session took place and that the above information was discussed.</p>
+              </div>
+
+              <div style="display:flex; gap:24px; justify-content:space-between; margin-top:8px;">
+                <div style="flex:1; text-align:left; padding-right:12px;">
+                  ${ (currentViewLog && currentViewLog.SignedImage) ? `
+                    <img src="${currentViewLog.SignedImage}" alt="Employee signature" style="max-height:80px; display:block; margin:0 auto 6px; object-fit:contain;"/>
+                  ` : `
+                    <div style="border-top:2px solid #e5e7eb; height:42px; margin-bottom:8px; border-style:dashed;"></div>
+                  ` }
+                  <div style="font-weight:600;">${(currentViewLog && currentViewLog.Employee) ? currentViewLog.Employee : ''}</div>
+                  <div style="font-size:11px; color:#6b7280; margin-bottom:12px;">Employee</div>
+
+                  <div style="border-top:1px dashed #d1d5db; width:60%; height:20px; margin-top:6px;"></div>
+                  <div style="font-size:11px; color:#6b7280; margin-top:4px;">Date</div>
+                </div>
+
+                <div style="flex:1; text-align:left; padding-left:12px;">
+                  <div style="border-top:2px solid #e5e7eb; height:42px; margin-bottom:8px; border-style:dashed;"></div>
+                  <div style="font-weight:600;">${(currentViewLog && currentViewLog.Coach) ? currentViewLog.Coach : ''}</div>
+                  <div style="font-size:11px; color:#6b7280; margin-bottom:12px;">Supervisor</div>
+
+                  <div style="border-top:1px dashed #d1d5db; width:60%; height:20px; margin-top:6px;"></div>
+                  <div style="font-size:11px; color:#6b7280; margin-top:4px;">Date</div>
+                </div>
+              </div>
+            `;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to replace acknowledgment for print:', e);
+      }
+
+      // Wait for images inside wrapper to load before printing
+      const imgs = Array.from(printWrapper.querySelectorAll('img'));
+      await Promise.all(imgs.map(img => new Promise(resolve => {
+        if (!img.src) return resolve();
+        if (img.complete) return resolve();
+        img.addEventListener('load', resolve);
+        img.addEventListener('error', resolve);
+        // set a timeout in case load events never fire
+        setTimeout(resolve, 1500);
+      })));
+
+      // Trigger print dialog
+      window.print();
+
+      // Clean up: remove wrapper and styles, and restore title
+      setTimeout(() => {
+        const s = document.getElementById('printWrapperStyles');
+        if (s) s.remove();
+        const w = document.getElementById('printWrapper');
+        if (w) w.remove();
+        try { document.title = originalTitle; } catch (e) {}
+      }, 500);
+    }
+
+    // Add print button event listener
+    document.getElementById('printDashboard').addEventListener('click', printDashboard);
+    
+    // Add keyboard shortcut for printing (Ctrl+P or Cmd+P)
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        printDashboard();
+      }
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCoachingLogs();
+    });
+  </script>
+</body>
+</html>
