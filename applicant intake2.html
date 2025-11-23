@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Job Application Form</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Use the same Tailwind configuration for consistent look and feel
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                    },
+                    colors: {
+                        'google-blue': '#4285F4',
+                        'brand-accent': '#CBEB33',
+                        'brand-dark': '#B5D12F',
+                        'bg-dark': '#0f172a',
+                        'text-dark': '#f1f5f9',
+                        'card-dark': '#1e293b',
+                        'border-dark': '#334155',
+                        'danger': '#ef4444',
+                        'primary-applicant': '#4285F4',
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            min-height: 100vh;
+            background-color: #f8fafc; /* Tailwind gray-50 */
+        }
+        .dark body {
+            background-color: #0f172a; /* Tailwind bg-dark */
+        }
+    </style>
+</head>
+<body class="font-sans transition-colors duration-300">
+
+    <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-extrabold text-google-blue dark:text-google-blue flex items-center justify-center mb-2">
+                <span class="material-symbols-outlined text-4xl mr-2">work</span>
+                Job Application
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400">Join our team! Please fill out the form below completely.</p>
+        </header>
+
+        <!-- Form Container -->
+        <div class="bg-white dark:bg-card-dark rounded-xl shadow-2xl p-6 sm:p-10 border border-gray-200 dark:border-border-dark">
+            
+            <form id="applicationForm" onsubmit="handleFormSubmit(event)">
+                
+                <!-- Section: Personal Information -->
+                <h2 class="text-2xl font-semibold border-b pb-2 mb-6 text-gray-800 dark:text-text-dark border-gray-200 dark:border-border-dark">1. Personal Information</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="firstName" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">First Name <span class="text-danger">*</span></label>
+                        <input type="text" id="firstName" name="firstName" required class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg bg-gray-50 dark:bg-bg-dark dark:text-text-dark focus:ring-google-blue focus:border-google-blue">
+                    </div>
+                    <div>
+                        <label for="lastName" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Last Name <span class="text-danger">*</span></label>
+                        <input type="text" id="lastName" name="lastName" required class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg bg-gray-50 dark:bg-bg-dark dark:text-text-dark focus:ring-google-blue focus:border-google-blue">
+                    </div>
+                    <div>
+                        <label for="email" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Email Address <span class="text-danger">*</span></label>
+                        <input type="email" id="email" name="email" required class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg bg-gray-50 dark:bg-bg-dark dark:text-text-dark focus:ring-google-blue focus:border-google-blue">
+                    </div>
+                    <div>
+                        <label for="phoneNumber" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Phone Number <span class="text-danger">*</span></label>
+                        <input type="tel" id="phoneNumber" name="phoneNumber" required class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg bg-gray-50 dark:bg-bg-dark dark:text-text-dark focus:ring-google-blue focus:border-google-blue">
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="nickname" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Nickname</label>
+                        <input type="text" id="nickname" name="nickname" class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg bg-gray-50 dark:bg-bg-dark dark:text-text-dark focus:ring-google-blue focus:border-google-blue">
+                    </div>
+                    <div>
+                        <label for="age" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Age</label>
+                        <input type="number" id="age" name="age" min="18" max="100" class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg bg-gray-50 dark:bg-bg-dark dark:text-text-dark focus:ring-google-blue focus:border-google-blue">
+                    </div>
+                    <div class="col-span-1 md:col-span-2">
+                        <label for="address" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Current Address</label>
+                        <textarea id="address" name="address" rows="2" class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg bg-gray-50 dark:bg-bg-dark dark:text-text-dark focus:ring-google-blue focus:border-google-blue"></textarea>
+                    </div>
+                </div>
+
+                <!-- Section: Job Details -->
+                <h2 class="text-2xl font-semibold border-b pb-2 my-8 text-gray-800 dark:text-text-dark border-gray-200 dark:border-border-dark">2. Job Details</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="position" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Position Applied For <span class="text-danger">*</span></label>
+                        <select id="position" name="position" required class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg bg-gray-50 dark:bg-bg-dark dark:text-text-dark focus:ring-google-blue focus:border-google-blue">
+                            <option value="">Select a Position</option>
+                            <!-- Options will be populated by JS from Apps Script -->
+                        </select>
+                    </div>
+                    <div>
+                        <label for="source" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">How did you hear about us?</label>
+                        <select id="source" name="source" class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg bg-gray-50 dark:bg-bg-dark dark:text-text-dark focus:ring-google-blue focus:border-google-blue">
+                            <option value="Online Job Board">Online Job Board (e.g., Indeed)</option>
+                            <option value="Social Media">Social Media</option>
+                            <option value="Referral">Referral</option>
+                            <option value="Company Website">Company Website</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <label for="referral" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Referral Name (if applicable)</label>
+                    <input type="text" id="referral" name="referral" class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg bg-gray-50 dark:bg-bg-dark dark:text-text-dark focus:ring-google-blue focus:border-google-blue">
+                </div>
+
+                <!-- Section: Education & Experience -->
+                <h2 class="text-2xl font-semibold border-b pb-2 my-8 text-gray-800 dark:text-text-dark border-gray-200 dark:border-border-dark">3. Background & Resume</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="education" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Highest Education Level</label>
+                        <select id="education" name="education" class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg bg-gray-50 dark:bg-bg-dark dark:text-text-dark focus:ring-google-blue focus:border-google-blue">
+                            <option value="High School">High School</option>
+                            <option value="Vocational">Vocational/Technical</option>
+                            <option value="Associate">Associate's Degree</option>
+                            <option value="Bachelor">Bachelor's Degree</option>
+                            <option value="Master">Master's Degree or Higher</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="schoolName" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">School / University Name</label>
+                        <input type="text" id="schoolName" name="schoolName" class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg bg-gray-50 dark:bg-bg-dark dark:text-text-dark focus:ring-google-blue focus:border-google-blue">
+                    </div>
+                    <div class="col-span-1 md:col-span-2">
+                        <label for="jobExperience" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Relevant Job Experience Summary (500 chars max)</label>
+                        <textarea id="jobExperience" name="jobExperience" rows="3" maxlength="500" class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg bg-gray-50 dark:bg-bg-dark dark:text-text-dark focus:ring-google-blue focus:border-google-blue"></textarea>
+                    </div>
+                    <div class="col-span-1 md:col-span-2">
+                        <label for="skills" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Key Skills (e.g., JavaScript, SQL, Project Management)</label>
+                        <input type="text" id="skills" name="skills" placeholder="List skills separated by commas" class="w-full p-3 border border-gray-300 dark:border-border-dark rounded-lg bg-gray-50 dark:bg-bg-dark dark:text-text-dark focus:ring-google-blue focus:border-google-blue">
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <label for="resume" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Upload Resume/CV (PDF, DOCX) <span class="text-danger">*</span></label>
+                    <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx" required class="w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-brand-accent/50 file:text-gray-900
+                        hover:file:bg-brand-accent/70
+                        dark:file:bg-brand-dark/50 dark:file:text-gray-900
+                    "/>
+                </div>
+                
+                <!-- Hidden fields for optional tracking (if needed by your specific sheet columns) -->
+                <input type="hidden" id="account" name="account" value="">
+                <input type="hidden" id="finalInterview" name="finalInterview" value="">
+                <input type="hidden" id="clientInterview" name="clientInterview" value="">
+                <input type="hidden" id="civilStatus" name="civilStatus" value="">
+                <input type="hidden" id="travelTime" name="travelTime" value="">
+                <input type="hidden" id="vehicle" name="vehicle" value="">
+                <input type="hidden" id="schoolYear" name="schoolYear" value="">
+
+
+                <!-- Submission Button -->
+                <div class="mt-10 pt-6 border-t border-gray-200 dark:border-border-dark">
+                    <button type="submit" id="submitButton" 
+                        class="w-full py-3 px-4 bg-google-blue text-white font-bold text-lg rounded-xl shadow-lg hover:bg-blue-600 transition duration-300 flex items-center justify-center">
+                        <i class="fa-solid fa-paper-plane mr-3"></i> Submit Application
+                    </button>
+                    <p id="submissionMessage" class="mt-4 text-center hidden"></p>
+                </div>
+
+            </form>
+        </div>
+        
+    </div>
+
+    <!-- Message Container (for form submission feedback) -->
+    <div id="message-container" class="fixed top-4 right-4 z-[200] space-y-2"></div>
+
+
+    <script>
+        // =================================================================================
+        // UTILITY FUNCTIONS
+        // =================================================================================
+        
+        // Custom message function (replacing alert())
+        function showMessage(message, type = 'info', duration = 5000) {
+            let container = document.getElementById('message-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'message-container';
+                container.className = 'fixed top-4 right-4 z-[200] space-y-2';
+                document.body.appendChild(container);
+            }
+
+            const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-danger' : 'bg-google-blue';
+            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-xmark-circle' : 'fa-info-circle';
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `p-4 rounded-xl shadow-lg text-white ${bgColor} flex items-center animate-in fade-in`;
+            messageDiv.innerHTML = `
+                <i class="fa-solid ${icon} mr-3"></i>
+                <span>${message}</span>
+            `;
+            
+            container.appendChild(messageDiv);
+
+            setTimeout(() => {
+                messageDiv.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+                messageDiv.addEventListener('transitionend', () => messageDiv.remove());
+            }, duration);
+        }
+        
+        // =================================================================================
+        // APPS SCRIPT COMMUNICATION
+        // =================================================================================
+
+        /**
+         * Fetches the list of available positions from the backend and populates the dropdown.
+         */
+        function loadPositions() {
+            google.script.run
+                .withSuccessHandler(populatePositionDropdown)
+                .withFailureHandler((error) => {
+                    console.error("Failed to load positions:", error);
+                    // Provide a fallback if the script fails to load positions
+                    populatePositionDropdown(['Software Engineer', 'QA Analyst', 'Project Manager', 'Other']);
+                })
+                .getPositionList();
+        }
+
+        /**
+         * Populates the position dropdown with options.
+         */
+        function populatePositionDropdown(positions) {
+            const select = document.getElementById('position');
+            select.innerHTML = '<option value="">Select a Position</option>'; // Keep default
+            if (Array.isArray(positions)) {
+                positions.forEach(position => {
+                    const option = document.createElement('option');
+                    option.value = position;
+                    option.textContent = position;
+                    select.appendChild(option);
+                });
+            }
+        }
+        
+        /**
+         * Handles the form submission event.
+         */
+        function handleFormSubmit(event) {
+            event.preventDefault(); // Stop default form submission
+            
+            const form = event.target;
+            const submitButton = document.getElementById('submitButton');
+            
+            // Collect form data
+            const formData = new FormData(form);
+            const data = {};
+            for (const [key, value] of formData.entries()) {
+                // Skip the file for now, process it separately
+                if (key !== 'resume') {
+                    data[key] = value;
+                }
+            }
+            
+            const fileInput = document.getElementById('resume');
+            const file = fileInput.files[0];
+
+            // Validate file presence
+            if (!file) {
+                showMessage('Please upload a resume/CV.', 'error');
+                return;
+            }
+
+            // Disable button and show loading state
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin-pulse mr-3"></i> Submitting...';
+
+            // Send data to Google Apps Script
+            // Note: The file blob is passed as the second argument to the Apps Script function
+            google.script.run
+                .withSuccessHandler((response) => {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fa-solid fa-paper-plane mr-3"></i> Submit Application';
+                    if (response.success) {
+                        showMessage('Application submitted successfully! Thank you.', 'success');
+                        form.reset(); // Clear the form on success
+                    } else {
+                        showMessage('Submission failed: ' + response.message, 'error');
+                    }
+                })
+                .withFailureHandler((error) => {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fa-solid fa-paper-plane mr-3"></i> Submit Application';
+                    showMessage('API communication failed: ' + error.message, 'error');
+                })
+                .handleApplicationSubmission(data, file);
+        }
+
+        // =================================================================================
+        // INITIALIZATION
+        // =================================================================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load Dark Mode preference for form consistency
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+            
+            // Load available positions for the dropdown
+            loadPositions();
+        });
+        
+    </script>
+</body>
+</html>
