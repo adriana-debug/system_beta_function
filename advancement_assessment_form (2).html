@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advancement Assessment Form</title>
+
+  <!-- Import Materialize CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #f5f5f5;
+    }
+    .container {
+      margin-top: 30px;
+      margin-bottom: 30px;
+    }
+    .card {
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      color: #1976d2;
+      margin-top: 20px;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #1976d2;
+      padding-bottom: 5px;
+    }
+    .logo-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo-header img {
+      max-width: 250px;
+      height: auto;
+    }
+    .score-box {
+      background-color: #fff3e0;
+      padding: 15px;
+      margin: 20px 0;
+      border-left: 4px solid #ff9800;
+    }
+    .verification-box {
+      background-color: #e8f5e9;
+      padding: 15px;
+      margin: 20px 0;
+      border-left: 4px solid #4caf50;
+    }
+    .criteria-input {
+      margin-bottom: 10px;
+    }
+    .remove-btn {
+      margin-top: 20px;
+    }
+
+    /* Hide display fields by default, show only in print */
+    .display-only {
+      display: none;
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background-color: white;
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 11pt;
+        line-height: 1.6;
+        color: #000;
+      }
+      .container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      .card {
+        box-shadow: none;
+        padding: 40px;
+        background: white;
+      }
+      .print-btn, .btn, button, .fixed-action-btn, .row:has(button), .remove-btn {
+        display: none !important;
+      }
+      .section-title {
+        color: #000;
+        font-weight: bold;
+        font-size: 14pt;
+        margin-top: 20pt;
+        margin-bottom: 12pt;
+        border-bottom: 2px solid #000;
+        page-break-after: avoid;
+        text-transform: uppercase;
+      }
+      h4 {
+        font-size: 18pt;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 20pt;
+        text-transform: uppercase;
+      }
+      h6 {
+        font-size: 12pt;
+        font-weight: bold;
+        margin-top: 15pt;
+        margin-bottom: 8pt;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 15px 0;
+        page-break-inside: auto;
+        font-size: 11pt;
+      }
+      table th, table td {
+        border: 1px solid #000 !important;
+        padding: 10pt;
+        text-align: left;
+        vertical-align: top;
+      }
+      table th {
+        font-weight: bold;
+        background-color: #d9d9d9 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        text-align: center;
+      }
+      table tr {
+        page-break-inside: avoid;
+      }
+      .score-box, .verification-box {
+        border: 2px solid #000;
+        padding: 15pt;
+        margin: 20pt 0;
+        page-break-inside: avoid;
+        background-color: #f5f5f5 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .signature-section {
+        margin-top: 25pt;
+        page-break-inside: avoid;
+      }
+      .signature-line {
+        border-bottom: 1px solid #000;
+        min-height: 50pt;
+        margin: 10pt 0;
+      }
+      .edit-fields {
+        display: none !important;
+      }
+      .display-only {
+        display: block !important;
+      }
+      input, textarea, select {
+        border: none !important;
+        box-shadow: none !important;
+        font-family: 'Times New Roman', Times, serif;
+        color: #000 !important;
+      }
+      .input-field label {
+        display: none;
+      }
+      .logo-header {
+        margin-bottom: 30pt;
+      }
+      .logo-header img {
+        max-width: 180px;
+      }
+      p {
+        margin: 8pt 0;
+        text-align: justify;
+      }
+      strong {
+        font-weight: bold;
+      }
+      .info-table {
+        margin-bottom: 20pt;
+      }
+      .info-table td {
+        padding: 8pt;
+      }
+      .info-table td:first-child {
+        width: 30%;
+        font-weight: bold;
+      }
+      .rating-result-table {
+        margin: 15pt 0;
+      }
+      .rating-result-table td {
+        padding: 8pt;
+      }
+      @page {
+        margin: 0.75in;
+        size: letter;
+      }
+      .page-number {
+        position: fixed;
+        bottom: 0.5in;
+        right: 0.75in;
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 10pt;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="card">
+      <div class="logo-header">
+        <img src="https://digitalmindsbpo.com/storage/2021/11/cropped-Digital_Minds_Logo_Original.png" alt="Digital Minds BPO Logo">
+      </div>
+      
+      <h4 class="center-align">Advancement Assessment Form</h4>
+
+      <!-- Employee Details Section -->
+      <h5 class="section-title">Employee Details</h5>
+      
+      <!-- Display version for print -->
+      <div class="display-only">
+        <table class="info-table">
+          <tr>
+            <td><strong>Employee Full Name:</strong></td>
+            <td id="empFullNameDisplay"></td>
+            <td><strong>Assigned Campaign/Position:</strong></td>
+            <td id="campaignDisplay"></td>
+          </tr>
+          <tr>
+            <td><strong>Employee ID:</strong></td>
+            <td id="empIdDisplay"></td>
+            <td><strong>Assessment Date:</strong></td>
+            <td id="assessDateDisplay"></td>
+          </tr>
+          <tr>
+            <td><strong>Supervisor/Assessor:</strong></td>
+            <td id="supervisorDisplay"></td>
+            <td><strong>Assessment Period:</strong></td>
+            <td id="assessPeriodDisplay"></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Edit version -->
+      <div class="row edit-fields">
+        <div class="input-field col s12 m6">
+          <input id="empFullName" type="text" class="validate">
+          <label for="empFullName">Employee Full Name</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="campaign" type="text" class="validate">
+          <label for="campaign">Assigned Campaign/Position</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="empId" type="text" class="validate">
+          <label for="empId">Employee ID</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="assessDate" type="date" class="validate">
+          <label for="assessDate">Assessment Date</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="supervisor" type="text" class="validate">
+          <label for="supervisor">Supervisor/Assessor</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="periodFrom" type="date" class="validate">
+          <label for="periodFrom">Period From</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="periodTo" type="date" class="validate">
+          <label for="periodTo">Period To</label>
+        </div>
+      </div>
+
+      <!-- Employment Standards Section -->
+      <h5 class="section-title">Employment Standards</h5>
+      <div id="employmentStandardsContainer">
+        <!-- Dynamic criteria will be added here -->
+      </div>
+      <div class="row">
+        <div class="col s12">
+          <button class="btn waves-effect waves-light blue" onclick="addEmploymentCriteria()">
+            <i class="material-icons left">add</i>Add Employment Criteria
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Metrics Section -->
+      <h5 class="section-title">KPI Metrics</h5>
+      <div id="kpiMetricsContainer">
+        <!-- Dynamic criteria will be added here -->
+      </div>
+      <div class="row">
+        <div class="col s12">
+          <button class="btn waves-effect waves-light blue" onclick="addKPICriteria()">
+            <i class="material-icons left">add</i>Add KPI Criteria
+          </button>
+        </div>
+      </div>
+
+      <!-- Overall Performance Rating -->
+      <h5 class="section-title">Overall Performance Rating</h5>
+      <div class="score-box">
+        <div class="row">
+          <div class="col s12">
+            <p><strong>Employment Standards Average:</strong> <span id="empStandardsScore">0.00</span> / 10 (50% weight)</p>
+            <p><strong>KPI Metrics Average:</strong> <span id="kpiScore">0.00</span> / 10 (50% weight)</p>
+            <p style="font-size: 18pt; color: #d32f2f;"><strong>FINAL SCORE: <span id="finalScore">0.00</span> / 10</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Rating Table -->
+      <table class="highlight responsive-table display-only rating-result-table">
+        <thead>
+          <tr>
+            <th>Score Range</th>
+            <th>Rating</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="rating1">
+            <td>9.0 - 10.0</td>
+            <td>Outstanding</td>
+            <td>PASSED PROBATIONARY W/ DISTINCTION</td>
+          </tr>
+          <tr id="rating2">
+            <td>8.0 - 8.9</td>
+            <td>Exceeds Expectations</td>
+            <td>Passed Probationary</td>
+          </tr>
+          <tr id="rating3">
+            <td>7.0 - 7.9</td>
+            <td>Meets Expectations</td>
+            <td>Extended Assessment Period for 2 Weeks with PIP</td>
+          </tr>
+          <tr id="rating4">
+            <td>6.0 - 6.9</td>
+            <td>Needs Improvement</td>
+            <td>Extended Assessment Period for 1 Month with PIP</td>
+          </tr>
+          <tr id="rating5">
+            <td>Below 6.0</td>
+            <td>Unsatisfactory</td>
+            <td>Probationary Unsuccessful</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Qualitative Feedback -->
+      <h5 class="section-title">Qualitative Feedback</h5>
+      
+      <div class="row">
+        <div class="col s12">
+          <h6><strong>1. Strengths Observed</strong></h6>
+          <p class="display-only" id="strengthsDisplay" style="text-align: justify;"></p>
+          <div class="input-field edit-fields">
+            <textarea id="strengths" class="materialize-textarea"></textarea>
+            <label for="strengths">Describe observed strengths</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col s12">
+          <h6><strong>2. Areas for Improvement</strong></h6>
+          <p class="display-only" id="improvementDisplay" style="text-align: justify;"></p>
+          <div class="input-field edit-fields">
+            <textarea id="improvement" class="materialize-textarea"></textarea>
+            <label for="improvement">Describe areas needing improvement</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col s12">
+          <h6><strong>3. Additional Comments</strong></h6>
+          <p class="display-only" id="commentsDisplay" style="text-align: justify;"></p>
+          <div class="input-field edit-fields">
+            <textarea id="comments" class="materialize-textarea"></textarea>
+            <label for="comments">Additional comments or observations</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Immediate Supervisor Section -->
+      <h5 class="section-title">Immediate Supervisor</h5>
+      <div class="signature-section">
+        <div class="row">
+          <div class="col s12 m6">
+            <p><strong>Assessor Signature:</strong></p>
+            <div class="signature-line"></div>
+            <div class="input-field">
+              <input id="assessorDate" type="date" class="validate">
+              <label for="assessorDate">Date</label>
+            </div>
+            <p class="display-only">Date: <span id="assessorDateDisplay"></span></p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col s12 m6">
+            <p><strong>Comments of TL/S/PM:</strong></p>
+            <div class="input-field edit-fields">
+              <textarea id="tlComments" class="materialize-textarea"></textarea>
+              <label for="tlComments">Team Leader/Manager Comments</label>
+            </div>
+            <p class="display-only" id="tlCommentsDisplay" style="text-align: justify;"></p>
+          </div>
+          <div class="col s12 m6">
+            <p><strong>TL/S/PM Signature:</strong></p>
+            <div class="signature-line"></div>
+            <div class="input-field">
+              <input id="tlDate" type="date" class="validate">
+              <label for="tlDate">Date</label>
+            </div>
+            <p class="display-only">Date: <span id="tlDateDisplay"></span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- HRD Verification -->
+      <h5 class="section-title">HRD Verification</h5>
+      <div class="verification-box">
+        <p><strong>The HR Department will conduct a final review of this evaluation to ensure accuracy, completeness, and consistency with company standards.</strong></p>
+        
+        <div class="row edit-fields">
+          <div class="col s12">
+            <p>
+              <label>
+                <input name="verification" type="radio" value="passed" />
+                <span>Passed Verification</span>
+              </label>
+            </p>
+            <p>
+              <label>
+                <input name="verification" type="radio" value="failed" />
+                <span>Failed Verification</span>
+              </label>
+            </p>
+            <p>
+              <label>
+                <input name="verification" type="radio" value="others" />
+                <span>Others (please specify reason below)</span>
+              </label>
+            </p>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col s12 m4">
+            <p><strong>Verified By:</strong></p>
+            <div class="input-field edit-fields">
+              <input id="verifiedBy" type="text" class="validate">
+              <label for="verifiedBy">Verified By</label>
+            </div>
+            <p class="display-only" id="verifiedByDisplay"></p>
+          </div>
+          <div class="col s12 m4">
+            <p><strong>Date:</strong></p>
+            <div class="input-field edit-fields">
+              <input id="verifiedDate" type="date" class="validate">
+              <label for="verifiedDate">Date</label>
+            </div>
+            <p class="display-only" id="verifiedDateDisplay"></p>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col s12">
+            <p><strong>Signature:</strong></p>
+            <div class="signature-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employee Acknowledgement -->
+      <h5 class="section-title">Employee Acknowledgement</h5>
+      <div class="signature-section">
+        <div class="row">
+          <div class="col s12 m6">
+            <p><strong>Employee Signature:</strong></p>
+            <div class="signature-line"></div>
+            <div class="input-field">
+              <input id="empAckDate" type="date" class="validate">
+              <label for="empAckDate">Date</label>
+            </div>
+            <p class="display-only">Date: <span id="empAckDateDisplay"></span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="row" style="margin-top: 30px;">
+        <div class="col s12 center-align">
+          <button class="btn waves-effect waves-light blue" onclick="previewForm()">
+            <i class="material-icons left">visibility</i>Preview
+          </button>
+          <button class="btn waves-effect waves-light green" onclick="savePDF()">
+            <i class="material-icons left">save</i>Save as PDF
+          </button>
+          <button class="btn waves-effect waves-light teal" onclick="saveToGoogleSheets()">
+            <i class="material-icons left">cloud_upload</i>Save to Google Sheets
+          </button>
+          <button class="btn waves-effect waves-light orange" onclick="window.print()">
+            <i class="material-icons left">print</i>Print
+          </button>
+          <button class="btn waves-effect waves-light grey darken-2" onclick="loadSampleData()">
+            <i class="material-icons left">file_download</i>Load Sample
+          </button>
+          <button class="btn waves-effect waves-light red" onclick="clearForm()">
+            <i class="material-icons left">clear</i>Clear
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Action Button -->
+  <div class="fixed-action-btn">
+    <a class="btn-floating btn-large orange" onclick="window.print()">
+      <i class="large material-icons">print</i>
+    </a>
+  </div>
+
+  <!-- Import Materialize JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <script>
+    // Initialize Materialize
+    M.AutoInit();
+
+    let empCriteriaCount = 0;
+    let kpiCriteriaCount = 0;
+
+    // Add Employment Criteria
+    function addEmploymentCriteria() {
+      empCriteriaCount++;
+      const container = document.getElementById('employmentStandardsContainer');
+      const criteriaDiv = document.createElement('div');
+      criteriaDiv.className = 'card grey lighten-4';
+      criteriaDiv.id = `empCriteria${empCriteriaCount}`;
+      criteriaDiv.style.padding = '15px';
+      criteriaDiv.style.marginBottom = '15px';
+      
+      criteriaDiv.innerHTML = `
+        <div class="row">
+          <div class="input-field col s12 m6">
+            <input id="empCriteriaName${empCriteriaCount}" type="text" class="validate criteria-input">
+            <label for="empCriteriaName${empCriteriaCount}">Criteria Name</label>
+          </div>
+          <div class="input-field col s12 m6">
+            <input id="empScore${empCriteriaCount}" type="number" min="0" max="10" step="0.1" class="validate" onchange="calculateScores()">
+            <label for="empScore${empCriteriaCount}">Score (0-10)</label>
+          </div>
+          <div class="input-field col s12">
+            <textarea id="empDescription${empCriteriaCount}" class="materialize-textarea"></textarea>
+            <label for="empDescription${empCriteriaCount}">Description/Guidelines</label>
+          </div>
+          <div class="col s12">
+            <button class="btn-small waves-effect waves-light red remove-btn" onclick="removeEmploymentCriteria(${empCriteriaCount})">
+              <i class="material-icons left">delete</i>Remove
+            </button>
+          </div>
+        </div>
+      `;
+      
+      container.appendChild(criteriaDiv);
+      M.updateTextFields();
+      M.textareaAutoResize(criteriaDiv.querySelector('textarea'));
+    }
+
+    // Remove Employment Criteria
+    function removeEmploymentCriteria(id) {
+      const element = document.getElementById(`empCriteria${id}`);
+      if (element) {
+        element.remove();
+        calculateScores();
+      }
+    }
+
+    // Add KPI Criteria
+    function addKPICriteria() {
+      kpiCriteriaCount++;
+      const container = document.getElementById('kpiMetricsContainer');
+      const criteriaDiv = document.createElement('div');
+      criteriaDiv.className = 'card grey lighten-4';
+      criteriaDiv.id = `kpiCriteria${kpiCriteriaCount}`;
+      criteriaDiv.style.padding = '15px';
+      criteriaDiv.style.marginBottom = '15px';
+      
+      criteriaDiv.innerHTML = `
+        <div class="row">
+          <div class="input-field col s12 m6">
+            <input id="kpiCriteriaName${kpiCriteriaCount}" type="text" class="validate criteria-input">
+            <label for="kpiCriteriaName${kpiCriteriaCount}">KPI Name</label>
+          </div>
+          <div class="input-field col s12 m6">
+            <input id="kpiScore${kpiCriteriaCount}" type="number" min="0" max="10" step="0.1" class="validate" onchange="calculateScores()">
+            <label for="kpiScore${kpiCriteriaCount}">Score (0-10)</label>
+          </div>
+          <div class="input-field col s12">
+            <textarea id="kpiDescription${kpiCriteriaCount}" class="materialize-textarea"></textarea>
+            <label for="kpiDescription${kpiCriteriaCount}">Description/Target</label>
+          </div>
+          <div class="col s12">
+            <button class="btn-small waves-effect waves-light red remove-btn" onclick="removeKPICriteria(${kpiCriteriaCount})">
+              <i class="material-icons left">delete</i>Remove
+            </button>
+          </div>
+        </div>
+      `;
+      
+      container.appendChild(criteriaDiv);
+      M.updateTextFields();
+      M.textareaAutoResize(criteriaDiv.querySelector('textarea'));
+    }
+
+    // Remove KPI Criteria
+    function removeKPICriteria(id) {
+      const element = document.getElementById(`kpiCriteria${id}`);
+      if (element) {
+        element.remove();
+        calculateScores();
+      }
+    }
+
+    // Calculate Scores
+    function calculateScores() {
+      let empTotal = 0;
+      let empCount = 0;
+      
+      // Calculate Employment Standards average
+      for (let i = 1; i <= empCriteriaCount; i++) {
+        const scoreInput = document.getElementById(`empScore${i}`);
+        if (scoreInput && scoreInput.value) {
+          empTotal += parseFloat(scoreInput.value);
+          empCount++;
+        }
+      }
+      
+      const empAverage = empCount > 0 ? (empTotal / empCount).toFixed(2) : '0.00';
+      
+      let kpiTotal = 0;
+      let kpiCount = 0;
+      
+      // Calculate KPI Metrics average
+      for (let i = 1; i <= kpiCriteriaCount; i++) {
+        const scoreInput = document.getElementById(`kpiScore${i}`);
+        if (scoreInput && scoreInput.value) {
+          kpiTotal += parseFloat(scoreInput.value);
+          kpiCount++;
+        }
+      }
+      
+      const kpiAverage = kpiCount > 0 ? (kpiTotal / kpiCount).toFixed(2) : '0.00';
+      
+      // Calculate final score (50% each)
+      const finalScore = ((parseFloat(empAverage) * 0.5) + (parseFloat(kpiAverage) * 0.5)).toFixed(2);
+      
+      // Update display
+      document.getElementById('empStandardsScore').textContent = empAverage;
+      document.getElementById('kpiScore').textContent = kpiAverage;
+      document.getElementById('finalScore').textContent = finalScore;
+      
+      // Highlight the appropriate rating row
+      highlightRatingRow(parseFloat(finalScore));
+    }
+
+    // Highlight Rating Row
+    function highlightRatingRow(score) {
+      // Remove all highlights
+      for (let i = 1; i <= 5; i++) {
+        const row = document.getElementById(`rating${i}`);
+        if (row) row.style.backgroundColor = '';
+      }
+      
+      // Highlight appropriate row
+      if (score >= 9.0) {
+        document.getElementById('rating1').style.backgroundColor = '#c8e6c9';
+      } else if (score >= 8.0) {
+        document.getElementById('rating2').style.backgroundColor = '#c8e6c9';
+      } else if (score >= 7.0) {
+        document.getElementById('rating3').style.backgroundColor = '#fff9c4';
+      } else if (score >= 6.0) {
+        document.getElementById('rating4').style.backgroundColor = '#ffccbc';
+      } else if (score > 0) {
+        document.getElementById('rating5').style.backgroundColor = '#ffcdd2';
+      }
+    }
+
+    // Update Display Fields
+    function updateDisplayFields() {
+      document.getElementById('empFullNameDisplay').textContent = document.getElementById('empFullName').value || '___________________';
+      document.getElementById('campaignDisplay').textContent = document.getElementById('campaign').value || '___________________';
+      document.getElementById('empIdDisplay').textContent = document.getElementById('empId').value || '___________________';
+      document.getElementById('assessDateDisplay').textContent = formatDate(document.getElementById('assessDate').value);
+      document.getElementById('supervisorDisplay').textContent = document.getElementById('supervisor').value || '___________________';
+      
+      const periodFrom = formatDate(document.getElementById('periodFrom').value);
+      const periodTo = formatDate(document.getElementById('periodTo').value);
+      document.getElementById('assessPeriodDisplay').textContent = `From: ${periodFrom}  To: ${periodTo}`;
+      
+      document.getElementById('strengthsDisplay').textContent = document.getElementById('strengths').value || '';
+      document.getElementById('improvementDisplay').textContent = document.getElementById('improvement').value || '';
+      document.getElementById('commentsDisplay').textContent = document.getElementById('comments').value || '';
+      document.getElementById('tlCommentsDisplay').textContent = document.getElementById('tlComments').value || '';
+      
+      document.getElementById('assessorDateDisplay').textContent = formatDate(document.getElementById('assessorDate').value);
+      document.getElementById('tlDateDisplay').textContent = formatDate(document.getElementById('tlDate').value);
+      document.getElementById('verifiedByDisplay').textContent = document.getElementById('verifiedBy').value || '___________________';
+      document.getElementById('verifiedDateDisplay').textContent = formatDate(document.getElementById('verifiedDate').value);
+      document.getElementById('empAckDateDisplay').textContent = formatDate(document.getElementById('empAckDate').value);
+    }
+
+    // Format Date
+    function formatDate(dateStr) {
+      if (!dateStr) return '_________________';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    // Add event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      const fields = ['empFullName', 'campaign', 'empId', 'assessDate', 'supervisor', 'periodFrom', 'periodTo', 
+                      'strengths', 'improvement', 'comments', 'tlComments', 'assessorDate', 'tlDate', 
+                      'verifiedBy', 'verifiedDate', 'empAckDate'];
+      fields.forEach(field => {
+        const element = document.getElementById(field);
+        if (element) {
+          element.addEventListener('input', updateDisplayFields);
+          element.addEventListener('change', updateDisplayFields);
+        }
+      });
+    });
+
+    // Preview Form
+    function previewForm() {
+      updateDisplayFields();
+      calculateScores();
+      M.toast({html: 'Form data updated. Click Print to see the formatted document.', classes: 'blue'});
+      setTimeout(() => window.print(), 1000);
+    }
+
+    // Save as PDF
+    function savePDF() {
+      updateDisplayFields();
+      calculateScores();
+      M.toast({html: 'Opening print dialog - select "Save as PDF" as destination', classes: 'blue', displayLength: 3000});
+      setTimeout(() => window.print(), 1000);
+    }
+
+    // Save to Google Sheets
+    function saveToGoogleSheets() {
+      updateDisplayFields();
+      calculateScores();
+      
+      let csv = 'ADVANCEMENT ASSESSMENT FORM\n\n';
+      csv += 'EMPLOYEE DETAILS\n';
+      csv += `Employee Full Name,${document.getElementById('empFullName').value}\n`;
+      csv += `Employee ID,${document.getElementById('empId').value}\n`;
+      csv += `Assigned Campaign/Position,${document.getElementById('campaign').value}\n`;
+      csv += `Assessment Date,${document.getElementById('assessDate').value}\n`;

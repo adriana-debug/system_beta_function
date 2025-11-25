@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advancement Assessment Form</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    /* ------------------------------------------------------------------- */
+    /* UI/UX ENHANCEMENTS (SCREEN) */
+    /* ------------------------------------------------------------------- */
+    body {
+      background-color: #e8eaf6; /* Light Lavender Background */
+      font-family: 'Roboto', sans-serif;
+    }
+    .container {
+      margin-top: 30px;
+      margin-bottom: 30px;
+    }
+    .card {
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+    .logo-header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .logo-header img {
+      max-width: 200px;
+      height: auto;
+    }
+    .section-title {
+      color: #3f51b5; /* Indigo */
+      margin-top: 20px;
+      margin-bottom: 15px;
+      border-bottom: 3px solid #3f51b5;
+      padding-bottom: 5px;
+      font-weight: 500;
+      font-size: 1.5rem;
+    }
+    .score-box {
+      background-color: #fce4ec; /* Light Pink */
+      padding: 20px;
+      margin: 25px 0;
+      border-left: 5px solid #e91e63; /* Pink */
+      border-radius: 4px;
+    }
+    .score-box p {
+      margin: 5px 0;
+    }
+    #finalScore {
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: #e91e63;
+    }
+    /* Dynamic Criteria Card */
+    .criteria-card {
+      padding: 15px;
+      margin-bottom: 15px;
+      border-left: 4px solid #4caf50; /* Green highlight */
+      position: relative;
+    }
+    .criteria-card:hover {
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    }
+    .delete-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      cursor: pointer;
+      color: #f44336;
+    }
+    .rating-table th, .rating-table td {
+      border: 1px solid #ddd;
+    }
+    .hidden-field {
+      display: none; /* Used to hide display fields on screen */
+    }
+
+    /* ------------------------------------------------------------------- */
+    /* PRINT STYLES (PDF DOCUMENT SIMULATION) */
+    /* ------------------------------------------------------------------- */
+    @media print {
+      body {
+        background-color: white !important;
+        font-family: 'Times New Roman', serif !important;
+        font-size: 10.5pt !important;
+        line-height: 1.4 !important;
+        color: #000 !important;
+        margin: 0;
+      }
+      @page {
+        margin: 0.75in 1in;
+        size: letter;
+      }
+
+      /* FIX: Hide Materialize toast popups */
+      .toast {
+        display: none !important; 
+      }
+      
+      /* Hide all UI clutter */
+      .container, .card {
+        padding: 0 !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
+      /* Hide all interactive/edit elements */
+      .edit-fields, .btn, .fixed-action-btn, .row:has(button) {
+        display: none !important;
+      }
+      .hidden-field {
+        display: block !important;
+      }
+      
+      /* Document Header */
+      .logo-header {
+        text-align: left !important;
+        border-bottom: 2px solid #000;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .logo-header img {
+        max-width: 150px;
+        order: 1;
+      }
+      .logo-header h4 {
+        font-size: 14pt;
+        font-weight: bold;
+        order: 2;
+        text-align: right;
+        margin: 0;
+        line-height: 1.2;
+      }
+
+      /* Section Styling */
+      .section-title {
+        color: #000 !important;
+        font-weight: bold !important;
+        font-size: 12pt !important;
+        margin-top: 15pt !important;
+        margin-bottom: 5pt !important;
+        border-bottom: 1px solid #000 !important;
+        padding-bottom: 3px !important;
+        page-break-after: avoid;
+      }
+      
+      /* Data Tables */
+      .employee-details-table, .summary-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 15px;
+        font-size: 10pt;
+      }
+      .employee-details-table td {
+        padding: 3pt 6pt;
+        border: none;
+      }
+      .employee-details-table strong {
+        font-weight: bold;
+      }
+      
+      /* Criteria and Ratings Table */
+      #dynamicCriteriaTable, #dynamicKpiTable {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 9.5pt;
+      }
+      #dynamicCriteriaTable th, #dynamicCriteriaTable td,
+      #dynamicKpiTable th, #dynamicKpiTable td {
+        border: 1px solid #000;
+        padding: 5pt;
+        text-align: left;
+      }
+      #dynamicCriteriaTable th, #dynamicKpiTable th {
+        background-color: #eceff1 !important; /* Light Gray Header */
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        font-weight: bold;
+      }
+      
+      /* Qualitative Fields */
+      .qualitative-field {
+        border: 1px solid #000;
+        padding: 10px;
+        min-height: 50px;
+        margin-bottom: 15px;
+        white-space: pre-wrap; /* Ensures line breaks are respected */
+      }
+      .qualitative-field + .edit-fields {
+        display: none; /* Hide the input field if the display field is shown */
+      }
+
+      /* Score Box */
+      .score-box {
+        border: 2px solid #e91e63 !important;
+        padding: 10pt !important;
+        margin: 15pt 0 !important;
+        page-break-inside: avoid;
+        background-color: #fdf5f9 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      #finalScore {
+        font-size: 16pt !important;
+        color: #e91e63 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      
+      /* Signatures */
+      .signature-section {
+        margin-top: 25pt;
+        page-break-inside: avoid;
+      }
+      .signature-line {
+        border-bottom: 1px solid #000;
+        min-height: 40pt;
+        margin: 5pt 0 10pt 0;
+      }
+      .sig-name {
+        margin-top: 3px;
+        font-style: italic;
+        font-size: 9pt;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="card">
+      <div class="logo-header">
+        <img src="https://digitalmindsbpo.com/storage/2021/11/cropped-Digital_Minds_Logo_Original.png" alt="Company Logo">
+        <h4 class="center-align">ADVANCEMENT ASSESSMENT FORM</h4>
+      </div>
+      
+      <h5 class="section-title">Employee Details</h5>
+      <table class="employee-details-table hidden-field">
+        <tr>
+          <td style="width: 25%;"><strong>Employee Full Name:</strong></td>
+          <td id="empFullNameDisplay" style="width: 25%;"></td>
+          <td style="width: 25%;"><strong>Assigned Campaign/Position:</strong></td>
+          <td id="campaignDisplay" style="width: 25%;"></td>
+        </tr>
+        <tr>
+          <td><strong>Employee ID:</strong></td>
+          <td id="empIdDisplay"></td>
+          <td><strong>Assessment Date:</strong></td>
+          <td id="assessDateDisplay"></td>
+        </tr>
+        <tr>
+          <td><strong>Supervisor/Assessor:</strong></td>
+          <td id="supervisorDisplay"></td>
+          <td><strong>Assessment Period:</strong></td>
+          <td id="assessPeriodDisplay"></td>
+        </tr>
+      </table>
+
+      <div class="row edit-fields">
+        <div class="input-field col s12 m6">
+          <input id="empFullName" type="text" class="validate">
+          <label for="empFullName">Employee Full Name</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="campaign" type="text" class="validate">
+          <label for="campaign">Assigned Campaign/Position</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="empId" type="text" class="validate">
+          <label for="empId">Employee ID</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="assessDate" type="date" class="validate">
+          <label for="assessDate">Assessment Date</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="supervisor" type="text" class="validate">
+          <label for="supervisor">Supervisor/Assessor</label>
+        </div>
+        <div class="input-field col s6 m3">
+          <input id="periodFrom" type="date" class="validate">
+          <label for="periodFrom">Period From</label>
+        </div>
+        <div class="input-field col s6 m3">
+          <input id="periodTo" type="date" class="validate">
+          <label for="periodTo">Period To</label>
+        </div>
+      </div>
+
+      <h5 class="section-title">Employment Standards</h5>
+      <p class="edit-fields">Add/remove performance criteria below. Score is based on 2 (Poor) to 10 (Excellent).</p>
+      
+      <table id="dynamicCriteriaTable" class="hidden-field">
+        <thead>
+          <tr>
+            <th style="width: 25%;">Criteria Name</th>
+            <th style="width: 65%;">Description / Guidelines</th>
+            <th style="width: 10%;">Score (Max 10)</th>
+          </tr>
+        </thead>
+        <tbody id="empCriteriaPrintBody">
+          </tbody>
+      </table>
+
+      <div id="employmentStandardsContainer" class="edit-fields">
+        </div>
+      <div class="row edit-fields">
+        <div class="col s12">
+          <button class="btn waves-effect waves-light green darken-1" onclick="addEmpCriteriaRow()">
+            <i class="material-icons left">add_circle</i>Add Employment Standard
+          </button>
+        </div>
+      </div>
+
+      <h5 class="section-title">KPI Metrics</h5>
+      <p class="edit-fields">Add/remove KPI metrics below. Score is based on 2 (Poor) to 10 (Excellent).</p>
+
+      <table id="dynamicKpiTable" class="hidden-field">
+        <thead>
+          <tr>
+            <th style="width: 25%;">KPI Name</th>
+            <th style="width: 65%;">Description / Target</th>
+            <th style="width: 10%;">Score (Max 10)</th>
+          </tr>
+        </thead>
+        <tbody id="kpiMetricsPrintBody">
+          </tbody>
+      </table>
+      
+      <div id="kpiMetricsContainer" class="edit-fields">
+        </div>
+      <div class="row edit-fields">
+        <div class="col s12">
+          <button class="btn waves-effect waves-light green darken-1" onclick="addKpiCriteriaRow()">
+            <i class="material-icons left">add_circle</i>Add KPI Metric
+          </button>
+        </div>
+      </div>
+
+      <h5 class="section-title">Overall Performance Rating</h5>
+      <div class="score-box">
+        <div class="row" style="margin-bottom: 0;">
+          <div class="col s12 m6">
+            <p><strong>Employment Standards Average:</strong> <span id="empStandardsScore">0.00</span> / 10 (50% weight)</p>
+            <p><strong>KPI Metrics Average:</strong> <span id="kpiScore">0.00</span> / 10 (50% weight)</p>
+          </div>
+          <div class="col s12 m6 right-align">
+            <p><strong>FINAL SCORE:</strong></p> 
+            <span id="finalScore">0.00</span> / 10
+          </div>
+        </div>
+      </div>
+
+      <table class="highlight responsive-table summary-table" style="font-size: 10pt;">
+        <thead>
+          <tr style="background-color: #f5f5f5;">
+            <th>Score Range</th>
+            <th>Rating</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="rating1">
+            <td>9.0 - 10.0</td>
+            <td>Outstanding</td>
+            <td>PASSED PROBATIONARY W/ DISTINCTION</td>
+          </tr>
+          <tr id="rating2">
+            <td>8.0 - 8.9</td>
+            <td>Exceeds Expectations</td>
+            <td>Passed Probationary</td>
+          </tr>
+          <tr id="rating3">
+            <td>7.0 - 7.9</td>
+            <td>Meets Expectations</td>
+            <td>Extended Assessment Period for 2 Weeks with PIP</td>
+          </tr>
+          <tr id="rating4">
+            <td>6.0 - 6.9</td>
+            <td>Needs Improvement</td>
+            <td>Extended Assessment Period for 1 Month with PIP</td>
+          </tr>
+          <tr id="rating5">
+            <td>Below 6.0</td>
+            <td>Unsatisfactory</td>
+            <td>Probationary Unsuccessful</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h5 class="section-title">Qualitative Feedback</h5>
+      
+      <div class="row">
+        <div class="col s12">
+          <h6>**1. Strengths Observed**</h6>
+          <div class="qualitative-field hidden-field" id="strengthsDisplay"></div>
+          <div class="input-field edit-fields">
+            <textarea id="strengths" class="materialize-textarea"></textarea>
+            <label for="strengths">Describe observed strengths</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col s12">
+          <h6>**2. Areas for Improvement**</h6>
+          <div class="qualitative-field hidden-field" id="improvementDisplay"></div>
+          <div class="input-field edit-fields">
+            <textarea id="improvement" class="materialize-textarea"></textarea>
+            <label for="improvement">Describe areas needing improvement</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col s12">
+          <h6>**3. Additional Comments**</h6>
+          <div class="qualitative-field hidden-field" id="commentsDisplay"></div>
+          <div class="input-field edit-fields">
+            <textarea id="comments" class="materialize-textarea"></textarea>
+            <label for="comments">Additional comments or observations</label>
+          </div>
+        </div>
+      </div>
+
+      <h5 class="section-title">Verification & Acknowledgement</h5>
+      <div class="signature-section">
+        
+        <div class="row">
+          <div class="col s12 m6">
+            <p style="margin-bottom: 0;">**Assessor Signature**</p>
+            <div class="signature-line"></div>
+            <p class="sig-name"><span id="supervisorSigDisplay"></span></p>
+            <div class="input-field">
+              <input id="assessorDate" type="date" class="validate">
+              <label for="assessorDate">Date</label>
+            </div>
+          </div>
+          <div class="col s12 m6">
+            <p style="margin-bottom: 0;">**Team Leader/Manager Signature**</p>
+            <div class="signature-line"></div>
+            <p class="sig-name"><span id="tlSigDisplay"></span></p>
+            <div class="input-field">
+              <input id="tlDate" type="date" class="validate">
+              <label for="tlDate">Date</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col s12">
+            <h6>**Comments of TL/S/PM (Manager Review)**</h6>
+            <div class="qualitative-field hidden-field" id="tlCommentsDisplay"></div>
+            <div class="input-field edit-fields">
+              <textarea id="tlComments" class="materialize-textarea"></textarea>
+              <label for="tlComments">Team Leader/Manager Comments</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col s12 m6">
+            <h6 style="border-bottom: 1px dashed #ccc; padding-bottom: 5px;">HRD Verification</h6>
+            <div class="input-field">
+              <input id="verifiedBy" type="text" class="validate">
+              <label for="verifiedBy">Verified By (HR Representative)</label>
+            </div>
+            <div class="input-field">
+              <input id="verifiedDate" type="date" class="validate">
+              <label for="verifiedDate">Verification Date</label>
+            </div>
+            <p style="margin-bottom: 0;">Signature</p>
+            <div class="signature-line" style="min-height: 25pt;"></div>
+          </div>
+          
+          <div class="col s12 m6">
+            <h6 style="border-bottom: 1px dashed #ccc; padding-bottom: 5px;">Employee Acknowledgement</h6>
+            <p>I have read and discussed this performance assessment with my Supervisor/Assessor.</p>
+            <p style="margin-bottom: 0;">Employee Signature</p>
+            <div class="signature-line" style="min-height: 25pt;"></div>
+            <div class="input-field">
+              <input id="empAckDate" type="date" class="validate">
+              <label for="empAckDate">Date Acknowledged</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row edit-fields" style="margin-top: 30px;">
+        <div class="col s12 center-align">
+          <button class="btn waves-effect waves-light blue" onclick="previewForm()">
+            <i class="material-icons left">visibility</i>Preview & Print PDF
+          </button>
+          <button class="btn waves-effect waves-light teal" onclick="saveToGoogleSheets()">
+            <i class="material-icons left">cloud_upload</i>Download CSV
+          </button>
+          <button class="btn waves-effect waves-light grey darken-2" onclick="loadSampleData()">
+            <i class="material-icons left">file_download</i>Load Sample
+          </button>
+          <button class="btn waves-effect waves-light red" onclick="clearForm()">
+            <i class="material-icons left">clear</i>Clear Form
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <script>
+    M.AutoInit();
+
+    // Global counters for dynamic elements
+    let empCriteriaCount = 0;
+    let kpiCriteriaCount = 0;
+
+    const ratingOptions = [
+        { value: 10, label: '10 - Excellent' },
+        { value: 8, label: '8 - Good' },
+        { value: 6, label: '6 - Satisfactory' },
+        { value: 4, label: '4 - Needs Improvement' },
+        { value: 2, label: '2 - Poor' }
+    ];
+
+    /**
+     * Helper function to create the score select dropdown HTML.
+     * @param {string} idPrefix The prefix for the select element's ID.
+     */
+    function createScoreSelect(idPrefix) {
+        let optionsHtml = '';
+        ratingOptions.forEach(opt => {
+            optionsHtml += `<option value="${opt.value}">${opt.label}</option>`;
+        });
+
+        return `
+            <select id="${idPrefix}Score" onchange="calculateScores()" class="browser-default score-select">
+                <option value="0" disabled selected>Rate</option>
+                ${optionsHtml}
+            </select>
+            <label for="${idPrefix}Score" style="display: none;"></label>
+        `;
+    }
+    
+    /**
+     * Adds a new dynamic criteria row (card) to the Employment Standards section.
+     */
+    function addEmpCriteriaRow(criteriaName = '', description = '', score = '0') {
+      empCriteriaCount++;
+      const id = empCriteriaCount;
+      const container = document.getElementById('employmentStandardsContainer');
+      
+      const newCard = document.createElement('div');
+      newCard.className = 'card criteria-card';
+      newCard.id = `empCard${id}`;
+      
+      newCard.innerHTML = `
+        <i class="material-icons delete-btn" onclick="removeCriteriaRow('empCard${id}')">close</i>
+        <div class="row" style="margin-bottom: 0;">
+          <div class="input-field col s12 m4">
+            <input id="empCriteriaName${id}" type="text" class="validate" value="${criteriaName}">
+            <label for="empCriteriaName${id}">Criteria Name</label>
+          </div>
+          <div class="input-field col s12 m5">
+            <input id="empDescription${id}" type="text" class="validate" value="${description}">
+            <label for="empDescription${id}">Description / Guidelines</label>
+          </div>
+          <div class="input-field col s12 m3">
+            ${createScoreSelect(`emp${id}`)}
+          </div>
+        </div>
+      `;
+
+      container.appendChild(newCard);
+      // Re-initialize Materialize elements
+      M.updateTextFields();
+      // Select the score if provided (for loading sample data)
+      const selectElement = document.getElementById(`emp${id}Score`);
+      if (score !== '0') {
+          selectElement.value = score;
+      }
+      M.FormSelect.init(selectElement);
+    }
+
+    /**
+     * Adds a new dynamic KPI row (card) to the KPI Metrics section.
+     */
+    function addKpiCriteriaRow(criteriaName = '', description = '', score = '0') {
+      kpiCriteriaCount++;
+      const id = kpiCriteriaCount;
+      const container = document.getElementById('kpiMetricsContainer');
+      
+      const newCard = document.createElement('div');
+      newCard.className = 'card criteria-card';
+      newCard.id = `kpiCard${id}`;
+      
+      newCard.innerHTML = `
+        <i class="material-icons delete-btn" onclick="removeCriteriaRow('kpiCard${id}')">close</i>
+        <div class="row" style="margin-bottom: 0;">
+          <div class="input-field col s12 m4">
+            <input id="kpiCriteriaName${id}" type="text" class="validate" value="${criteriaName}">
+            <label for="kpiCriteriaName${id}">KPI Name</label>
+          </div>
+          <div class="input-field col s12 m5">
+            <input id="kpiDescription${id}" type="text" class="validate" value="${description}">
+            <label for="kpiDescription${id}">Description / Target</label>
+          </div>
+          <div class="input-field col s12 m3">
+            ${createScoreSelect(`kpi${id}`)}
+          </div>
+        </div>
+      `;
+
+      container.appendChild(newCard);
+      M.updateTextFields();
+      const selectElement = document.getElementById(`kpi${id}Score`);
+      if (score !== '0') {
+          selectElement.value = score;
+      }
+      M.FormSelect.init(selectElement);
+    }
+
+    /**
+     * Removes a dynamically created criteria card.
+     * @param {string} cardId The ID of the card element to remove.
+     */
+    function removeCriteriaRow(cardId) {
+      document.getElementById(cardId).remove();
+      calculateScores();
+      M.toast({html: 'Criteria removed', classes: 'red', displayLength: 2000});
+    }
+
+    /**
+     * Calculates the overall performance scores.
+     */
+    function calculateScores() {
+      let empTotal = 0;
+      let empCount = 0;
+      let kpiTotal = 0;
+      let kpiCount = 0;
+      
+      // Calculate Employment Standards average
+      for (let i = 1; i <= empCriteriaCount; i++) {
+        const scoreEl = document.getElementById(`emp${i}Score`);
+        const cardEl = document.getElementById(`empCard${i}`);
+        
+        // Only count if the card exists (i.e., hasn't been deleted)
+        if (scoreEl && cardEl) {
+          const score = parseInt(scoreEl.value) || 0;
+          if (score > 0) {
+            empTotal += score;
+            empCount++;
+          }
+        }
+      }
+      
+      const empAverage = empCount > 0 ? (empTotal / empCount).toFixed(2) : '0.00';
+      
+      // Calculate KPI Metrics average
+      for (let i = 1; i <= kpiCriteriaCount; i++) {
+        const scoreEl = document.getElementById(`kpi${i}Score`);
+        const cardEl = document.getElementById(`kpiCard${i}`);
+        
+        if (scoreEl && cardEl) {
+          const score = parseInt(scoreEl.value) || 0;
+          if (score > 0) {
+            kpiTotal += score;
+            kpiCount++;
+          }
+        }
+      }
+      
+      const kpiAverage = kpiCount > 0 ? (kpiTotal / kpiCount).toFixed(2) : '0.00';
+      
+      // Calculate final score (50% each)
+      let finalScore = '0.00';
+      if (empCount > 0 && kpiCount > 0) {
+        finalScore = ((parseFloat(empAverage) * 0.5) + (parseFloat(kpiAverage) * 0.5)).toFixed(2);
+      } else if (empCount > 0) {
+         finalScore = parseFloat(empAverage).toFixed(2);
+      } else if (kpiCount > 0) {
+         finalScore = parseFloat(kpiAverage).toFixed(2);
+      }
+      
+      // Update display
+      document.getElementById('empStandardsScore').textContent = empAverage;
+      document.getElementById('kpiScore').textContent = kpiAverage;
+      document.getElementById('finalScore').textContent = finalScore;
+      
+      // Highlight the appropriate rating row
+      highlightRatingRow(parseFloat(finalScore));
+    }
+
+    /**
+     * Highlights the corresponding result row in the summary table.
+     * @param {number} score The calculated final score.
+     */
+    function highlightRatingRow(score) {
+      // Remove all highlights
+      for (let i = 1; i <= 5; i++) {
+        document.getElementById(`rating${i}`).style.backgroundColor = '';
+        document.getElementById(`rating${i}`).style.fontWeight = 'normal';
+      }
+      
+      // Highlight appropriate row
+      if (score >= 9.0) {
+        document.getElementById('rating1').style.backgroundColor = '#e8f5e9'; // Green light
+        document.getElementById('rating1').style.fontWeight = 'bold';
+      } else if (score >= 8.0) {
+        document.getElementById('rating2').style.backgroundColor = '#e8f5e9';
+        document.getElementById('rating2').style.fontWeight = 'bold';
+      } else if (score >= 7.0) {
+        document.getElementById('rating3').style.backgroundColor = '#fff8e1'; // Yellow light
+        document.getElementById('rating3').style.fontWeight = 'bold';
+      } else if (score >= 6.0) {
+        document.getElementById('rating4').style.backgroundColor = '#ffccbc'; // Red light
+        document.getElementById('rating4').style.fontWeight = 'bold';
+      } else if (score > 0) {
+        document.getElementById('rating5').style.backgroundColor = '#ffcdd2'; // Darker Red light
+        document.getElementById('rating5').style.fontWeight = 'bold';
+      }
+    }
+
+    /**
+     * Updates all hidden display fields for the print output.
+     */
+    function updateDisplayFields() {
+      // Employee Details
+      document.getElementById('empFullNameDisplay').textContent = document.getElementById('empFullName').value || 'N/A';
+      document.getElementById('campaignDisplay').textContent = document.getElementById('campaign').value || 'N/A';
+      document.getElementById('empIdDisplay').textContent = document.getElementById('empId').value || 'N/A';
+      document.getElementById('assessDateDisplay').textContent = formatDate(document.getElementById('assessDate').value);
+      document.getElementById('supervisorDisplay').textContent = document.getElementById('supervisor').value || 'N/A';
+      document.getElementById('supervisorSigDisplay').textContent = document.getElementById('supervisor').value || '[Supervisor Name]';
+      document.getElementById('tlSigDisplay').textContent = document.getElementById('supervisor').value || '[TL/Manager Name]';
+      
+      const periodFrom = formatDate(document.getElementById('periodFrom').value);
+      const periodTo = formatDate(document.getElementById('periodTo').value);
+      document.getElementById('assessPeriodDisplay').textContent = `${periodFrom} - ${periodTo}`;
+      
+      // Qualitative Feedback - use innerText/value directly for pre-wrap
+      document.getElementById('strengthsDisplay').textContent = document.getElementById('strengths').value || '[No data entered]';
+      document.getElementById('improvementDisplay').textContent = document.getElementById('improvement').value || '[No data entered]';
+      document.getElementById('commentsDisplay').textContent = document.getElementById('comments').value || '[No data entered]';
+      document.getElementById('tlCommentsDisplay').textContent = document.getElementById('tlComments').value || '[No data entered]';
+
+      // Dynamic Data for Print Tables
+      populatePrintTables();
+    }
+    
+    /**
+     * Populates the static print tables with data from the dynamic fields.
+     */
+    function populatePrintTables() {
+      const empBody = document.getElementById('empCriteriaPrintBody');
+      const kpiBody = document.getElementById('kpiMetricsPrintBody');
+      empBody.innerHTML = '';
+      kpiBody.innerHTML = '';
+
+      // Employment Standards
+      for (let i = 1; i <= empCriteriaCount; i++) {
+        const nameEl = document.getElementById(`empCriteriaName${i}`);
+        const descEl = document.getElementById(`empDescription${i}`);
+        const scoreEl = document.getElementById(`emp${i}Score`);
+        const cardEl = document.getElementById(`empCard${i}`);
+
+        if (nameEl && cardEl) { // Check if the card exists (i.e., not deleted)
+          const name = nameEl.value || 'Criteria Name';
+          const description = descEl.value || 'N/A';
+          const score = scoreEl ? `${scoreEl.value} / 10` : '0 / 10';
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${name}</td>
+            <td>${description}</td>
+            <td style="text-align: center; font-weight: bold;">${score}</td>
+          `;
+          empBody.appendChild(row);
+        }
+      }
+
+      // KPI Metrics
+      for (let i = 1; i <= kpiCriteriaCount; i++) {
+        const nameEl = document.getElementById(`kpiCriteriaName${i}`);
+        const descEl = document.getElementById(`kpiDescription${i}`);
+        const scoreEl = document.getElementById(`kpi${i}Score`);
+        const cardEl = document.getElementById(`kpiCard${i}`);
+
+        if (nameEl && cardEl) {
+          const name = nameEl.value || 'KPI Name';
+          const description = descEl.value || 'N/A';
+          const score = scoreEl ? `${scoreEl.value} / 10` : '0 / 10';
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${name}</td>
+            <td>${description}</td>
+            <td style="text-align: center; font-weight: bold;">${score}</td>
+          `;
+          kpiBody.appendChild(row);
+        }
+      }
+    }
+
+    /**
+     * Formats a date string for display.
+     */
+    function formatDate(dateStr) {
+      if (!dateStr) return 'N/A';
+      try {
+        const date = new Date(dateStr + 'T00:00:00'); // Add time to prevent timezone issues
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      } catch (e) {
+        return dateStr;
+      }
+    }
+
+    /**
+     * Previews and prints the form.
+     */
+    function previewForm() {
+      updateDisplayFields();
+      calculateScores();
+      M.toast({html: 'Preparing print preview... Remember to disable Headers/Footers in your print dialog for a clean PDF.', classes: 'blue', displayLength: 8000});
+      setTimeout(() => window.print(), 1000);
+    }
+
+    /**
+     * Downloads form data as a CSV file.
+     */
+    function saveToGoogleSheets() {
+      updateDisplayFields();
+      calculateScores();
+      
+      let csv = 'ADVANCEMENT ASSESSMENT FORM\n\n';
+      
+      // 1. Employee Details
+      csv += 'EMPLOYEE DETAILS\n';
+      csv += `Employee Full Name,${document.getElementById('empFullName').value}\n`;
+      csv += `Employee ID,${document.getElementById('empId').value}\n`;
+      csv += `Assigned Campaign/Position,${document.getElementById('campaign').value}\n`;
+      csv += `Assessment Date,${document.getElementById('assessDate').value}\n`;
+      csv += `Supervisor/Assessor,${document.getElementById('supervisor').value}\n`;
+      csv += `Assessment Period,From: ${document.getElementById('periodFrom').value} To: ${document.getElementById('periodTo').value}\n\n`;
+      
+      // 2. Dynamic Employment Standards
+      csv += 'EMPLOYMENT STANDARDS\n';
+      csv += 'Criteria Name,Description/Guidelines,Score\n';
+      for (let i = 1; i <= empCriteriaCount; i++) {
+        const nameEl = document.getElementById(`empCriteriaName${i}`);
+        const descEl = document.getElementById(`empDescription${i}`);
+        const scoreEl = document.getElementById(`emp${i}Score`);
+        const cardEl = document.getElementById(`empCard${i}`);
+        
+        if (nameEl && cardEl) { 
+          const name = nameEl.value.replace(/"/g, '""') || 'N/A';
+          const description = descEl.value.replace(/"/g, '""') || 'N/A';
+          const score = scoreEl.value || '0';
+          csv += `"${name}","${description}",${score}\n`;
+        }
+      }
+      csv += '\n';
+      
+      // 3. Dynamic KPI Metrics
+      csv += 'KPI METRICS\n';
+      csv += 'KPI Name,Description/Target,Score\n';
+      for (let i = 1; i <= kpiCriteriaCount; i++) {
+        const nameEl = document.getElementById(`kpiCriteriaName${i}`);
+        const descEl = document.getElementById(`kpiDescription${i}`);
+        const scoreEl = document.getElementById(`kpi${i}Score`);
+        const cardEl = document.getElementById(`kpiCard${i}`);
+        
+        if (nameEl && cardEl) { 
+          const name = nameEl.value.replace(/"/g, '""') || 'N/A';
+          const description = descEl.value.replace(/"/g, '""') || 'N/A';
+          const score = scoreEl.value || '0';
+          csv += `"${name}","${description}",${score}\n`;
+        }
+      }
+      csv += '\n';
+      
+      // 4. Scores
+      csv += 'SCORES\n';
+      csv += `Employment Standards Average,${document.getElementById('empStandardsScore').textContent}\n`;
+      csv += `KPI Metrics Average,${document.getElementById('kpiScore').textContent}\n`;
+      csv += `Final Score,${document.getElementById('finalScore').textContent}\n\n`;
+      
+      // 5. Qualitative Feedback
+      csv += 'QUALITATIVE FEEDBACK\n';
+      csv += `Strengths Observed,"${document.getElementById('strengths').value.replace(/"/g, '""')}"\n`;
+      csv += `Areas for Improvement,"${document.getElementById('improvement').value.replace(/"/g, '""')}"\n`;
+      csv += `Additional Comments,"${document.getElementById('comments').value.replace(/"/g, '""')}"\n\n`;
+      
+      // 6. Signatures/Dates
+      csv += 'SIGNATURES & VERIFICATION\n';
+      csv += `Assessor Date,${document.getElementById('assessorDate').value}\n`;
+      csv += `TL Comments,"${document.getElementById('tlComments').value.replace(/"/g, '""')}"\n`;
+      csv += `TL Date,${document.getElementById('tlDate').value}\n`;
+      csv += `Verified By,${document.getElementById('verifiedBy').value}\n`;
+      csv += `Verified Date,${document.getElementById('verifiedDate').value}\n`;
+      csv += `Employee Acknowledgement Date,${document.getElementById('empAckDate').value}\n`;
+
+      // Initiate download
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      const empName = document.getElementById('empFullName').value.replace(/\s+/g, '_') || 'Assessment';
+      link.setAttribute('download', `Assessment_${empName}_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      M.toast({html: 'CSV file downloaded! Import to Google Sheets (File > Import)', classes: 'green', displayLength: 6000});
+    }
+
+    /**
+     * Clears all fields and dynamic rows.
+     */
+    function clearForm() {
+      if (confirm('Are you sure you want to clear all form data?')) {
+        // Clear static fields
+        document.querySelectorAll('input[type="text"], input[type="date"], textarea').forEach(el => el.value = '');
+        document.querySelectorAll('select').forEach(el => el.value = '0');
+        
+        // Clear dynamic rows
+        document.getElementById('employmentStandardsContainer').innerHTML = '';
+        document.getElementById('kpiMetricsContainer').innerHTML = '';
+        empCriteriaCount = 0;
+        kpiCriteriaCount = 0;
+
+        // Re-initialize state
+        loadInitialData(); // Load default starting rows
+        calculateScores();
+        updateDisplayFields();
+        M.updateTextFields();
+        M.toast({html: 'Form cleared', classes: 'orange'});
+      }
+    }
+
+    /**
+     * Loads sample data and dynamic rows.
+     */
+    function loadSampleData() {
+      clearForm();
+      
+      // Static Data
+      document.getElementById('empFullName').value = 'John Doe';
+      document.getElementById('campaign').value = 'Campaign X - Sales Associate';
+      document.getElementById('empId').value = 'DMBPO-12345';
+      document.getElementById('assessDate').value = '2025-11-18';
+      document.getElementById('supervisor').value = 'Jane Smith';
+      document.getElementById('periodFrom').value = '2025-08-18';
+      document.getElementById('periodTo').value = '2025-11-17';
+      
+      document.getElementById('strengths').value = 'John demonstrates exceptional professional appearance and adherence to company policies with a perfect record. He is a positive force within the team, consistently promoting a collaborative environment and embracing new challenges quickly.';
+      document.getElementById('improvement').value = 'While John is reliable, his KPI performance, particularly in conversion rate and daily transfer goal, is consistently below expectations. This is attributed to difficulties in spontaneous client engagement and objection handling. Further coaching is required in core sales competence.';
+      document.getElementById('comments').value = 'The disparity between John\'s strong employment standards performance (attitude, attendance, adherence) and his weak KPI results necessitates an immediate Performance Improvement Plan focused solely on core job function (sales/transfer goals).';
+      document.getElementById('tlComments').value = 'I agree with the assessment. We will implement a 2-week daily coaching schedule.';
+      
+      document.getElementById('assessorDate').value = '2025-11-18';
+      document.getElementById('tlDate').value = '2025-11-19';
+      document.getElementById('verifiedBy').value = 'HR Manager';
+      document.getElementById('verifiedDate').value = '2025-11-20';
+      document.getElementById('empAckDate').value = '2025-11-20';
+      
+      // Dynamic Employment Standards (Criteria Name, Description, Score)
+      addEmpCriteriaRow('Professional Appearance', 'Consistently maintains a polished, professional appearance.', '10');
+      addEmpCriteriaRow('Attendance & Punctuality', 'Adheres to scheduled work hours and company time policies.', '10');
+      addEmpCriteriaRow('Job Competence', 'Exhibits thorough understanding and proficiency in assigned responsibilities.', '6');
+      addEmpCriteriaRow('Attitude & Teamwork', 'Displays a positive, enthusiastic outlook and fosters collaborative relationships.', '8');
+      addEmpCriteriaRow('Adherence to Policies', 'Consistently follows company rules, regulations, and procedures (No IRs).', '10');
+      
+      // Dynamic KPI Metrics (KPI Name, Description, Score)
+      addKpiCriteriaRow('Conversion Rate (Target 8%)', 'Percentage of calls that resulted in a successful transfer/conversion.', '2');
+      addKpiCriteriaRow('Daily Transfer Goal (Target 10)', 'Average number of successful transfers achieved per day.', '4');
+
+      // Update and Calculate
+      calculateScores();
+      updateDisplayFields();
+      M.updateTextFields();
+      
+      // Manually re-initialize the selects that were dynamically created
+      for (let i = 1; i <= empCriteriaCount; i++) {
+        const empSelect = document.getElementById(`emp${i}Score`);
+        if (empSelect) M.FormSelect.init(empSelect);
+      }
+      for (let i = 1; i <= kpiCriteriaCount; i++) {
+        const kpiSelect = document.getElementById(`kpi${i}Score`);
+        if (kpiSelect) M.FormSelect.init(kpiSelect);
+      }
+      
+      M.toast({html: 'Sample data loaded successfully!', classes: 'blue'});
+    }
+    
+    /**
+     * Loads a few starting rows to prevent a blank canvas.
+     */
+    function loadInitialData() {
+        if (empCriteriaCount === 0) {
+            addEmpCriteriaRow('Professional Appearance', 'Consistently maintains a polished, professional appearance.');
+            addEmpCriteriaRow('Attendance & Punctuality', 'Adheres to scheduled work hours and company time policies.');
+        }
+        if (kpiCriteriaCount === 0) {
+            addKpiCriteriaRow('Key Performance Indicator 1', 'Define the target for this KPI.');
+        }
+    }
+
+    // Initialize on page load
+    window.onload = function() {
+      loadInitialData();
+      calculateScores(); // Initial calculation
+      updateDisplayFields(); // Initial display update
+      M.AutoInit();
+    };
+    
+    // Add event listeners for constant updates to print fields
+    document.addEventListener('DOMContentLoaded', function() {
+      const fields = document.querySelectorAll('input[type="text"], input[type="date"], textarea');
+      fields.forEach(field => {
+        field.addEventListener('input', updateDisplayFields);
+        field.addEventListener('change', updateDisplayFields);
+      });
+      // Also listen to score changes on dynamically created elements via a common parent
+      document.addEventListener('change', (e) => {
+        if (e.target.classList.contains('score-select')) {
+          calculateScores();
+          updateDisplayFields();
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

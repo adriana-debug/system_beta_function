@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advancement Assessment Form</title>
+
+  <!-- Import Materialize CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #f5f5f5;
+    }
+    .container {
+      margin-top: 30px;
+      margin-bottom: 30px;
+    }
+    .card {
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      color: #1976d2;
+      margin-top: 20px;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #1976d2;
+      padding-bottom: 5px;
+    }
+    .logo-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo-header img {
+      max-width: 250px;
+      height: auto;
+    }
+    .rating-table {
+      margin-top: 15px;
+    }
+    .rating-table td, .rating-table th {
+      padding: 8px;
+      font-size: 11pt;
+    }
+    .criteria-row {
+      background-color: #e3f2fd;
+      font-weight: bold;
+    }
+    .rating-option {
+      padding-left: 20px;
+    }
+    .score-box {
+      background-color: #fff3e0;
+      padding: 15px;
+      margin: 20px 0;
+      border-left: 4px solid #ff9800;
+    }
+    .verification-box {
+      background-color: #e8f5e9;
+      padding: 15px;
+      margin: 20px 0;
+      border-left: 4px solid #4caf50;
+    }
+
+    /* Hide display fields by default, show only in print */
+    .display-only {
+      display: none;
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background-color: white;
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 11pt;
+        line-height: 1.5;
+        color: #000;
+      }
+      .container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      .card {
+        box-shadow: none;
+        padding: 40px;
+        background: white;
+      }
+      .print-btn, .btn, button, .fixed-action-btn, .row:has(button) {
+        display: none !important;
+      }
+      .section-title {
+        color: #000;
+        font-weight: bold;
+        font-size: 13pt;
+        margin-top: 18pt;
+        margin-bottom: 8pt;
+        border-bottom: 2px solid #000;
+        page-break-after: avoid;
+      }
+      h4 {
+        font-size: 16pt;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 15pt;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 10px 0;
+        page-break-inside: auto;
+        font-size: 10pt;
+      }
+      table th, table td {
+        border: 1px solid #000 !important;
+        padding: 6pt;
+        text-align: left;
+      }
+      table th {
+        font-weight: bold;
+        background-color: #e0e0e0 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      table tr {
+        page-break-inside: avoid;
+      }
+      .criteria-row {
+        background-color: #e3f2fd !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .score-box, .verification-box {
+        border: 2px solid #000;
+        padding: 10pt;
+        margin: 15pt 0;
+        page-break-inside: avoid;
+        background-color: #f9f9f9 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .signature-section {
+        margin-top: 20pt;
+        page-break-inside: avoid;
+      }
+      .signature-line {
+        border-bottom: 1px solid #000;
+        min-height: 40pt;
+        margin: 8pt 0;
+      }
+      .edit-fields {
+        display: none !important;
+      }
+      .display-only {
+        display: block !important;
+      }
+      input, textarea, select {
+        border: none !important;
+        box-shadow: none !important;
+        font-family: 'Times New Roman', Times, serif;
+        color: #000 !important;
+      }
+      .input-field label {
+        display: none;
+      }
+      .logo-header img {
+        max-width: 180px;
+      }
+      @page {
+        margin: 0.75in;
+        size: letter;
+      }
+      .page-number {
+        position: fixed;
+        bottom: 0.5in;
+        right: 0.75in;
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 10pt;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="card">
+      <div class="logo-header">
+        <img src="https://digitalmindsbpo.com/storage/2021/11/cropped-Digital_Minds_Logo_Original.png" alt="Digital Minds BPO Logo">
+      </div>
+      
+      <h4 class="center-align">ADVANCEMENT ASSESSMENT FORM</h4>
+
+      <!-- Employee Details Section -->
+      <h5 class="section-title">Employee Details</h5>
+      
+      <!-- Display version for print -->
+      <div class="display-only">
+        <table>
+          <tr>
+            <td><strong>Employee Full Name:</strong></td>
+            <td id="empFullNameDisplay"></td>
+            <td><strong>Assigned Campaign/Position:</strong></td>
+            <td id="campaignDisplay"></td>
+          </tr>
+          <tr>
+            <td><strong>Employee ID:</strong></td>
+            <td id="empIdDisplay"></td>
+            <td><strong>Assessment Date:</strong></td>
+            <td id="assessDateDisplay"></td>
+          </tr>
+          <tr>
+            <td><strong>Supervisor/Assessor:</strong></td>
+            <td id="supervisorDisplay"></td>
+            <td><strong>Assessment Period:</strong></td>
+            <td id="assessPeriodDisplay"></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Edit version -->
+      <div class="row edit-fields">
+        <div class="input-field col s12 m6">
+          <input id="empFullName" type="text" class="validate">
+          <label for="empFullName">Employee Full Name</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="campaign" type="text" class="validate">
+          <label for="campaign">Assigned Campaign/Position</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="empId" type="text" class="validate">
+          <label for="empId">Employee ID</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="assessDate" type="date" class="validate">
+          <label for="assessDate">Assessment Date</label>
+        </div>
+        <div class="input-field col s12 m6">
+          <input id="supervisor" type="text" class="validate">
+          <label for="supervisor">Supervisor/Assessor</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="periodFrom" type="date" class="validate">
+          <label for="periodFrom">Period From</label>
+        </div>
+        <div class="input-field col s12 m3">
+          <input id="periodTo" type="date" class="validate">
+          <label for="periodTo">Period To</label>
+        </div>
+      </div>
+
+      <!-- Employment Standards Section -->
+      <h5 class="section-title">Employment Standards</h5>
+      <table class="highlight responsive-table rating-table" id="employmentStandardsTable">
+        <thead>
+          <tr>
+            <th style="width: 20%">Criteria</th>
+            <th style="width: 40%">Guidelines</th>
+            <th style="width: 10%">Select</th>
+            <th style="width: 30%">Rating</th>
+          </tr>
+        </thead>
+        <tbody id="employmentStandardsBody">
+          <!-- Will be populated by JavaScript -->
+        </tbody>
+      </table>
+
+      <!-- KPI Metrics Section -->
+      <h5 class="section-title">KPI Metrics</h5>
+      <table class="highlight responsive-table rating-table" id="kpiMetricsTable">
+        <thead>
+          <tr>
+            <th style="width: 20%">Criteria</th>
+            <th style="width: 40%">Guidelines</th>
+            <th style="width: 10%">Select</th>
+            <th style="width: 30%">Rating</th>
+          </tr>
+        </thead>
+        <tbody id="kpiMetricsBody">
+          <!-- Will be populated by JavaScript -->
+        </tbody>
+      </table>
+
+      <!-- Overall Performance Rating -->
+      <h5 class="section-title">Overall Performance Rating</h5>
+      <div class="score-box">
+        <div class="row">
+          <div class="col s12">
+            <p><strong>Employment Standards Score:</strong> <span id="empStandardsScore">0</span> / 10 (50% weight)</p>
+            <p><strong>KPI Metrics Score:</strong> <span id="kpiScore">0</span> / 10 (50% weight)</p>
+            <p style="font-size: 18pt; color: #d32f2f;"><strong>FINAL SCORE: <span id="finalScore">0</span> / 10</strong></p>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="input-field col s12 m6">
+            <input id="conversionRate" type="text" class="validate">
+            <label for="conversionRate">Actual Conversion Rate (%)</label>
+          </div>
+          <div class="input-field col s12 m6">
+            <input id="dailyTransfer" type="text" class="validate">
+            <label for="dailyTransfer">Average Daily Transfer</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Rating Table -->
+      <table class="highlight responsive-table">
+        <thead>
+          <tr>
+            <th>Score Range</th>
+            <th>Rating</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="rating1">
+            <td>9.0 - 10.0</td>
+            <td>Outstanding</td>
+            <td>PASSED PROBATIONARY W/ DISTINCTION</td>
+          </tr>
+          <tr id="rating2">
+            <td>8.0 - 8.9</td>
+            <td>Exceeds Expectations</td>
+            <td>Passed Probationary</td>
+          </tr>
+          <tr id="rating3">
+            <td>7.0 - 7.9</td>
+            <td>Meets Expectations</td>
+            <td>Extended Assessment Period for 2 Weeks with PIP</td>
+          </tr>
+          <tr id="rating4">
+            <td>6.0 - 6.9</td>
+            <td>Needs Improvement</td>
+            <td>Extended Assessment Period for 1 Month with PIP</td>
+          </tr>
+          <tr id="rating5">
+            <td>Below 6.0</td>
+            <td>Unsatisfactory</td>
+            <td>Probationary Unsuccessful</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Qualitative Feedback -->
+      <h5 class="section-title">Qualitative Feedback</h5>
+      
+      <div class="row">
+        <div class="col s12">
+          <h6><strong>1. Strengths Observed</strong></h6>
+          <p class="display-only" id="strengthsDisplay"></p>
+          <div class="input-field edit-fields">
+            <textarea id="strengths" class="materialize-textarea"></textarea>
+            <label for="strengths">Describe observed strengths</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col s12">
+          <h6><strong>2. Areas for Improvement</strong></h6>
+          <p class="display-only" id="improvementDisplay"></p>
+          <div class="input-field edit-fields">
+            <textarea id="improvement" class="materialize-textarea"></textarea>
+            <label for="improvement">Describe areas needing improvement</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col s12">
+          <h6><strong>3. Additional Comments</strong></h6>
+          <p class="display-only" id="commentsDisplay"></p>
+          <div class="input-field edit-fields">
+            <textarea id="comments" class="materialize-textarea"></textarea>
+            <label for="comments">Additional comments or observations</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Immediate Supervisor Section -->
+      <h5 class="section-title">Immediate Supervisor</h5>
+      <div class="signature-section">
+        <div class="row">
+          <div class="col s12 m6">
+            <strong>Assessor Signature:</strong>
+            <div class="signature-line"></div>
+            <div class="input-field">
+              <input id="assessorDate" type="date" class="validate">
+              <label for="assessorDate">Date</label>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col s12 m6">
+            <strong>Comments of TL/S/PM:</strong>
+            <div class="input-field edit-fields">
+              <textarea id="tlComments" class="materialize-textarea"></textarea>
+              <label for="tlComments">Team Leader/Manager Comments</label>
+            </div>
+            <p class="display-only" id="tlCommentsDisplay"></p>
+          </div>
+          <div class="col s12 m6">
+            <strong>TL/S/PM Signature:</strong>
+            <div class="signature-line"></div>
+            <div class="input-field">
+              <input id="tlDate" type="date" class="validate">
+              <label for="tlDate">Date</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HRD Verification -->
+      <h5 class="section-title">HRD Verification</h5>
+      <div class="verification-box">
+        <p>The HR Department will conduct a final review of this evaluation to ensure accuracy, completeness, and consistency with company standards.</p>
+        
+        <div class="row">
+          <div class="col s12">
+            <p>
+              <label>
+                <input name="verification" type="radio" value="passed" />
+                <span>Passed Verification</span>
+              </label>
+            </p>
+            <p>
+              <label>
+                <input name="verification" type="radio" value="failed" />
+                <span>Failed Verification</span>
+              </label>
+            </p>
+            <p>
+              <label>
+                <input name="verification" type="radio" value="others" />
+                <span>Others (please specify reason below)</span>
+              </label>
+            </p>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="input-field col s12 m4">
+            <input id="verifiedBy" type="text" class="validate">
+            <label for="verifiedBy">Verified By</label>
+          </div>
+          <div class="input-field col s12 m4">
+            <input id="verifiedDate" type="date" class="validate">
+            <label for="verifiedDate">Date</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col s12">
+            <strong>Signature:</strong>
+            <div class="signature-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employee Acknowledgement -->
+      <h5 class="section-title">Employee Acknowledgement</h5>
+      <div class="signature-section">
+        <div class="row">
+          <div class="col s12 m6">
+            <strong>Employee Signature:</strong>
+            <div class="signature-line"></div>
+            <div class="input-field">
+              <input id="empAckDate" type="date" class="validate">
+              <label for="empAckDate">Date</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="row" style="margin-top: 30px;">
+        <div class="col s12 center-align">
+          <button class="btn waves-effect waves-light blue" onclick="previewForm()">
+            <i class="material-icons left">visibility</i>Preview
+          </button>
+          <button class="btn waves-effect waves-light green" onclick="savePDF()">
+            <i class="material-icons left">save</i>Save as PDF
+          </button>
+          <button class="btn waves-effect waves-light teal" onclick="saveToGoogleSheets()">
+            <i class="material-icons left">cloud_upload</i>Save to Google Sheets
+          </button>
+          <button class="btn waves-effect waves-light orange" onclick="window.print()">
+            <i class="material-icons left">print</i>Print
+          </button>
+          <button class="btn waves-effect waves-light grey darken-2" onclick="loadSampleData()">
+            <i class="material-icons left">file_download</i>Load Sample
+          </button>
+          <button class="btn waves-effect waves-light red" onclick="clearForm()">
+            <i class="material-icons left">clear</i>Clear
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Action Button -->
+  <div class="fixed-action-btn">
+    <a class="btn-floating btn-large orange" onclick="window.print()">
+      <i class="large material-icons">print</i>
+    </a>
+  </div>
+
+  <!-- Import Materialize JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <script>
+    // Initialize Materialize
+    M.AutoInit();
+
+    // Employment Standards Criteria
+    const employmentStandards = [
+      {
+        criteria: "Professional Appearance",
+        description: "Consistently maintains a polished, professional appearance that aligns with company standards and positively represents the organization.",
+        guidelines: [
+          {text: "Exemplary appearance that enhances company image and serves as a role model for others.", rating: "10 - Excellent"},
+          {text: "Consistently well-groomed and professionally dressed, exceeding basic standards.", rating: "8 - Good"},
+          {text: "Meets company dress code and maintains an acceptable professional appearance.", rating: "6 - Satisfactory"},
+          {text: "Occasionally falls short of appearance standards, requiring periodic reminders.", rating: "4 - Needs Improvement"},
+          {text: "Frequently violates dress code and presents an unprofessional appearance, negatively impacting company image.", rating: "2 - Poor"}
+        ]
+      },
+      {
+        criteria: "Attendance & Punctuality",
+        description: "Demonstrates reliability through consistent attendance and punctuality, adhering to scheduled work hours and company time policies.",
+        guidelines: [
+          {text: "Complete Attendance", rating: "10 - Excellent"},
+          {text: "w/ less than 2 absences", rating: "8 - Good"},
+          {text: "w/ less than 5 counts of violation of the 15-min rule", rating: "6 - Satisfactory"},
+          {text: "w/ more than 5 counts of violation of the 15-min rule", rating: "4 - Needs Improvement"},
+          {text: "w/ more than 2 absences", rating: "2 - Poor"}
+        ]
+      },
+      {
+        criteria: "Job Competence",
+        description: "Exhibits thorough understanding and proficiency in assigned responsibilities, applying relevant skills and knowledge effectively.",
+        guidelines: [
+          {text: "Demonstrates exceptional expertise, consistently exceeding job requirements.", rating: "10 - Excellent"},
+          {text: "Shows strong proficiency, often surpassing expectations.", rating: "8 - Good"},
+          {text: "Meets job requirements with adequate skill and knowledge.", rating: "6 - Satisfactory"},
+          {text: "Occasionally falls short of job requirements, requiring guidance.", rating: "4 - Needs Improvement"},
+          {text: "Frequently fails to meet job requirements, lacking necessary skills.", rating: "2 - Poor"}
+        ]
+      },
+      {
+        criteria: "Attitude & Teamwork",
+        description: "Displays a positive, enthusiastic outlook and willingness to learn while fostering collaborative relationships with colleagues.",
+        guidelines: [
+          {text: "Exemplary positive attitude, actively fosters team cohesion and collaboration.", rating: "10 - Excellent"},
+          {text: "Consistently positive, contributes effectively to team dynamics.", rating: "8 - Good"},
+          {text: "Generally positive, cooperates with team members adequately.", rating: "6 - Satisfactory"},
+          {text: "Occasionally negative or uncooperative, impacting team harmony.", rating: "4 - Needs Improvement"},
+          {text: "Frequently negative, hinders team collaboration and morale.", rating: "2 - Poor"}
+        ]
+      },
+      {
+        criteria: "Adherence to Policies",
+        description: "Consistently follows company rules, regulations, and procedures. Responds constructively to feedback and guidance for improvement.",
+        guidelines: [
+          {text: "No Incident Report recorded", rating: "10 - Excellent"},
+          {text: "Less than two Incident Report recorded", rating: "8 - Good"},
+          {text: "With two Incident Report recorded", rating: "6 - Satisfactory"},
+          {text: "With more than two Incident Report recorded", rating: "4 - Needs Improvement"},
+          {text: "With more than five Incident Report recorded", rating: "2 - Poor"}
+        ]
+      },
+      {
+        criteria: "Work Quality & Results",
+        description: "Produces high-quality work that meets or exceeds expectations. Demonstrates ability to manage competing priorities and deliver results.",
+        guidelines: [
+          {text: "No client call out recorded", rating: "10 - Excellent"},
+          {text: "With one client call out", rating: "8 - Good"},
+          {text: "With two client call out recorded", rating: "6 - Satisfactory"},
+          {text: "With three client call out recorded", rating: "4 - Needs Improvement"},
+          {text: "With more than three client call out recorded", rating: "2 - Poor"}
+        ]
+      },
+      {
+        criteria: "Adaptability",
+        description: "Shows resilience and flexibility in adjusting to new situations, changes in work processes, or unexpected challenges.",
+        guidelines: [
+          {text: "Embraces change enthusiastically, leads others through transitions.", rating: "10 - Excellent"},
+          {text: "Adapts quickly to changes, maintains positive outlook consistently.", rating: "8 - Good"},
+          {text: "Adjusts to changes adequately, generally maintains composure.", rating: "6 - Satisfactory"},
+          {text: "Sometimes resistant to change, occasionally struggles to adapt.", rating: "4 - Needs Improvement"},
+          {text: "Frequently resists change, unable to adjust effectively to new situations.", rating: "2 - Poor"}
+        ]
+      }
+    ];
+
+    // KPI Metrics
+    const kpiMetrics = [
+      {
+        criteria: "Conversion Rate of 8%",
+        description: "Percentage of calls that resulted in a successful transfer.",
+        guidelines: [
+          {text: "Conversion Rate of 8% and above", rating: "10 – Excellent"},
+          {text: "Conversion Rate of 7.0% to 7.99%", rating: "8 – Good"},
+          {text: "Conversion rate of 5.0% to 6.99%", rating: "6 – Satisfactory"},
+          {text: "Conversion rate of 3.0% to 4.99%", rating: "4 – Needs Improvement"},
+          {text: "Conversion rate of 2.99% and below", rating: "2 – Poor"}
+        ]
+      },
+      {
+        criteria: "Daily Transfer Goal",
+        description: "Agents are expected to achieve at least 10 successful transfers per day.",
+        guidelines: [
+          {text: "Average daily transfer of 10 and above", rating: "10 – Excellent"},
+          {text: "Average daily transfer of 9 to 9.99", rating: "8 – Good"},
+          {text: "Average daily transfer of 7 to 8.99", rating: "6 – Satisfactory"},
+          {text: "Average daily transfer of 6 to 6.99", rating: "4 – Needs Improvement"},
+          {text: "Average daily transfer of 5.99 and below", rating: "2 – Poor"}
+        ]
+      }
+    ];
+
+    // Populate Employment Standards Table
+    function populateEmploymentStandards() {
+      const tbody = document.getElementById('employmentStandardsBody');
+      employmentStandards.forEach((standard, index) => {
+        // Criteria row
+        const criteriaRow = document.createElement('tr');
+        criteriaRow.className = 'criteria-row';
+        criteriaRow.innerHTML = `
+          <td colspan="4"><strong>${standard.criteria}</strong><br><small>${standard.description}</small></td>
+        `;
+        tbody.appendChild(criteriaRow);
+
+        // Guideline rows
+        standard.guidelines.forEach((guideline, gIndex) => {
+          const guideRow = document.createElement('tr');
+          guideRow.innerHTML = `
+            <td></td>
+            <td class="rating-option">${guideline.text}</td>
+            <td class="center-align">
+              <p>
+                <label>
+                  <input type="radio" name="emp_${index}" value="${guideline.rating}" onchange="calculateScores()" />
+                  <span></span>
+                </label>
+              </p>
+            </td>
+            <td>${guideline.rating}</td>
+          `;
+          tbody.appendChild(guideRow);
+        });
+      });
+    }
+
+    // Populate KPI Metrics Table
+    function populateKPIMetrics() {
+      const tbody = document.getElementById('kpiMetricsBody');
+      kpiMetrics.forEach((metric, index) => {
+        // Criteria row
+        const criteriaRow = document.createElement('tr');
+        criteriaRow.className = 'criteria-row';
+        criteriaRow.innerHTML = `
+          <td colspan="4"><strong>${metric.criteria}</strong><br><small>${metric.description}</small></td>
+        `;
+        tbody.appendChild(criteriaRow);
+
+        // Guideline rows
+        metric.guidelines.forEach((guideline, gIndex) => {
+          const guideRow = document.createElement('tr');
+          guideRow.innerHTML = `
+            <td></td>
+            <td class="rating-option">${guideline.text}</td>
+            <td class="center-align">
+              <p>
+                <label>
+                  <input type="radio" name="kpi_${index}" value="${guideline.rating}" onchange="calculateScores()" />
+                  <span></span>
+                </label>
+              </p>
+            </td>
+            <td>${guideline.rating}</td>
+          `;
+          tbody.appendChild(guideRow);
+        });
+      });
+    }
+
+    // Calculate Scores
+    function calculateScores() {
+      let empTotal = 0;
+      let empCount = 0;
+      
+      // Calculate Employment Standards average
+      for (let i = 0; i < employmentStandards.length; i++) {
+        const selected = document.querySelector(`input[name="emp_${i}"]:checked`);
+        if (selected) {
+          const score = parseInt(selected.value.split(' - ')[0]);
+          empTotal += score;
+          empCount++;
+        }
+      }
+      
+      const empAverage = empCount > 0 ? (empTotal / empCount).toFixed(2) : 0;
+      
+      let kpiTotal = 0;
+      let kpiCount = 0;
+      
+      // Calculate KPI Metrics average
+      for (let i = 0; i < kpiMetrics.length; i++) {
+        const selected = document.querySelector(`input[name="kpi_${i}"]:checked`);
+        if (selected) {
+          const score = parseInt(selected.value.split(' ')[0]);
+          kpiTotal += score;
+          kpiCount++;
+        }
+      }
+      
+      const kpiAverage = kpiCount > 0 ? (kpiTotal / kpiCount).toFixed(2) : 0;
+      
+      // Calculate final score (50% each)
+      const finalScore = ((parseFloat(empAverage) * 0.5) + (parseFloat(kpiAverage) * 0.5)).toFixed(2);
+      
+      // Update display
+      document.getElementById('empStandardsScore').textContent = empAverage;
+      document.getElementById('kpiScore').textContent = kpiAverage;
+      document.getElementById('finalScore').textContent = finalScore;
+      
+      // Highlight the appropriate rating row
+      highlightRatingRow(parseFloat(finalScore));
+    }
+
+    // Highlight Rating Row
+    function highlightRatingRow(score) {
+      // Remove all highlights
+      for (let i = 1; i <= 5; i++) {
+        document.getElementById(`rating${i}`).style.backgroundColor = '';
+      }
+      
+      // Highlight appropriate row
+      if (score >= 9.0) {
+        document.getElementById('rating1').style.backgroundColor = '#c8e6c9';
+      } else if (score >= 8.0) {
+        document.getElementById('rating2').style.backgroundColor = '#c8e6c9';
+      } else if (score >= 7.0) {
+        document.getElementById('rating3').style.backgroundColor = '#fff9c4';
+      } else if (score >= 6.0) {
+        document.getElementById('rating4').style.backgroundColor = '#ffccbc';
+      } else {
+        document.getElementById('rating5').style.backgroundColor = '#ffcdd2';
+      }
+    }
+
+    // Update Display Fields
+    function updateDisplayFields() {
+      document.getElementById('empFullNameDisplay').textContent = document.getElementById('empFullName').value || '___________________';
+      document.getElementById('campaignDisplay').textContent = document.getElementById('campaign').value || '___________________';
+      document.getElementById('empIdDisplay').textContent = document.getElementById('empId').value || '___________________';
+      document.getElementById('assessDateDisplay').textContent = formatDate(document.getElementById('assessDate').value);
+      document.getElementById('supervisorDisplay').textContent = document.getElementById('supervisor').value || '___________________';
+      
+      const periodFrom = formatDate(document.getElementById('periodFrom').value);
+      const periodTo = formatDate(document.getElementById('periodTo').value);
+      document.getElementById('assessPeriodDisplay').textContent = `From: ${periodFrom}  To: ${periodTo}`;
+      
+      document.getElementById('strengthsDisplay').textContent = document.getElementById('strengths').value || '';
+      document.getElementById('improvementDisplay').textContent = document.getElementById('improvement').value || '';
+      document.getElementById('commentsDisplay').textContent = document.getElementById('comments').value || '';
+      document.getElementById('tlCommentsDisplay').textContent = document.getElementById('tlComments').value || '';
+    }
+
+    // Format Date
+    function formatDate(dateStr) {
+      if (!dateStr) return '_________________';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    // Add event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      const fields = ['empFullName', 'campaign', 'empId', 'assessDate', 'supervisor', 'periodFrom', 'periodTo', 'strengths', 'improvement', 'comments', 'tlComments'];
+      fields.forEach(field => {
+        const element = document.getElementById(field);
+        if (element) {
+          element.addEventListener('input', updateDisplayFields);
+          element.addEventListener('change', updateDisplayFields);
+        }
+      });
+    });
+
+    // Preview Form
+    function previewForm() {
+      updateDisplayFields();
+      calculateScores();
+      M.toast({html: 'Form data updated. Click Print to see the formatted document.', classes: 'blue'});
+      setTimeout(() => window.print(), 1000);
+    }
+
+    // Save as PDF
+    function savePDF() {
+      updateDisplayFields();
+      calculateScores();
+      M.toast({html: 'Opening print dialog - select "Save as PDF" as destination', classes: 'blue', displayLength: 3000});
+      setTimeout(() => window.print(), 1000);
+    }
+
+    // Save to Google Sheets
+    function saveToGoogleSheets() {
+      updateDisplayFields();
+      calculateScores();
+      
+      let csv = 'ADVANCEMENT ASSESSMENT FORM\n\n';
+      csv += 'EMPLOYEE DETAILS\n';
+      csv += `Employee Full Name,${document.getElementById('empFullName').value}\n`;
+      csv += `Employee ID,${document.getElementById('empId').value}\n`;
+      csv += `Assigned Campaign/Position,${document.getElementById('campaign').value}\n`;
+      csv += `Assessment Date,${document.getElementById('assessDate').value}\n`;
+      csv += `Supervisor/Assessor,${document.getElementById('supervisor').value}\n`;
+      csv += `Assessment Period,From: ${document.getElementById('periodFrom').value} To: ${document.getElementById('periodTo').value}\n\n`;
+      
+      csv += 'EMPLOYMENT STANDARDS\n';
+      csv += 'Criteria,Selected Rating\n';
+      employmentStandards.forEach((standard, index) => {
+        const selected = document.querySelector(`input[name="emp_${index}"]:checked`);
+        const rating = selected ? selected.value : 'Not Selected';
+        csv += `${standard.criteria},${rating}\n`;
+      });
+      csv += '\n';
+      
+      csv += 'KPI METRICS\n';
+      csv += 'Criteria,Selected Rating\n';
+      kpiMetrics.forEach((metric, index) => {
+        const selected = document.querySelector(`input[name="kpi_${index}"]:checked`);
+        const rating = selected ? selected.value : 'Not Selected';
+        csv += `${metric.criteria},${rating}\n`;
+      });
+      csv += '\n';
+      
+      csv += 'SCORES\n';
+      csv += `Employment Standards Score,${document.getElementById('empStandardsScore').textContent}\n`;
+      csv += `KPI Metrics Score,${document.getElementById('kpiScore').textContent}\n`;
+      csv += `Final Score,${document.getElementById('finalScore').textContent}\n`;
+      csv += `Conversion Rate,${document.getElementById('conversionRate').value}\n`;
+      csv += `Average Daily Transfer,${document.getElementById('dailyTransfer').value}\n\n`;
+      
+      csv += 'QUALITATIVE FEEDBACK\n';
+      csv += `Strengths Observed,"${document.getElementById('strengths').value}"\n`;
+      csv += `Areas for Improvement,"${document.getElementById('improvement').value}"\n`;
+      csv += `Additional Comments,"${document.getElementById('comments').value}"\n\n`;
+      
+      csv += 'SIGNATURES\n';
+      csv += `Assessor Date,${document.getElementById('assessorDate').value}\n`;
+      csv += `TL Comments,"${document.getElementById('tlComments').value}"\n`;
+      csv += `TL Date,${document.getElementById('tlDate').value}\n`;
+      csv += `Verified By,${document.getElementById('verifiedBy').value}\n`;
+      csv += `Verified Date,${document.getElementById('verifiedDate').value}\n`;
+      csv += `Employee Acknowledgement Date,${document.getElementById('empAckDate').value}\n`;
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      const empName = document.getElementById('empFullName').value.replace(/\s+/g, '_') || 'Assessment';
+      link.setAttribute('download', `Assessment_${empName}_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      M.toast({html: 'CSV file downloaded! Import to Google Sheets (File > Import)', classes: 'green', displayLength: 6000});
+    }
+
+    // Clear Form
+    function clearForm() {
+      if (confirm('Are you sure you want to clear all form data?')) {
+        document.querySelectorAll('input[type="text"], input[type="date"], textarea').forEach(el => el.value = '');
+        document.querySelectorAll('input[type="radio"]').forEach(el => el.checked = false);
+        calculateScores();
+        updateDisplayFields();
+        M.updateTextFields();
+        M.toast({html: 'Form cleared', classes: 'orange'});
+      }
+    }
+
+    // Load Sample Data
+    function loadSampleData() {
+      document.getElementById('empFullName').value = 'John Doe';
+      document.getElementById('campaign').value = 'Customer Sales Associate';
+      document.getElementById('empId').value = 'EMP-12345';
+      document.getElementById('assessDate').value = '2025-11-18';
+      document.getElementById('supervisor').value = 'Jane Smith';
+      document.getElementById('periodFrom').value = '2025-10-04';
+      document.getElementById('periodTo').value = '2025-11-03';
+      
+      document.getElementById('conversionRate').value = '2.87';
+      document.getElementById('dailyTransfer').value = '3';
+      
+      document.getElementById('strengths').value = 'Attendance and Reliability: Demonstrates consistent punctuality and reliability. No instances of absences or violations of the 15-minute rule have been recorded. This reflects a strong commitment to scheduled work hours and overall dependability. Trainee has shown enthusiasm and willingness with his work and hitting his targets.';
+      
+      document.getElementById('improvement').value = 'Sales Conversion and Call Handling: There\'s been ongoing difficulty with converting calls into sales. Given the low call volume and very short AHT (5 to 30 seconds), it\'s important to quickly engage the customer but this remains a challenge. The agent struggles to adapt to the varying quality of leads and lacks the flexibility and conversational experience necessary to engage clients effectively without sounding scripted.\n\nAdaptability and Practical Experience: Displays difficulty in adjusting to the nuances of real time client interaction. Requires further development in spontaneous communication and objection handling to improve engagement and conversion outcomes.';
+      
+      document.getElementById('comments').value = 'Following Instructions and Focus: There have been multiple occasions where instructions weren\'t fully understood or followed, possibly due to a short attention span or difficulty focusing.\n\nMindset and Professionalism: Since day one, there\'s been a tendency to focus on what\'s not working, whether it\'s the headset, the calls, internet connection, and to dissatisfaction with KPIs and tools. While some of these concerns were valid, most have already been addressed or clarified, but the complaints have continued.';
+      
+      document.getElementById('tlComments').value = 'Employee shows potential but needs significant improvement in key performance areas.';
+      
+      document.getElementById('assessorDate').value = '2025-11-18';
+      document.getElementById('tlDate').value = '2025-11-18';
+      document.getElementById('verifiedBy').value = 'HR Manager';
+      document.getElementById('verifiedDate').value = '2025-11-18';
+      
+      // Set sample ratings - Professional Appearance: Excellent
+      document.querySelector('input[name="emp_0"][value="10 - Excellent"]').checked = true;
+      // Attendance: Excellent
+      document.querySelector('input[name="emp_1"][value="10 - Excellent"]').checked = true;
+      // Job Competence: Needs Improvement
+      document.querySelector('input[name="emp_2"][value="4 - Needs Improvement"]').checked = true;
+      // Attitude: Excellent
+      document.querySelector('input[name="emp_3"][value="10 - Excellent"]').checked = true;
+      // Adherence to Policies: Excellent
+      document.querySelector('input[name="emp_4"][value="10 - Excellent"]').checked = true;
+      // Work Quality: Excellent
+      document.querySelector('input[name="emp_5"][value="10 - Excellent"]').checked = true;
+      // Adaptability: Excellent
+      document.querySelector('input[name="emp_6"][value="10 - Excellent"]').checked = true;
+      
+      // KPI - Conversion Rate: Poor
+      document.querySelector('input[name="kpi_0"][value="2 – Poor"]').checked = true;
+      // Daily Transfer: Poor
+      document.querySelector('input[name="kpi_1"][value="2 – Poor"]').checked = true;
+      
+      calculateScores();
+      updateDisplayFields();
+      M.updateTextFields();
+      M.toast({html: 'Sample data loaded successfully!', classes: 'blue'});
+    }
+
+    // Initialize on page load
+    window.onload = function() {
+      populateEmploymentStandards();
+      populateKPIMetrics();
+      updateDisplayFields();
+    };
+  </script>
+
+</body>
+</html>
