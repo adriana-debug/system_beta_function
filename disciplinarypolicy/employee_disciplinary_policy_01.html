@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Disciplinary Policy and Code of Conduct</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* CSS for Print Media */
+    @media print {
+      body {
+        background: white !important;
+      }
+
+      .no-print {
+        display: none;
+      }
+
+      .print\:border {
+        border: 1px solid #ccc !important;
+      }
+
+      .print\:border-collapse {
+        border-collapse: collapse !important;
+      }
+
+      .print\:text-xs {
+        font-size: 0.75rem !important;
+      }
+
+      .print\:p-2 {
+        padding: 0.5rem !important;
+      }
+
+      /* Force a page break before this element */
+      .page-break {
+        page-break-after: always;
+      }
+
+      /* Optional: Add page numbering (pure CSS numbering is complex and browser-dependent, so this is a placeholder) */
+      .page-number::after {
+        content: "Page " counter(page);
+        position: absolute;
+        bottom: 0.5in;
+        right: 0.5in;
+        font-size: 9pt;
+      }
+    }
+
+    /* Common Styles */
+    .policy-section {
+        border: 1px solid #d1d5db;
+        border-collapse: collapse;
+        width: 100%;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100 text-gray-800 font-sans print:bg-white">
+
+  <div class="max-w-5xl mx-auto p-6 bg-white shadow-md mt-10 rounded-lg print:shadow-none print:p-2 print:text-xs">
+
+    <h2 class="text-2xl font-bold mb-6 text-center">EMPLOYEE DISCIPLINARY POLICY AND CODE OF CONDUCT</h2>
+    <h3 class="text-lg font-semibold text-center text-gray-600 mb-4">[COMPANY NAME]</h3>
+
+    <table class="w-full table-auto border border-gray-300 text-sm print:border-collapse print:border print:w-full print:table-auto">
+        <thead>
+            <tr class="bg-gray-200 print:bg-white">
+                <th colspan="2" class="p-2 text-left border border-gray-300 print:border">SECTION 1: POLICY FUNDAMENTALS (Page 1 of 2)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="p-2 font-semibold w-1/4 border border-gray-300 print:border">1. Objective</td>
+                <td class="p-2 border border-gray-300 print:border">
+                    To establish a fair, consistent, and transparent disciplinary system that guides employee behavior, ensures organizational order, and supports professional conduct across all levels of the Company.
+                </td>
+            </tr>
+            <tr>
+                <td class="p-2 font-semibold border border-gray-300 print:border">2. Rationale (Legal Basis)</td>
+                <td class="p-2 border border-gray-300 print:border">
+                    Ensures compliance with the requirements of **substantive and procedural due process** under the Labor Code of the Philippines and DOLE regulations, protecting both business interests and employee tenure.
+                </td>
+            </tr>
+            <tr>
+                <td class="p-2 font-semibold border border-gray-300 print:border">3. Effective Date</td>
+                <td class="p-2 border border-gray-300 print:border">
+                    This policy takes effect on **[Date of Implementation]**.
+                </td>
+            </tr>
+            <tr>
+                <td class="p-2 font-semibold border border-gray-300 print:border">4. Eligibility</td>
+                <td class="p-2 border border-gray-300 print:border">
+                    Applies to **all employees** of [Company Name], regardless of rank, position, or employment status (regular, probationary, or contractual).
+                </td>
+            </tr>
+
+            <tr class="bg-gray-200 print:bg-white">
+                <th colspan="2" class="p-2 text-left border border-gray-300 print:border">SECTION 2: DISCIPLINARY GROUPS AND SANCTIONS</th>
+            </tr>
+            <tr>
+                <td colspan="2" class="p-2 border border-gray-300 print:border">
+                    <table class="w-full table-auto border border-gray-300 text-sm print:border-collapse print:border print:w-full print:table-auto">
+                        <thead>
+                            <tr class="bg-gray-100 print:bg-white">
+                                <th class="p-2 w-1/5 border border-gray-300 print:border">Group</th>
+                                <th class="p-2 w-2/5 border border-gray-300 print:border">Definition</th>
+                                <th class="p-2 w-2/5 border border-gray-300 print:border">Sanction Range (Progressive)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="p-2 font-semibold border border-gray-300 print:border">Group I (Minor)</td>
+                                <td class="p-2 border border-gray-300 print:border">Minor infractions affecting personal output or simple rules.</td>
+                                <td class="p-2 border border-gray-300 print:border">
+                                    1st: Verbal Warning (documented)<br>
+                                    2nd: Written Warning<br>
+                                    3rd: 1–3 Days Suspension<br>
+                                    4th: 4–7 Days Suspension<br>
+                                    5th: Termination for habitual neglect
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 font-semibold border border-gray-300 print:border">Group II (Major)</td>
+                                <td class="p-2 border border-gray-300 print:border">Substantially impacts productivity, internal order, or operations.</td>
+                                <td class="p-2 border border-gray-300 print:border">
+                                    1st: Written Warning to 7 Days Suspension<br>
+                                    2nd: 8–30 Days Suspension<br>
+                                    3rd: Termination
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 font-semibold border border-gray-300 print:border">Group III (Serious)</td>
+                                <td class="p-2 border border-gray-300 print:border">Just Cause for termination (willful misconduct, breach of trust, crime).</td>
+                                <td class="p-2 border border-gray-300 print:border">
+                                    Immediate Termination (for the first offense if warranted by severity)
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
+            <tr class="bg-gray-200 print:bg-white">
+                <th colspan="2" class="p-2 text-left border border-gray-300 print:border">SECTION 3: EXAMPLES OF VIOLATIONS</th>
+            </tr>
+            <tr>
+                <td class="p-2 font-semibold w-1/4 border border-gray-300 print:border">Group I Examples</td>
+                <td class="p-2 border border-gray-300 print:border">
+                    <ul class="list-disc ml-4 mt-0">
+                        <li>Tardiness & Undertime</li>
+                        <li>Failure to follow dress code</li>
+                        <li>Loitering during work hours</li>
+                        <li>Minor insubordination or non-compliance</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td class="p-2 font-semibold border border-gray-300 print:border">Group II Examples</td>
+                <td class="p-2 border border-gray-300 print:border">
+                    <ul class="list-disc ml-4 mt-0">
+                        <li>No Call, No Show (NCNS)</li>
+                        <li>Unauthorized absence</li>
+                        <li>Repeated minor infractions (Habitual Neglect)</li>
+                        <li>Gross discourtesy or verbal harassment</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td class="p-2 font-semibold border border-gray-300 print:border">Group III Examples</td>
+                <td class="p-2 border border-gray-300 print:border">
+                    <ul class="list-disc ml-4 mt-0">
+                        <li>Fraud, Theft, or Stealing</li>
+                        <li>Sexual Harassment or Physical Assault</li>
+                        <li>Falsification of documents</li>
+                        <li>Willful Breach of Trust / Unauthorized confidential disclosure</li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </div> <div class="page-break"></div> <div class="max-w-5xl mx-auto p-6 bg-white shadow-md mt-10 rounded-lg print:shadow-none print:p-2 print:text-xs">
+    
+    <h2 class="text-xl font-bold mb-4 text-center text-gray-700">EMPLOYEE DISCIPLINARY POLICY AND CODE OF CONDUCT (Cont.)</h2>
+    <h3 class="text-sm font-semibold text-center text-gray-500 mb-4">[COMPANY NAME] - Page 2 of 2</h3>
+
+    <table class="w-full table-auto border border-gray-300 text-sm print:border-collapse print:border print:w-full print:table-auto">
+        <thead>
+            <tr class="bg-gray-200 print:bg-white">
+                <th colspan="2" class="p-2 text-left border border-gray-300 print:border">SECTION 4: DUE PROCESS AND SUSPENSION</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="p-2 font-semibold w-1/4 border border-gray-300 print:border">Twin-Notice Rule for Termination</td>
+                <td class="p-2 border border-gray-300 print:border">
+                    <ol class="list-decimal ml-4 mt-0">
+                        <li>**First Written Notice (Notice to Explain):** States charges, facts, and grants five (5) calendar days for explanation.</li>
+                        <li>**Opportunity to be Heard:** Employee is given a conference or hearing.</li>
+                        <li>**Second Written Notice (Notice of Decision):** Communicates the final decision and penalty.</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr>
+                <td class="p-2 font-semibold border border-gray-300 print:border">Preventive Suspension (PS)</td>
+                <td class="p-2 border border-gray-300 print:border">
+                    A non-punitive measure, maximum 30 days, used if the employee poses a serious threat during investigation.
+                </td>
+            </tr>
+
+            <tr class="bg-gray-200 print:bg-white">
+                <th colspan="2" class="p-2 text-left border border-gray-300 print:border">SECTION 5: PRESCRIPTIVE PERIODS AND APPLICABILITY</th>
+            </tr>
+            <tr>
+                <td colspan="2" class="p-0 border-none">
+                     <table class="w-full table-auto border border-gray-300 text-sm print:border-collapse print:border print:w-full print:table-auto">
+                        <thead>
+                            <tr class="bg-gray-100 print:bg-white">
+                                <th class="p-2 w-1/2 border border-gray-300 print:border">Offense Classification</th>
+                                <th class="p-2 w-1/2 border border-gray-300 print:border">Prescriptive Period</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="p-2 border border-gray-300 print:border">Group I Minor Infractions</td>
+                                <td class="p-2 border border-gray-300 print:border">60 days from discovery</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 border border-gray-300 print:border">Group II Major Infractions</td>
+                                <td class="p-2 border border-gray-300 print:border">90 days from discovery</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 border border-gray-300 print:border">Serious Offenses (Fraud, Crime)</td>
+                                <td class="p-2 border border-gray-300 print:border">Governed by the statutory period of the corresponding legal action.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            
+            <tr class="bg-gray-200 print:bg-white">
+                <th colspan="2" class="p-2 text-left border border-gray-300 print:border">SECTION 6: SUPPLETORY APPLICATION</th>
+            </tr>
+            <tr>
+                <td colspan="2" class="p-2 border border-gray-300 print:border">
+                    In all matters not expressly covered by this Policy, the provisions of the **Labor Code of the Philippines, relevant DOLE issuances, and established labor jurisprudence** shall apply in a suppletory manner.
+                </td>
+            </tr>
+
+            <tr class="bg-gray-200 print:bg-white">
+                <th colspan="2" class="p-2 text-left border border-gray-300 print:border">SECTION 7: DOCUMENT HISTORY</th>
+            </tr>
+            <tr>
+                <td colspan="2" class="p-0 border-none">
+                    <table class="w-full table-auto border border-gray-300 text-sm print:border-collapse print:border print:w-full print:table-auto">
+                        <thead>
+                            <tr class="bg-gray-100 print:bg-white">
+                                <th class="p-2 w-1/5 border border-gray-300 print:border">Version</th>
+                                <th class="p-2 w-1/5 border border-gray-300 print:border">Effective Date</th>
+                                <th class="p-2 w-3/5 border border-gray-300 print:border">Changes/Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="p-2 border border-gray-300 print:border">1.0</td>
+                                <td class="p-2 border border-gray-300 print:border">[Date]</td>
+                                <td class="p-2 border border-gray-300 print:border">Initial Release in compliance with the Labor Code, DOLE rules, and jurisprudence.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+    
+    <div class="text-xs text-center text-gray-500 mt-6 print:p-2">
+        <p>
+            COPYRIGHT NOTICE<br>
+            This Employee Disciplinary Policy is the exclusive property of [Company Name]. Unauthorized reproduction, disclosure, modification, or use of this document without written consent is strictly prohibited. © [Year] [Company Name]. All Rights Reserved.
+        </p>
+    </div>
+
+  </div> </body>
+</html>
