@@ -1,0 +1,922 @@
+/**
+ * AfterShip-first Amazon delivery tracking.
+ * Uses AfterShip movement recency (with auto-create on 404) to pick the latest tracking per order.
+ * Entry point: emailAmazonAftershipLookupOrders (syncs + targeted email focused on stuck/delayed orders).
+ */
+
+const AFTERSHIP_LABEL_STUCK_HOURS = 48; // Flag labels with no movement after this many hours.
+
+function syncAmazonDeliveryTrackingAftershipLookup() {
+  validateConfig();
+  const cfg = getResolvedConfig();
+  console.log(`AfterShip lookup sync start: lookback=${cfg.daysToCheck}d, site=${cfg.websiteUrl}`);
+
+  const ss = SpreadsheetApp.openById(cfg.spreadsheetId);
+  const sheet = ss.getSheetByName(cfg.deliverySheetName) || ss.insertSheet(cfg.deliverySheetName);
+  const headers = [["Order ID", "Amazon Order ID", "Woo Status", "Tracking Number", "Carrier", "Country", "State/City", "Info Received (UTC)", "In Transit (UTC)", "Out for delivery (UTC)", "Delivered (UTC)", "Tracking Notes"]];
+  sheet.clearContents();
+  sheet.getRange(1, 1, 1, headers[0].length).setValues(headers).setFontWeight("bold");
+
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - cfg.daysToCheck);
+  const apiDateFilter = startDate.toISOString();
+
+  const completedRows = [];
+  const orderDetails = [];
+  const missingTrackings = [];
+  const csrNotes = fetchCsrNotes(cfg);
+  let page = 1;
+  let totalPages = 1;
+
+  while (page <= totalPages) {
+    const url = `${cfg.websiteUrl}/wp-json/wc/v3/orders?consumer_key=${cfg.wooKey}&consumer_secret=${cfg.wooSecret}&per_page=50&page=${page}&modified_after=${apiDateFilter}&status=completed`;
+    const resp = fetchWithRetry(url, { muteHttpExceptions: true });
+    if (resp.getResponseCode() !== 200) {
+      const body = resp.getContentText();
+      throw new Error(`Failed to fetch completed orders page ${page} (HTTP ${resp.getResponseCode()}) body=${body}`);
+    }
+
+    if (page === 1) {
+      totalPages = parseInt(resp.getHeaders()["x-wp-totalpages"], 10) || 1;
+    }
+
+    const orders = JSON.parse(resp.getContentText()) || [];
+    console.log(`Fetched Woo page ${page}/${totalPages} (${orders.length} orders)`);
+    for (const order of orders) {
+      const channelId = Number(order.customer_id || 0);
+      if (!cfg.amazonChannelIds.includes(channelId)) continue;
+
+      const amazonOrderIdMeta = order.meta_data?.find((meta) => meta.key === "amzn_order_number");
+      const amazonOrderId = amazonOrderIdMeta ? amazonOrderIdMeta.value : "";
+
+      const trackingMeta = order.meta_data?.find((meta) => meta.key === "_wc_shipment_tracking_items");
+      const trackingItems = (trackingMeta && Array.isArray(trackingMeta.value)) ? trackingMeta.value : [];
+      if (!trackingItems.length) {
+        console.warn(`Order ${order.id} missing tracking metadata or empty tracking items.`);
+      }
+
+      const resolvedTracking = resolveLatestTrackingWithAftership(trackingItems, order.id, cfg);
+      if (!resolvedTracking || !resolvedTracking.bestTracking) {
+        missingTrackings.push({
+          orderId: order.id,
+          amazonOrderId,
+          reason: !trackingItems.length
+            ? 'No tracking items in WooCommerce'
+            : 'No usable tracking after AfterShip lookup (missing carrier/number or invalid slug)'
+        });
+        continue;
+      }
+
+      const country = (order.shipping && order.shipping.country) || '';
+      const stateCity = getStateOrCity(order.shipping);
+      const { trackingNumber, carrier, trackingNotes, checkpoints, replacementTracking, originalTracking, originalStatus, statusTag } = resolvedTracking.bestTracking;
+      const csrNote = csrNotes[String(order.id)] || csrNotes[String(amazonOrderId)] || null;
+      const replacementFromNotes = csrNote?.replacementTracking || '';
+      const originalFromNotes = csrNote?.originalTracking || '';
+      const statusFromNotes = csrNote?.trackingStatus || '';
+      const emailedFromNotes = csrNote?.emailedMessaged || '';
+      const responseFromNotes = csrNote?.response || '';
+      orderDetails.push({
+        orderId: order.id,
+        amazonOrderId,
+        wooStatus: order.status || '',
+        country,
+        stateCity,
+        trackings: resolvedTracking.candidates,
+        csrNote
+      });
+      completedRows.push({
+        orderId: order.id,
+        amazonOrderId,
+        wooStatus: order.status || '',
+        trackingNumber,
+        originalTracking: originalFromNotes || originalTracking || trackingNumber,
+        replacementTracking: replacementFromNotes || replacementTracking || '',
+        carrier,
+        country,
+        stateCity,
+        trackingNotes,
+        infoReceived: checkpoints.infoReceived,
+        inTransit: checkpoints.inTransit,
+        outForDelivery: checkpoints.outForDelivery,
+        delivered: checkpoints.delivered,
+        statusTag: statusFromNotes || statusTag || checkpoints.statusTag || '',
+        originalStatus: originalStatus || checkpoints.statusTag || '',
+        emailedMessaged: emailedFromNotes,
+        response: responseFromNotes
+      });
+    }
+
+    page++;
+  }
+
+  const toDate = (val) => val ? new Date(val) : null;
+  completedRows.sort((a, b) => {
+    const aTs = toDate(a.inTransit) || toDate(a.infoReceived) || new Date(0);
+    const bTs = toDate(b.inTransit) || toDate(b.infoReceived) || new Date(0);
+    return aTs - bTs;
+  });
+
+  const undeliveredRows = completedRows.filter((row) => !row.delivered && String(row.statusTag || '').toLowerCase() !== 'delivered');
+  if (undeliveredRows.length > 0) {
+    const values = undeliveredRows.map((row) => [
+      row.orderId,
+      row.amazonOrderId,
+      row.wooStatus,
+      row.trackingNumber,
+      row.carrier,
+      row.country,
+      row.stateCity,
+      row.infoReceived,
+      row.inTransit,
+      row.outForDelivery,
+      row.delivered,
+      row.trackingNotes || ''
+    ]);
+    sheet.getRange(2, 1, values.length, headers[0].length).setValues(values);
+  }
+
+  console.log(`--- AfterShip lookup sheet updated with ${undeliveredRows.length} undelivered rows (total fetched ${completedRows.length}) ---`);
+  writeMissingAftershipSheet(ss, missingTrackings);
+  return { rows: undeliveredRows, orderDetails };
+}
+
+/**
+ * Email Amazon completed orders (AfterShip lookup) that are not yet delivered.
+ */
+function emailAmazonAftershipLookupOrders(runSync = true) {
+  const cfg = getResolvedConfig();
+  const syncResult = runSync ? syncAmazonDeliveryTrackingAftershipLookup() : loadUndeliveredFromSheet(cfg);
+  const rows = Array.isArray(syncResult) ? syncResult : (syncResult.rows || []);
+  const orderDetails = Array.isArray(syncResult) ? [] : (syncResult.orderDetails || []);
+  const now = new Date();
+  const stalledThresholdHours = AFTERSHIP_LABEL_STUCK_HOURS;
+  const stalledRows = computeStalledRows(rows, stalledThresholdHours, now);
+  const aftershipIssues = buildAftershipIssues(orderDetails, now);
+  const statusKpiHtml = buildStatusKpi(aftershipIssues.statusCounts);
+  let stalledDisplay = [];
+  const inTransitRows = rows.filter((row) => !row.delivered);
+  if (!inTransitRows.length) {
+    console.log("No Amazon completed orders pending delivery after AfterShip lookup.");
+    return;
+  }
+
+  const ss = SpreadsheetApp.openById(cfg.spreadsheetId);
+  const sheetUrl = ss.getUrl();
+  const recipients = getRecipientsFromDistro(ss);
+
+  const rangeStart = new Date(now);
+  rangeStart.setDate(rangeStart.getDate() - cfg.daysToCheck);
+  const rangeText = `${Utilities.formatDate(rangeStart, "America/Chicago", "MM/dd/yyyy")} to ${Utilities.formatDate(now, "America/Chicago", "MM/dd/yyyy")}`;
+  const toDate = (val) => val ? new Date(val) : null;
+  const agesMs = inTransitRows.map((row) => {
+    const ts = toDate(row.inTransit) || toDate(row.infoReceived) || now;
+    return now - ts;
+  });
+  const avgAgeMs = agesMs.length ? (agesMs.reduce((a, b) => a + b, 0) / agesMs.length) : 0;
+  const maxAgeMs = agesMs.length ? Math.max.apply(null, agesMs) : 0;
+  const carrierCounts = inTransitRows.reduce((acc, row) => {
+    const carrier = row.carrier || 'unknown';
+    acc[carrier] = (acc[carrier] || 0) + 1;
+    return acc;
+  }, {});
+  const topCarriers = Object.entries(carrierCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([carrier, count]) => ({ carrier, count }));
+  const carrierTotal = Object.values(carrierCounts).reduce((a, b) => a + b, 0);
+
+  const topCarriersRows = topCarriers.map(({ carrier, count }) => `
+    <tr>
+      <td>${carrier}</td>
+      <td>${count}</td>
+    </tr>
+  `).join('');
+  const topCarriersFooter = `
+    <tr style="background-color: #f8fafc; font-weight: 600;">
+      <td>Total</td>
+      <td>${carrierTotal}</td>
+    </tr>
+  `;
+
+  const agedRows = inTransitRows
+    .map((row) => {
+      const ts = toDate(row.inTransit) || toDate(row.infoReceived) || now;
+      const deltaMs = now - ts;
+      const days = deltaMs / (1000 * 60 * 60 * 24);
+      return { ...row, daysPending: days, daysPendingMs: deltaMs, lastMovement: ts, replacementTracking: row.replacementTracking || '' };
+    })
+    .filter((row) => row.daysPending >= 14)
+    .sort((a, b) => b.daysPending - a.daysPending)
+    .slice(0, 10);
+
+  const agedOrderIds = new Set(agedRows.map((row) => row.orderId));
+  const stalledEmailRows = stalledRows.filter((row) => !agedOrderIds.has(row.orderId));
+  stalledDisplay = stalledEmailRows.slice(0, 10);
+
+  const agedTableRows = agedRows.map((row) => `
+    <tr>
+      <td>${row.orderId || ''}</td>
+      <td>${row.amazonOrderId || ''}</td>
+      <td>${row.wooStatus || ''}</td>
+      <td>${row.trackingNumber || ''}</td>
+      <td>${row.replacementTracking || ''}</td>
+      <td>${row.carrier || ''}</td>
+      <td>${row.country || ''}</td>
+      <td>${row.stateCity || ''}</td>
+      <td>${row.infoReceived || ''}</td>
+      <td>${formatDuration(row.daysPendingMs)}</td>
+      <td>${row.lastMovement ? Utilities.formatDate(row.lastMovement, "UTC", "yyyy-MM-dd HH:mm") : ''}</td>
+    </tr>
+  `).join('');
+
+  const chicagoNow = Utilities.formatDate(new Date(), "America/Chicago", "MM/dd/yyyy HH:mm");
+  const body = `
+  <html>
+    <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Amazon Completed Orders - AfterShip Lookup</title>
+    </head>
+    <body style="margin:0; padding:12px; background:#fafbfc; font-family: Arial, sans-serif; font-size: 14px; color: #0f172a;">
+      <h3 style="margin: 0 0 2px 0; font-size: 17px; font-weight: 700; color: #0f172a;">Amazon Completed Orders - Pending Delivery (AfterShip sweep)</h3>
+      <p style="margin: 0 0 8px 0; font-size: 12px; color: #475569;">As of ${chicagoNow} (America/Chicago)</p>
+      <p style="margin: 0 0 8px 0; font-size: 12px; color: #334155; font-weight: 600;">Date range: ${rangeText} (last ${cfg.daysToCheck} days)</p>
+      <p style="margin: 0 0 12px 0; font-size: 12px; color: #334155;">Latest tracking per order is selected by AfterShip movement (auto-creates trackings on 404) so stalled/delayed packages are surfaced even when Woo tracking changed.</p>
+
+      ${aftershipIssues.summaryHtml || ''}
+      ${aftershipIssues.issuesHtml || ''}
+
+      <table cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse; table-layout: fixed; margin: 0 0 12px 0; font-size: 13px;">
+        <tr style="background:#eef2f7; color:#0f172a;">
+          <th style="border: 1px solid #d0d7de; padding: 8px 10px; text-align:left; font-weight: 600;">Total pending</th>
+          <th style="border: 1px solid #d0d7de; padding: 8px 10px; text-align:left; font-weight: 600;">Avg since last move</th>
+          <th style="border: 1px solid #d0d7de; padding: 8px 10px; text-align:left; font-weight: 600;">Oldest pending</th>
+          <th style="border: 1px solid #d0d7de; padding: 8px 10px; text-align:left; font-weight: 600;">Top carrier</th>
+          <th style="border: 1px solid #d0d7de; padding: 8px 10px; text-align:left; font-weight: 600;">Label-only stalled (Stuck)</th>
+          <th style="border: 1px solid #d0d7de; padding: 8px 10px; text-align:left; font-weight: 600;">14+ day backlog</th>
+        </tr>
+        <tr>
+          <td style="border: 1px solid #d0d7de; padding: 10px; font-size: 18px; font-weight: 700;">${inTransitRows.length}</td>
+          <td style="border: 1px solid #d0d7de; padding: 10px; font-size: 18px; font-weight: 700; color: #2563eb;">${formatDuration(avgAgeMs)}</td>
+          <td style="border: 1px solid #d0d7de; padding: 10px; font-size: 18px; font-weight: 700; color: #2563eb;">${formatDuration(maxAgeMs)}</td>
+          <td style="border: 1px solid #d0d7de; padding: 10px; font-size: 18px; font-weight: 700;">${topCarriers.length ? `${topCarriers[0].carrier}: ${topCarriers[0].count}` : 'n/a'}</td>
+          <td style="border: 1px solid #d0d7de; padding: 10px; font-size: 18px; font-weight: 700; color: ${stalledEmailRows.length ? '#b45309' : '#15803d'};">${stalledEmailRows.length ? `${stalledEmailRows.length} orders` : 'None'}</td>
+          <td style="border: 1px solid #d0d7de; padding: 10px; font-size: 18px; font-weight: 700; color: ${agedRows.length ? '#b45309' : '#15803d'};">${agedRows.length ? `${agedRows.length} orders` : 'None'}</td>
+        </tr>
+      </table>
+
+      ${statusKpiHtml}
+
+      <div style="margin: 12px 0 6px 0; font-size: 14px; font-weight: 700; color: #0f172a;">Top carriers (by undelivered count)</div>
+      ${topCarriers.length ? `
+      <table cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse; margin: 0 0 12px 0; font-size: 13px;">
+        <thead>
+          <tr style="background:#eef2f7; color:#0f172a;">
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Carrier</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Undelivered Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${topCarriersRows}
+          ${topCarriersFooter}
+        </tbody>
+      </table>
+      ` : '<p style="margin:0 0 10px 0; color:#6b7280; font-size:12px;">No carrier data available.</p>'}
+
+      <div style="margin: 12px 0 6px 0; font-size: 14px; font-weight: 700; color: #0f172a;">Label-created / InfoReceived only (${stalledEmailRows.length} at ${stalledThresholdHours}+ hours; showing up to 10)</div>
+      ${stalledDisplay.length ? `
+      <table cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse; margin: 0 0 12px 0; font-size: 13px;">
+        <thead>
+          <tr style="background:#eef2f7; color:#0f172a;">
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Order ID</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Amazon Order ID</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Woo Status</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Original Tracking</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Replacement / Reship</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Carrier</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Country</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">State/City</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Label Created</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Age</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Last Movement (UTC)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${stalledDisplay.map((row) => `
+            <tr>
+              <td>${row.orderId || ''}</td>
+              <td>${row.amazonOrderId || ''}</td>
+              <td>${row.wooStatus || ''}</td>
+              <td>${row.trackingNumber || ''}</td>
+              <td>${row.replacementTracking || ''}</td>
+              <td>${row.carrier || ''}</td>
+              <td>${row.country || ''}</td>
+              <td>${row.stateCity || ''}</td>
+              <td>${row.infoReceived || ''}</td>
+              <td>${formatDuration(row.stalledAgeMs)}</td>
+              <td>${row.lastMovement ? Utilities.formatDate(row.lastMovement, "UTC", "yyyy-MM-dd HH:mm") : ''}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      ` : '<p style="margin:0 0 10px 0; color:#15803d; font-size:12px; font-weight:600;">No stalled label-only orders.</p>'}
+
+      <div style="margin: 12px 0 6px 0; font-size: 14px; font-weight: 700; color: #0f172a;">Orders pending 14+ days (showing up to 10)</div>
+      ${agedRows.length ? `
+      <table cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse; margin: 0 0 12px 0; font-size: 13px;">
+        <thead>
+          <tr style="background:#eef2f7; color:#0f172a;">
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Order ID</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Amazon Order ID</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Woo Status</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Original Tracking</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Replacement / Reship</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Carrier</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Country</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">State/City</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Label Created</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Age</th>
+            <th align="left" style="border: 1px solid #d0d7de; padding: 8px 10px; font-weight: 600;">Last Movement (UTC)</th>
+          </tr>
+        </thead>
+        <tbody>${agedTableRows}</tbody>
+      </table>
+  ` : '<p style="margin:0 0 10px 0; color:#15803d; font-size:12px; font-weight:600;">No orders pending 14+ days.</p>'}
+
+      <p style="margin: 6px 0 0 0; font-size: 13px; color: #334155;">
+        Full details: <a href="${sheetUrl}" target="_blank" style="color: #2563eb; text-decoration: none; font-weight: 600;">${cfg.deliverySheetName}</a>
+      </p>
+    </body>
+  </html>
+  `;
+
+  MailApp.sendEmail({
+    to: recipients.join(','),
+    subject: 'Amazon completed orders in transit - AfterShip lookup sweep',
+    htmlBody: body,
+    name: buildSenderName(cfg.customerName, 'Alerts')
+  });
+
+  console.log('Amazon in-transit delivery email sent (AfterShip lookup).');
+  writeStalledSheet(ss, stalledRows, stalledThresholdHours);
+}
+
+/**
+ * Resolve the newest tracking per order using AfterShip movement recency.
+ */
+function resolveLatestTrackingWithAftership(trackingItems, orderId, cfg) {
+  if (!Array.isArray(trackingItems) || !trackingItems.length) return null;
+  const toDate = (val) => {
+    if (!val) return null;
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  const candidates = [];
+  for (const item of trackingItems) {
+    const trackingNumber = item.tracking_number;
+    const carrier = item.custom_tracking_provider || item.tracking_provider || '';
+    if (!trackingNumber || !carrier) continue;
+    const carrierSlug = normalizeCarrierSlug(String(carrier).toLowerCase().replace(/\s+/g, ''));
+    const trackingNotes = item.tracking_notes || item.tracking_note || item.notes || item.note || '';
+    const checkpoints = fetchAftershipCheckpointsWithCreate(carrierSlug, trackingNumber);
+    const wooTs = toDate(item.date_shipped) || toDate(item.date_added);
+    const latestCheckpointMs = getLatestCheckpointMs(checkpoints);
+    const recencyScore = latestCheckpointMs || (wooTs ? wooTs.getTime() : 0);
+    candidates.push({
+      trackingNumber,
+      carrier: carrierSlug,
+      trackingNotes,
+      checkpoints,
+      wooTs,
+      recencyScore,
+      isCancelled: checkpoints.isCancelled
+    });
+  }
+
+  if (!candidates.length) {
+    console.warn(`Order ${orderId} had tracking items but none were usable after AfterShip lookup.`);
+    return null;
+  }
+
+  candidates.sort((a, b) => {
+    const recDiff = (b.recencyScore || 0) - (a.recencyScore || 0);
+    if (recDiff !== 0) return recDiff;
+    const cancelDiff = (a.isCancelled ? 1 : 0) - (b.isCancelled ? 1 : 0); // prefer active
+    if (cancelDiff !== 0) return cancelDiff;
+    return ((b.wooTs ? b.wooTs.getTime() : 0) - (a.wooTs ? a.wooTs.getTime() : 0));
+  });
+
+  const active = candidates.filter((c) => !c.isCancelled);
+  const cancelled = candidates.filter((c) => c.isCancelled);
+  const bestTracking = active[0] || candidates[0];
+  const replacementCandidate = active[0] || null;
+  const originalCandidate = cancelled[0] || candidates[0];
+
+  bestTracking.replacementTracking = replacementCandidate && replacementCandidate.trackingNumber !== bestTracking.trackingNumber
+    ? replacementCandidate.trackingNumber
+    : '';
+  bestTracking.originalTracking = originalCandidate ? originalCandidate.trackingNumber : bestTracking.trackingNumber;
+  bestTracking.originalStatus = originalCandidate ? (originalCandidate.checkpoints?.statusTag || 'Cancelled') : (bestTracking.checkpoints?.statusTag || '');
+  bestTracking.statusTag = bestTracking.checkpoints?.statusTag || '';
+
+  return { bestTracking, candidates };
+}
+
+/**
+ * Fetch AfterShip checkpoints; auto-create tracking on 404 and include latest movement timestamp.
+ */
+function fetchAftershipCheckpointsWithCreate(carrierSlug, trackingNumber) {
+  const { aftershipKey } = getResolvedConfig();
+  const url = `https://api.aftership.com/v4/trackings/${carrierSlug}/${trackingNumber}`;
+  const options = {
+    method: 'get',
+    headers: {
+      'as-api-key': aftershipKey,
+      'Content-Type': 'application/json'
+    },
+    muteHttpExceptions: true
+  };
+
+  const summary = { infoReceived: '', inTransit: '', outForDelivery: '', delivered: '', latestCheckpointMs: 0, statusTag: '', isCancelled: false };
+  let response = fetchWithRetry(url, options);
+  if (response.getResponseCode() === 404) {
+    console.warn(`AfterShip missing tracking ${carrierSlug}/${trackingNumber}. Attempting auto-create.`);
+    const createUrl = 'https://api.aftership.com/v4/trackings';
+    const createResp = fetchWithRetry(createUrl, {
+      method: 'post',
+      headers: {
+        'as-api-key': aftershipKey,
+        'Content-Type': 'application/json'
+      },
+      payload: JSON.stringify({
+        tracking: { slug: carrierSlug, tracking_number: trackingNumber }
+      }),
+      muteHttpExceptions: true
+    });
+    if (createResp.getResponseCode() >= 200 && createResp.getResponseCode() < 300) {
+      Utilities.sleep(300);
+      response = fetchWithRetry(url, options);
+    } else {
+      console.warn(`Failed to auto-create AfterShip tracking ${carrierSlug}/${trackingNumber}. HTTP ${createResp.getResponseCode()}`);
+      return summary;
+    }
+  }
+
+  if (response.getResponseCode() !== 200) {
+    console.warn(`Failed to fetch AfterShip data for ${trackingNumber} (${carrierSlug}). HTTP ${response.getResponseCode()}`);
+    return summary;
+  }
+
+  const json = JSON.parse(response.getContentText());
+  const trackingData = json?.data?.tracking;
+  if (!trackingData || !Array.isArray(trackingData.checkpoints)) return summary;
+
+  const statusTag = trackingData.tag || trackingData.status || '';
+  summary.statusTag = statusTag;
+  const lowered = (statusTag || '').toLowerCase();
+  summary.isCancelled = lowered.includes('cancel') || lowered.includes('void') || lowered.includes('expired');
+
+  for (const checkpoint of trackingData.checkpoints.slice().reverse()) {
+    const checkpointDate = checkpoint.checkpoint_time ? new Date(checkpoint.checkpoint_time) : null;
+    const checkpointTime = checkpointDate ? Utilities.formatDate(checkpointDate, "UTC", "yyyy-MM-dd HH:mm:ss") : '';
+    const checkpointMs = checkpointDate ? checkpointDate.getTime() : 0;
+    if (checkpointMs > summary.latestCheckpointMs) summary.latestCheckpointMs = checkpointMs;
+    switch (checkpoint.tag) {
+      case 'InfoReceived':
+        if (!summary.infoReceived) summary.infoReceived = checkpointTime;
+        break;
+      case 'InTransit':
+        if (!summary.inTransit) summary.inTransit = checkpointTime;
+        break;
+      case 'OutForDelivery':
+        if (!summary.outForDelivery) summary.outForDelivery = checkpointTime;
+        break;
+      case 'Delivered':
+        if (!summary.delivered) summary.delivered = checkpointTime;
+        break;
+      default:
+        break;
+    }
+  }
+
+  return summary;
+}
+
+function getLatestCheckpointMs(checkpoints) {
+  if (!checkpoints) return 0;
+  const dates = [checkpoints.delivered, checkpoints.outForDelivery, checkpoints.inTransit, checkpoints.infoReceived]
+    .filter(Boolean)
+    .map((d) => new Date(d).getTime())
+    .filter((ms) => !isNaN(ms));
+  return dates.length ? Math.max.apply(null, dates) : (checkpoints.latestCheckpointMs || 0);
+}
+
+function isTrackingStuckLabel(checkpoints, now) {
+  if (!checkpoints) return false;
+  if (checkpoints.inTransit || checkpoints.outForDelivery || checkpoints.delivered) return false;
+  if (!checkpoints.infoReceived) return false;
+  const lastMs = getLatestCheckpointMs(checkpoints);
+  const ageMs = now.getTime() - (lastMs || now.getTime());
+  const hours = ageMs / (1000 * 60 * 60);
+  return hours >= AFTERSHIP_LABEL_STUCK_HOURS;
+}
+
+function buildAftershipIssues(orderDetails, now) {
+  if (!Array.isArray(orderDetails) || !orderDetails.length) {
+    return { summaryHtml: '', issuesHtml: '', statusCounts: {} };
+  }
+
+  const stuckLabels = [];
+  const stuckDetailed = [];
+  const multipleLabels = [];
+  const missingConsolidation = [];
+  const consolidated = [];
+  const cancelledWithReplacement = [];
+  const statusCounts = {};
+
+  for (const order of orderDetails) {
+    const trackings = order.trackings || [];
+    if (!trackings.length) continue;
+
+    for (const t of trackings) {
+      const status = t.checkpoints?.statusTag || 'unknown';
+      statusCounts[status] = (statusCounts[status] || 0) + 1;
+    }
+
+    const active = trackings.filter((t) => !t.checkpoints?.isCancelled);
+    const cancelled = trackings.filter((t) => t.checkpoints?.isCancelled);
+    const stuck = active.filter((t) => {
+      if (String(t.checkpoints?.statusTag || '').toLowerCase() === 'delivered') return false;
+      return isTrackingStuckLabel(t.checkpoints, now);
+    });
+
+    if (stuck.length) {
+      stuckLabels.push({
+        orderId: order.orderId,
+        amazonOrderId: order.amazonOrderId,
+        trackings: stuck.map((t) => t.trackingNumber),
+        carrier: stuck.map((t) => t.carrier).join(', '),
+        stateCity: order.stateCity,
+        country: order.country
+      });
+      stuck.forEach((t) => {
+        const infoReceived = t.checkpoints?.infoReceived || '';
+        const lastMs = getLatestCheckpointMs(t.checkpoints);
+        const lastMovement = lastMs ? new Date(lastMs) : (infoReceived ? new Date(infoReceived) : null);
+        const ageMs = infoReceived ? (now.getTime() - new Date(infoReceived).getTime()) : (lastMs ? now.getTime() - lastMs : 0);
+        stuckDetailed.push({
+          orderId: order.orderId,
+          amazonOrderId: order.amazonOrderId,
+          wooStatus: order.wooStatus || '',
+          originalTracking: t.trackingNumber || '',
+          replacementTracking: t.replacementTracking || '',
+          carrier: t.carrier || '',
+          country: order.country || '',
+          stateCity: order.stateCity || '',
+          infoReceived: infoReceived || '',
+          ageMs,
+          lastMovement,
+          statusTag: t.checkpoints?.statusTag || '',
+          emailedMessaged: order.csrNote?.emailedMessaged || '',
+          response: order.csrNote?.response || ''
+        });
+      });
+    }
+
+    if (trackings.length > 1) {
+      multipleLabels.push({
+        orderId: order.orderId,
+        amazonOrderId: order.amazonOrderId,
+        trackings: trackings.map((t) => `${t.trackingNumber} (${t.checkpoints?.statusTag || 'unknown'})`)
+      });
+
+      if (active.length > 1) {
+        missingConsolidation.push({
+          orderId: order.orderId,
+          amazonOrderId: order.amazonOrderId,
+          activeTrackings: active.map((t) => `${t.trackingNumber} (${t.checkpoints?.statusTag || 'unknown'})`)
+        });
+      } else if (active.length === 1 && cancelled.length) {
+        consolidated.push({
+          orderId: order.orderId,
+          amazonOrderId: order.amazonOrderId,
+          primary: `${active[0].trackingNumber} (${active[0].checkpoints?.statusTag || 'unknown'})`,
+          cancelled: cancelled.map((t) => t.trackingNumber)
+        });
+      }
+    }
+
+    if (cancelled.length && active.length) {
+      const newestActive = active.slice().sort((a, b) => (b.recencyScore || 0) - (a.recencyScore || 0))[0];
+      cancelledWithReplacement.push({
+        orderId: order.orderId,
+        amazonOrderId: order.amazonOrderId,
+        cancelled: cancelled.map((t) => t.trackingNumber),
+        replacement: newestActive ? `${newestActive.trackingNumber} (${newestActive.checkpoints?.statusTag || 'unknown'})` : ''
+      });
+    }
+  }
+
+  const makeTable = (title, rows, headers, renderRow) => {
+    if (!rows.length) return '';
+    return `
+      <div style="margin: 10px 0 4px 0; font-size: 14px; font-weight: 700; color: #0f172a;">${title}</div>
+      <table cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse; margin: 0 0 10px 0; font-size: 13px;">
+        <thead>
+          <tr style="background:#eef2f7; color:#0f172a;">
+            ${headers.map((h) => `<th align="left" style="border: 1px solid #d0d7de; padding: 6px 8px; font-weight: 600;">${h}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(renderRow).join('')}
+        </tbody>
+      </table>
+    `;
+  };
+
+  const issuesHtml = [
+    makeTable(`Stuck labels (no movement 48h+, showing up to 20)`, stuckDetailed.slice(0, 20), ['Order ID', 'Amazon Order ID', 'Woo Status', 'Original Tracking', 'Replacement / Reship', 'Carrier', 'Country', 'State/City', 'Label Created', 'Age', 'Last Movement (UTC)', 'AfterShip Status', 'Emailed / Messaged', 'Response'], (row) => `
+      <tr>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.orderId || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.amazonOrderId || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.wooStatus || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.originalTracking || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.replacementTracking || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.carrier || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.country || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.stateCity || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.infoReceived || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${formatDuration(row.ageMs)}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.lastMovement ? Utilities.formatDate(row.lastMovement, "UTC", "yyyy-MM-dd HH:mm") : ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.statusTag || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.emailedMessaged || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.response || ''}</td>
+      </tr>
+    `),
+    makeTable('Stuck labels (no movement 48h+)', stuckLabels, ['Order ID', 'Amazon Order ID', 'Tracking(s)', 'Carrier', 'Country', 'State/City'], (row) => `
+      <tr>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.orderId || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.amazonOrderId || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.trackings.join(', ')}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.carrier}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.country || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.stateCity || ''}</td>
+      </tr>
+    `),
+    makeTable('Multiple labels on an order', multipleLabels, ['Order ID', 'Amazon Order ID', 'Trackings'], (row) => `
+      <tr>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.orderId || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.amazonOrderId || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.trackings.join(', ')}</td>
+      </tr>
+    `),
+    makeTable('Missing consolidation (multiple active labels)', missingConsolidation, ['Order ID', 'Amazon Order ID', 'Active Trackings'], (row) => `
+      <tr>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.orderId || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.amazonOrderId || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.activeTrackings.join(', ')}</td>
+      </tr>
+    `),
+    makeTable('Cancelled tracking with replacement', cancelledWithReplacement, ['Order ID', 'Amazon Order ID', 'Cancelled', 'Replacement'], (row) => `
+      <tr>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.orderId || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.amazonOrderId || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.cancelled.join(', ')}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.replacement || ''}</td>
+      </tr>
+    `),
+    makeTable('Consolidated (single active after cancellation)', consolidated, ['Order ID', 'Amazon Order ID', 'Active', 'Cancelled'], (row) => `
+      <tr>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.orderId || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.amazonOrderId || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.primary || ''}</td>
+        <td style="border: 1px solid #d0d7de; padding: 6px 8px;">${row.cancelled.join(', ')}</td>
+      </tr>
+    `)
+  ].filter(Boolean).join('');
+
+  const statusSummary = Object.entries(statusCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([status, count]) => `${status || 'unknown'}: ${count}`)
+    .join(' | ');
+
+  const summaryHtml = `
+    <div style="margin: 0 0 10px 0; padding: 8px 10px; background: #eef2f7; border: 1px solid #d0d7de; font-size: 13px;">
+      <div style="font-weight: 700; margin: 0 0 4px 0;">AfterShip issue sweep (stuck ${AFTERSHIP_LABEL_STUCK_HOURS}h+, multiples, cancellations)</div>
+      <div style="color: #0f172a;">Status mix: ${statusSummary || 'n/a'}.</div>
+    </div>
+  `;
+
+  return { summaryHtml, issuesHtml, statusCounts };
+}
+
+function writeMissingAftershipSheet(ss, missingTrackings) {
+  const name = 'Amazon Missing AfterShip';
+  const sheet = ss.getSheetByName(name) || ss.insertSheet(name);
+  sheet.clearContents();
+  const headers = [['Order ID', 'Amazon Order ID', 'Reason']];
+  sheet.getRange(1, 1, 1, headers[0].length).setValues(headers).setFontWeight('bold');
+  if (!Array.isArray(missingTrackings) || !missingTrackings.length) return;
+  const rows = missingTrackings.map((m) => [m.orderId || '', m.amazonOrderId || '', m.reason || '']);
+  sheet.getRange(2, 1, rows.length, headers[0].length).setValues(rows);
+}
+
+function fetchCsrNotes(cfg) {
+  const map = {};
+  const sheetId = cfg.csrNotesSheetId;
+  const sheetName = cfg.csrNotesSheetName;
+  if (!sheetId || !sheetName) return map;
+  try {
+    const ss = SpreadsheetApp.openById(sheetId);
+    const sheet = ss.getSheetByName(sheetName);
+    if (!sheet || sheet.getLastRow() < 2) return map;
+    const lastCol = sheet.getLastColumn();
+    const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map((h) => String(h || '').trim().toLowerCase());
+    const idx = (name) => headers.indexOf(name.toLowerCase());
+    const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, lastCol).getValues();
+    for (const row of values) {
+      const orderId = idx('order number') >= 0 ? row[idx('order number')] : '';
+      if (!orderId) continue;
+      const originalTracking = idx('original tracking number') >= 0 ? row[idx('original tracking number')] : (idx('tracking number') >= 0 ? row[idx('tracking number')] : '');
+      const replacementTracking = idx('replacement / reship') >= 0 ? row[idx('replacement / reship')] : '';
+      const trackingStatusIdx = idx('tracking status');
+      let trackingStatus = trackingStatusIdx >= 0 ? row[trackingStatusIdx] : '';
+      if (!trackingStatus) {
+        const lastIdx = headers.lastIndexOf('tracking status');
+        if (lastIdx >= 0 && lastIdx < row.length) trackingStatus = row[lastIdx];
+      }
+      map[String(orderId)] = {
+        originalTracking: originalTracking || '',
+        replacementTracking: replacementTracking || '',
+        trackingStatus: trackingStatus || '',
+        comment: idx('comment.') >= 0 ? row[idx('comment.')] : '',
+        emailedMessaged: idx('emailed / messaged') >= 0 ? row[idx('emailed / messaged')] : '',
+        response: idx('response') >= 0 ? row[idx('response')] : ''
+      };
+    }
+  } catch (err) {
+    console.warn(`Failed to read CSR notes sheet: ${err}`);
+  }
+  return map;
+}
+
+function buildStatusKpi(statusCounts) {
+  const keys = ['Delivered', 'InfoReceived', 'InTransit', 'OutForDelivery', 'Exception', 'AvailableForPickup', 'AttemptFail'];
+  const rows = keys.map((k) => {
+    const val = statusCounts[k] || statusCounts[k.toLowerCase()] || 0;
+    return `<td style="border: 1px solid #d0d7de; padding: 6px 8px; font-weight: 700;">${val}</td>`;
+  }).join('');
+  return `
+    <table cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse; table-layout: fixed; margin: 0 0 12px 0; font-size: 13px;">
+      <tr style="background:#eef2f7; color:#0f172a;">
+        ${keys.map((k) => `<th style="border: 1px solid #d0d7de; padding: 6px 8px; text-align:left; font-weight: 600;">${k}</th>`).join('')}
+      </tr>
+      <tr>
+        ${rows}
+      </tr>
+    </table>
+  `;
+}
+
+function getResolvedConfig() {
+  const props = (typeof PropertiesService !== 'undefined' && PropertiesService.getScriptProperties) ? PropertiesService.getScriptProperties() : null;
+  const fromProps = (key) => (props ? props.getProperty(key) : '');
+  const websiteUrl = fromProps('YOUR_WEBSITE_URL') || (typeof YOUR_WEBSITE_URL !== 'undefined' ? YOUR_WEBSITE_URL : '');
+  const wooKey = fromProps('YOUR_CONSUMER_KEY') || (typeof YOUR_CONSUMER_KEY !== 'undefined' ? YOUR_CONSUMER_KEY : '');
+  const wooSecret = fromProps('YOUR_CONSUMER_SECRET') || (typeof YOUR_CONSUMER_SECRET !== 'undefined' ? YOUR_CONSUMER_SECRET : '');
+  const aftershipKey = fromProps('AFTERSHIP_API_KEY') || (typeof AFTERSHIP_API_KEY !== 'undefined' ? AFTERSHIP_API_KEY : '');
+  const spreadsheetId = (typeof SPREADSHEET_ID !== 'undefined' ? SPREADSHEET_ID : '') || fromProps('SPREADSHEET_ID');
+  const deliverySheetName = (typeof AMAZON_DELIVERY_SHEET_NAME !== 'undefined' ? AMAZON_DELIVERY_SHEET_NAME : 'Amazon Delivery Tracking');
+  const daysToCheck = (typeof DAYS_TO_CHECK !== 'undefined' ? DAYS_TO_CHECK : 7);
+  const amazonChannelIds = (typeof AMAZON_CHANNEL_IDS !== 'undefined' ? AMAZON_CHANNEL_IDS : [90, 116]);
+  const rawCustomerName = fromProps('CUSTOMER_NAME') || (typeof CUSTOMER_NAME !== 'undefined' ? CUSTOMER_NAME : 'Make A Fort Reports');
+  const customerName = normalizeCustomerName(rawCustomerName);
+  const warehouseRecipients = (typeof WAREHOUSE_RECIPIENTS !== 'undefined' ? WAREHOUSE_RECIPIENTS : []);
+  const stalledLabelDays = (typeof STALLED_LABEL_DAYS !== 'undefined' ? STALLED_LABEL_DAYS : Number(fromProps('STALLED_LABEL_DAYS')) || 3);
+  const csrNotesSheetId = (typeof CSR_NOTES_SPREADSHEET_ID !== 'undefined' ? CSR_NOTES_SPREADSHEET_ID : '') || fromProps('CSR_NOTES_SPREADSHEET_ID');
+  const csrNotesSheetName = (typeof CSR_NOTES_SHEET_NAME !== 'undefined' ? CSR_NOTES_SHEET_NAME : '') || fromProps('CSR_NOTES_SHEET_NAME');
+  return { websiteUrl, wooKey, wooSecret, aftershipKey, spreadsheetId, deliverySheetName, daysToCheck, amazonChannelIds, customerName, warehouseRecipients, stalledLabelDays, csrNotesSheetId, csrNotesSheetName };
+}
+
+function formatDuration(ms) {
+  const totalMs = Math.max(0, ms || 0);
+  const totalSec = Math.floor(totalMs / 1000);
+  const days = Math.floor(totalSec / 86400);
+  const hours = Math.floor((totalSec % 86400) / 3600);
+  const minutes = Math.floor((totalSec % 3600) / 60);
+  const seconds = totalSec % 60;
+  const parts = [];
+  if (days) parts.push(`${days}d`);
+  if (hours) parts.push(`${hours}h`);
+  if (minutes && parts.length < 2) parts.push(`${minutes}m`);
+  if (!parts.length && seconds) parts.push(`${seconds}s`);
+  if (!parts.length) parts.push('0s');
+  return parts.slice(0, 2).join(' ');
+}
+
+function normalizeCarrierSlug(slug) {
+  const map = {
+    'dpd': 'dpd-uk',
+    'dpduk': 'dpd-uk',
+    'dpd-uk': 'dpd-uk',
+    'dpdparcelnextday': 'dpd-uk',
+    'dpd-parcelnextday': 'dpd-uk',
+    'dpd-parceltwoday': 'dpd-uk',
+    'ups': 'ups',
+    'upsuk': 'ups',
+    'upscanada': 'ups',
+    'upsnetherlands': 'ups',
+    'fedex': 'fedex',
+    'fedexground': 'fedex',
+    'loomisexpress': 'loomis_express',
+    'canadapost': 'canada_post',
+    'dhl': 'dhl_express',
+    'dhlintrashipde': 'dhl_express',
+    'dhlexpresscanada': 'dhl_express_canada',
+    'purolator': 'purolator',
+    'purolatorcourierltd': 'purolator',
+    'purolator_ca': 'purolator',
+    'yodel': 'yodel',
+    'yodelxpress': 'yodel',
+    'yodelxpresspod': 'yodel',
+    'yodel-xpress24pod': 'yodel',
+    'yodel-xpect24pod': 'yodel',
+    'yodel-xpect24': 'yodel',
+    'yodel-xpress': 'yodel',
+    'usps': 'usps'
+  };
+  return map[slug] || slug;
+}
+
+function getStateOrCity(shipping) {
+  if (!shipping) return '';
+  const country = shipping.country || '';
+  const state = shipping.state || '';
+  const city = shipping.city || '';
+  if ((country === 'US' || country === 'CA') && state) return state;
+  if (city) return city;
+  return state || '';
+}
+
+function getRecipientsFromDistro(ss) {
+  const distro = ss.getSheetByName(DELIVERY_DISTRO_SHEET);
+  if (!distro || distro.getLastRow() < 1) throw new Error(`Missing sheet "${DELIVERY_DISTRO_SHEET}" for recipients.`);
+  const values = distro.getRange(1, 1, distro.getLastRow(), 1).getValues();
+  const emails = values.flat().filter((e) => e && String(e).includes('@'));
+  if (!emails.length) throw new Error('No recipients found in distro sheet.');
+  return emails;
+}
+
+function normalizeCustomerName(name) {
+  let base = (name || '').trim();
+  if (!base) return '';
+  while (/\s+(alerts|reports)\s*$/i.test(base)) {
+    base = base.replace(/\s+(alerts|reports)\s*$/i, '').trim();
+  }
+  return base || (name || '').trim();
+}
+
+function buildSenderName(customerName, suffix) {
+  const base = normalizeCustomerName(customerName);
+  const suffixPart = (suffix || '').trim();
+  if (!suffixPart) return base;
+  const suffixRegex = new RegExp(`\\b${suffixPart}$`, 'i');
+  if (suffixRegex.test(base)) return base;
+  return `${base} ${suffixPart}`.trim();
+}
+
+function fetchWithRetry(url, options) {
+  const maxAttempts = 4;
+  const backoffMs = 500;
+  let lastResp;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const resp = UrlFetchApp.fetch(url, options);
+      const code = resp.getResponseCode();
+      if (code >= 200 && code < 300) return resp;
+      lastResp = resp;
+      if (code === 429 || code >= 500) {
+        Utilities.sleep(backoffMs * attempt);
+        continue;
+      }
+      return resp;
+    } catch (err) {
+      if (attempt === maxAttempts) throw err;
+      Utilities.sleep(backoffMs * attempt);
+    }
+  }
+  return lastResp;
+}
+
+function validateConfig() {
+  const cfg = getResolvedConfig();
+  if (!cfg.wooKey || !cfg.wooSecret) {
+    throw new Error('Missing WooCommerce credentials: set YOUR_CONSUMER_KEY and YOUR_CONSUMER_SECRET.');
+  }
+  if (!cfg.aftershipKey) {
+    throw new Error('Missing AfterShip API key: set AFTERSHIP_API_KEY.');
+  }
+}
+
