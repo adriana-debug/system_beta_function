@@ -1,0 +1,2384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Minds BPO Services Inc. - Hiring Knowledge Base</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Simulated IDE and coding challenge styles */
+        .ide-card { 
+            background: linear-gradient(180deg,#ffffff,#fbfbfc); 
+            border: 2px solid #e5e7eb; 
+            border-radius: 10px;
+            margin: 16px 0;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .ide-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+        }
+        .ide-header { 
+            display:flex; 
+            align-items:center; 
+            gap:8px; 
+            padding: 12px 16px; 
+            border-bottom: 2px solid #eef2f6; 
+            background: linear-gradient(90deg, #f7f9fb, #f0f4f8);
+            border-top-left-radius:8px; 
+            border-top-right-radius:8px; 
+        }
+        .ide-dots { display:flex; gap:6px; }
+        .ide-dot { width:12px; height:12px; border-radius:50%; background:#ff5f56; box-shadow:inset 0 -1px 0 rgba(0,0,0,0.05); }
+        .ide-dot.yellow { background:#ffbd2e; }
+        .ide-dot.green { background:#27c93f; }
+        .ide-toolbar { margin-left:auto; display:flex; gap:8px; }
+        .ide-body { 
+            padding: 16px; 
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace; 
+            font-size:13px; 
+            color:#0f172a; 
+            background: linear-gradient(180deg,#fbfdff,#f8fbff); 
+        }
+        .code-line { white-space:pre; }
+        .code-editor { 
+            background: #0b1220; 
+            color: #cbd5e1; 
+            padding: 16px; 
+            border-radius: 8px; 
+            overflow: auto; 
+            max-height: 380px;
+            border: 1px solid #1e293b;
+        }
+        .code-editor .line { display:flex; gap:12px; }
+        .code-editor .gutter { width:40px; text-align:right; color:#94a3b8; user-select:none; font-weight: 500; }
+        .code-editor .source { flex:1; font-family: 'Courier New', monospace; }
+        .btn-ide { 
+            background: #0f172a; 
+            color: #fff; 
+            padding: 8px 14px; 
+            border-radius: 6px; 
+            font-size: 12px; 
+            border: none; 
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .btn-ide:hover { background: #1e293b; }
+        .btn-ide.secondary { 
+            background: #eef2f6; 
+            color: #0b1220; 
+            border: 1px solid #d1d5db;
+        }
+        .btn-ide.secondary:hover { background: #e5e7eb; }
+        /* Challenge section: minimal, clean card design */
+        .challenge-section { 
+            background: white; 
+            border: 1px solid #d1d5db; 
+            border-left: 4px solid #3b82f6; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin: 16px 0;
+        }
+        .challenge-section.difficulty-basic-section { border-left-color: #0369a1; }
+        .challenge-section.difficulty-intermediate-section { border-left-color: #b45309; }
+        .challenge-section.difficulty-expert-section { border-left-color: #9f1239; }
+        
+        .challenge-meta { 
+            display: flex; 
+            gap: 12px; 
+            align-items: center; 
+            margin-bottom: 12px;
+        }
+        .challenge-difficulty { 
+            padding: 4px 10px; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            font-size: 11px; 
+        }
+        .difficulty-basic { background: #dbeafe; color: #0369a1; }
+        .difficulty-intermediate { background: #fed7aa; color: #b45309; }
+        .difficulty-expert { background: #fbcfe8; color: #9f1239; }
+        
+        .challenge-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 8px 0;
+        }
+        
+        .challenge-role {
+            font-size: 13px;
+            color: #4b5563;
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+        
+        .challenge-task {
+            font-size: 13px;
+            color: #4b5563;
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+        
+        .jd-compact { 
+            font-size: 13px; 
+            line-height: 1.4; 
+        }
+        
+        /* Interview questions styling */
+        .interview-qs { 
+            margin-top: 12px;
+        }
+        .interview-qs strong {
+            color: #1f2937;
+            font-size: 13px;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .interview-qs ul {
+            list-style: disc;
+            padding-left: 20px;
+            margin: 0;
+        }
+        .interview-qs li { 
+            margin-bottom: 4px;
+            color: #4b5563;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .interview-qs li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #3b82f6;
+            font-weight: bold;
+        }
+        .assessment-scenario { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+        .scenario-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f3f4f6; padding-bottom: 12px; margin-bottom: 16px; }
+        .scenario-header h3 { margin: 0; }
+        .scenario-time { background: #dbeafe; color: #0369a1; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .scenario-part { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #f0f0f0; }
+        .scenario-part:last-child { border-bottom: none; padding-bottom: 0; }
+        .part-badge { background: #f0f9ff; color: #0369a1; padding: 6px 12px; border-left: 3px solid #0369a1; font-weight: 600; font-size: 13px; display: inline-block; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+        }
+        
+        .kb-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+            padding-top: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .accordion-icon {
+            transition: transform 0.2s ease;
+        }
+        
+        .accordion-trigger:hover {
+            background: linear-gradient(to right, #f9fafb, #f3f4f6);
+        }
+        
+        .nav-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+        
+        .tree-node {
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.15s ease;
+            display: block;
+            color: #4b5563;
+            text-decoration: none;
+        }
+        
+        .tree-node:hover {
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+        
+        .tree-node:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+        
+        .kb-selected {
+            background: #dbeafe !important;
+            color: #1e40af !important;
+            font-weight: 500;
+        }
+
+        /* Simple tree connectors for sidebar navigation */
+        #tree-nav [role="group"] {
+            border-left: 1px solid #e5e7eb;
+            margin-left: 8px;
+            padding-left: 12px;
+        }
+
+        #tree-nav li[role="treeitem"] { position: relative; }
+
+        /* horizontal connector to each node */
+        #tree-nav .tree-node::before {
+            content: '';
+            position: absolute;
+            left: -18px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 1px;
+            background: #e5e7eb;
+            border-radius: 1px;
+        }
+        
+        .toggle-btn {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            background: #f3f4f6;
+            color: #6b7280;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-size: 12px;
+        }
+        
+        .toggle-btn:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .tab-link {
+            position: relative;
+            padding: 12px 0;
+            color: #6b7280;
+            transition: all 0.2s ease;
+        }
+        
+        .tab-link.active {
+            color: #2563eb;
+            font-weight: 500;
+        }
+        
+        .tab-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #2563eb;
+            border-radius: 3px 3px 0 0;
+            transform: scaleX(0);
+            transition: transform 0.2s ease;
+        }
+        
+        .tab-link.active::after {
+            transform: scaleX(1);
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #e5e7eb;
+            padding: 32px;
+        }
+        .search-match { font-weight:700; background:transparent; color:#111827; }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .badge-critical {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .search-input {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .search-input:focus {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.3);
+            outline: none;
+        }
+        
+        .info-box {
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border-left: 4px solid;
+        }
+        
+        .info-box-blue {
+            background: #eff6ff;
+            border-color: #3b82f6;
+        }
+        
+        .info-box-red {
+            background: #fef2f2;
+            border-color: #ef4444;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13px;
+        }
+        
+        .data-table thead {
+            background: #f9fafb;
+        }
+        
+        .data-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #4b5563;
+        }
+        
+        .data-table tbody tr:hover {
+            background: #f9fafb;
+        }
+        
+        .scroll-container {
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+        
+        .accordion-content {
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .header-gradient {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        }
+        /* Legal / minimal document styling for job descriptions */
+        .legal-doc {
+            font-family: 'Times New Roman', Times, Georgia, serif;
+            color: #0b1220;
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        .legal-doc h2, .legal-doc h3, .legal-doc h4 {
+            font-family: 'Times New Roman', Times, Georgia, serif;
+            color: #0b1220;
+            margin-top: 0.8rem;
+            margin-bottom: 0.35rem;
+            font-weight: 600;
+        }
+
+        .legal-doc p {
+            margin: 0 0 0.5rem 0;
+        }
+
+        .legal-doc ul {
+            margin: 0 0 0.5rem 1.1rem;
+            padding: 0;
+        }
+
+        .legal-doc li {
+            margin: 0 0 0.25rem 0;
+            padding: 0;
+        }
+
+        /* Scorecard table styling: light row borders except last row, inherit legal-doc font */
+        .scorecard-table th, .scorecard-table td {
+            font-family: inherit;
+            font-size: 14px;
+            padding: 10px 12px;
+            vertical-align: top;
+        }
+
+        .scorecard-table tbody tr td {
+            border-bottom: 1px solid #e6eef8;
+        }
+
+        .scorecard-table tbody tr:last-child td {
+            border-bottom: none;
+            font-weight: 600;
+        }
+        
+        /* Rating scale table: no border on first data row, light borders otherwise */
+        .rating-table th, .rating-table td {
+            font-family: inherit;
+            font-size: 14px;
+            padding: 8px 10px;
+            vertical-align: top;
+        }
+
+        .rating-table tbody tr td {
+            border-bottom: 1px solid #e6eef8;
+        }
+
+        /* remove border for the first data row */
+        .rating-table tbody tr:first-child td {
+            border-bottom: none;
+        }
+
+        .rating-table tbody tr:last-child td {
+            border-bottom: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="header-gradient text-white shadow-xl sticky top-0 z-50">
+        <div class="max-w-[1400px] mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <img src="https://hubdmibpo.s3-ap-southeast-1.amazonaws.com/fluentcom-a99363c7e022f116bbbf025bd9cf0098-fluentcom-path824.webp" 
+                         alt="DMI Logo" 
+                         class="h-10 w-10 rounded-lg">
+                    <div>
+                        <h1 class="font-bold text-xl">Talent Acquisition Knowledge Base</h1>
+                        <p class="text-sm text-gray-300">Digital Minds BPO Services Inc.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <input type="text" 
+                           placeholder="Search resources..." 
+                           class="search-input rounded-lg px-4 py-2 text-sm w-72 text-white placeholder-gray-400">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="kb-content px-6 pb-12">
+        <aside class="space-y-4">
+            <div class="nav-card p-6">
+                <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">DMI Resources</h2>
+                <p class="text-sm text-gray-600 mb-4">Centralized hiring documentation and tools</p>
+                <div class="pt-4 border-t border-gray-100">
+                    <p class="text-xs text-gray-400">Last Updated: Dec 11, 2025</p>
+                </div>
+            </div>
+            
+            <div class="nav-card p-6">
+                <h3 class="font-semibold text-base mb-3 text-gray-800">Quick Access</h3>
+                
+                <nav id="tree-nav" aria-label="Resources navigation" class="text-sm">
+                    <ul role="tree" class="space-y-1">
+                        <li role="treeitem" aria-expanded="true">
+                            <div class="flex items-start gap-2">
+                                <button class="toggle-btn" aria-hidden="true">▾</button>
+                                <div class="ml-1">
+                                    <div class="font-medium">Job Descriptions</div>
+                                    <div class="text-xs text-gray-400">Select a role to view its full job description</div>
+                                </div>
+                            </div>
+                            <ul role="group" class="ml-8 mt-2 space-y-1">
+                                <li role="treeitem"><a href="#jobdesc-tsr" class="tree-node text-sm" data-id="jobdesc-tsr">Technical Support Representative</a></li>
+                                <li role="treeitem"><a href="#jobdesc-se" class="tree-node text-sm" data-id="jobdesc-se">Software Engineer</a></li>
+                                <li role="treeitem"><a href="#jobdesc-pd" class="tree-node text-sm" data-id="jobdesc-pd">Product Designer</a></li>
+                                <li role="treeitem"><a href="#jobdesc-csr" class="tree-node text-sm" data-id="jobdesc-csr">Customer Service Representative</a></li>
+                                <li role="treeitem"><a href="#jobdesc-csa" class="tree-node text-sm" data-id="jobdesc-csa">Customer Sales Associate</a></li>
+                                <li role="treeitem"><a href="#jobdesc-deo" class="tree-node text-sm" data-id="jobdesc-deo">Data Entry Operator</a></li>
+                            </ul>
+                        </li>
+
+                        <li role="treeitem" aria-expanded="false">
+                            <div class="flex items-start gap-2">
+                                <button class="toggle-btn" aria-label="Toggle Assessment Forms" aria-expanded="false">▸</button>
+                                <div class="ml-1">
+                                    <div class="font-medium">Assessment Forms</div>
+                                    <div class="text-xs text-gray-400">Forms to evaluate technical and behavioral skills</div>
+                                </div>
+                            </div>
+                            <ul role="group" class="ml-8 mt-2 space-y-1" style="display:none">
+                                <li role="treeitem"><a href="#assess-scorecard" class="tree-node text-sm" data-id="assess-scorecard">Interview Scorecard</a></li>
+                                <li role="treeitem"><a href="#assess-technical" class="tree-node text-sm" data-id="assess-technical">Technical Assessment</a></li>
+                                <li role="treeitem"><a href="#assess-coding" class="tree-node text-sm" data-id="assess-coding">Coding Challenges</a></li>
+                                <li role="treeitem"><a href="#assess-scoring" class="tree-node text-sm" data-id="assess-scoring">Behavioral & Competency Scoring Sheet</a></li>
+                            </ul>
+                        </li>
+
+                        <li role="treeitem" aria-expanded="false">
+                            <div class="flex items-start gap-2">
+                                <button class="toggle-btn" aria-label="Toggle Hiring SOPs" aria-expanded="false">▸</button>
+                                <div class="ml-1">
+                                    <div class="font-medium">Hiring SOPs</div>
+                                    <div class="text-xs text-gray-400">Official workflows for requisitions and offers</div>
+                                </div>
+                            </div>
+                            <ul role="group" class="ml-8 mt-2 space-y-1" style="display:none">
+                                <li role="treeitem"><a href="#sop-requisition" class="tree-node text-sm" data-id="sop-requisition">Requisition Process</a></li>
+                                <li role="treeitem"><a href="#sop-scheduling" class="tree-node text-sm" data-id="sop-scheduling">Interview Scheduling</a></li>
+                                <li role="treeitem"><a href="#sop-offer" class="tree-node text-sm" data-id="sop-offer">Offer Approval Workflow</a></li>
+                            </ul>
+                        </li>
+
+                        <li role="treeitem">
+                            <div class="flex items-center gap-2 ml-8">
+                                <a href="#guides" class="tree-node font-medium" data-id="guides" tabindex="-1">Interview Guides</a>
+                            </div>
+                        </li>
+
+                        <li role="treeitem" aria-expanded="false">
+                            <div class="flex items-start gap-2">
+                                <button class="toggle-btn" aria-label="Toggle Campaign Overview" aria-expanded="false">▸</button>
+                                <div class="ml-1">
+                                    <div class="font-medium">Campaign Overview</div>
+                                    <div class="text-xs text-gray-400">Campaign platforms and quick references</div>
+                                </div>
+                            </div>
+                            <ul role="group" class="ml-8 mt-2 space-y-1" style="display:none">
+                                <li role="treeitem"><a href="#campaign-fliplet" class="tree-node text-sm" data-id="campaign-fliplet">fliplet</a></li>
+                            </ul>
+                        </li>
+
+                        <li role="treeitem">
+                            <div class="flex items-center gap-2 ml-8">
+                                <a href="#templates" class="tree-node" data-id="templates" tabindex="-1">Offer Templates</a>
+                            </div>
+                        </li>
+
+                        <li role="treeitem">
+                            <div class="flex items-center gap-2 ml-8">
+                                <a href="#trackers" class="tree-node" data-id="trackers" tabindex="-1">Candidate Tracker</a>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <div class="col-span-1">
+            <div class="content-card" id="spa-content"></div>
+        </div>
+    </main>
+    
+    <script>
+        const contentArea = document.getElementById('spa-content');
+
+        function createAccordion(id, title, content) {
+            return `
+                <div class="border border-gray-200 bg-white rounded-xl overflow-hidden mb-4 hover:shadow-md transition-shadow duration-200">
+                    <button id="trigger-${id}" data-target="content-${id}" class="accordion-trigger w-full flex justify-between items-center p-5 text-left">
+                        <span class="font-semibold text-base text-gray-800">${title}</span>
+                        <svg class="accordion-icon w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="content-${id}" class="accordion-content hidden">
+                        <div class="p-6 pt-0 border-t border-gray-100">
+                            ${content}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Content modules
+        const TSR_ASSESSMENT_FULL = `
+            <div class="info-box info-box-red">
+                <p class="font-semibold text-gray-800 mb-1">Assessment Type: Tier 3 Technical Support</p>
+                <p class="text-sm text-gray-600">Focus on troubleshooting, logs, and documentation skills</p>
+            </div>
+            
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Interview Questions</h3>
+
+            <h4 class="text-sm font-semibold mt-6 mb-3 text-gray-700 uppercase tracking-wide">Section A: Background & Experience (10%)</h4>
+            <div class="scroll-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Q#</th>
+                            <th>Question</th>
+                            <th>Task</th>
+                            <th>Type</th>
+                            <th>Points</th>
+                            <th>Competency</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-medium">A1</td>
+                            <td>Work Experience</td>
+                            <td>Describe previous experience in web support or technical troubleshooting</td>
+                            <td><span class="badge badge-info">Paragraph</span></td>
+                            <td>5</td>
+                            <td>General Background</td>
+                        </tr>
+                        <tr>
+                            <td class="font-medium">A2</td>
+                            <td>Technical Tools</td>
+                            <td>List web tools or platforms you're familiar with</td>
+                            <td><span class="badge badge-info">Short Answer</span></td>
+                            <td>5</td>
+                            <td>General Background</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4 class="text-sm font-semibold mt-8 mb-3 text-gray-700 uppercase tracking-wide">Section B: Technical Assessment (50%)</h4>
+            <div class="scroll-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Q#</th>
+                            <th>Question</th>
+                            <th>Task</th>
+                            <th>Type</th>
+                            <th>Points</th>
+                            <th>Tools</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-medium">B1</td>
+                            <td>HTML & CSS Debugging</td>
+                            <td>Identify and fix layout/styling issues</td>
+                            <td><span class="badge badge-info">Task</span></td>
+                            <td>5</td>
+                            <td>CodePen, DevTools</td>
+                        </tr>
+                        <tr>
+                            <td class="font-medium">B2</td>
+                            <td>Troubleshooting Logic</td>
+                            <td>Debug JSON or console error</td>
+                            <td><span class="badge badge-info">Task</span></td>
+                            <td>5</td>
+                            <td>JSONLint, Inspector</td>
+                        </tr>
+                        <tr>
+                            <td class="font-medium">B3</td>
+                            <td>Web Navigation</td>
+                            <td>Guide user through web interface</td>
+                            <td><span class="badge badge-info">Task</span></td>
+                            <td>5</td>
+                            <td>JSFiddle, Google Sites</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4 class="text-sm font-semibold mt-8 mb-3 text-gray-700 uppercase tracking-wide">Section C: Ticket Handling (20%)</h4>
+            <div class="scroll-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Q#</th>
+                            <th>Question</th>
+                            <th>Task</th>
+                            <th>Competency</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-medium">C1</td>
+                            <td>Ticket Prioritization</td>
+                            <td>Prioritize three sample tickets</td>
+                            <td>Workflow Thinking</td>
+                        </tr>
+                        <tr>
+                            <td class="font-medium">C2</td>
+                            <td>Ticket Response</td>
+                            <td>Draft customer response</td>
+                            <td>Communication</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        const TSR_SOP_DETAILS = `
+            <div class="info-box info-box-red">
+                <h4 class="font-semibold text-gray-800 mb-2">Role: Technical Support Representative (Tier 3)</h4>
+                <div class="grid grid-cols-3 gap-4 text-sm">
+                    <div><span class="text-gray-600">Headcount:</span> <span class="font-medium">5</span></div>
+                    <div><span class="text-gray-600">Shift:</span> <span class="font-medium">Night Shift</span></div>
+                    <div><span class="text-gray-600">Department:</span> <span class="font-medium">Tech Support</span></div>
+                </div>
+            </div>
+            
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">Hiring Process Steps</h4>
+            <div class="scroll-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px">Step</th>
+                            <th>Task</th>
+                            <th>Description</th>
+                            <th style="width: 120px">Responsible</th>
+                            <th style="width: 100px">Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-bold text-blue-600">1</td>
+                            <td class="font-medium">Resume Screening</td>
+                            <td>Review technical background and support experience</td>
+                            <td>Recruitment</td>
+                            <td><span class="badge badge-critical">Critical</span></td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-blue-600">2</td>
+                            <td class="font-medium">Initial Interview</td>
+                            <td>Phone screening for communication skills</td>
+                            <td>Recruitment</td>
+                            <td><span class="badge badge-info">Standard</span></td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold text-blue-600">3</td>
+                            <td class="font-medium">Technical Assessment</td>
+                            <td>Troubleshooting scenario and mock interaction</td>
+                            <td>Support Manager</td>
+                            <td><span class="badge badge-critical">Critical</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        const TSR_JD_CONTENT = `
+            <div class="legal-doc">
+                <h3>Technical Support Representative (Tier 2)</h3>
+
+                <p><strong>Campaign Name:</strong> Fliplet</p>
+                <p><strong>Service Type:</strong> Technical Support (Voice)</p>
+                <p><strong>Team Structure:</strong> 5 Customer Support Representatives, 1 Shared In-House Immediate Supervisor</p>
+
+                <h4>Work Schedule</h4>
+                <p><strong>Hours per shift:</strong> 8 working hours (Standard)</p>
+                <p><strong>Working days per week:</strong> 5 days (Standard)</p>
+                <p><strong>Working days per month:</strong> 22 days (Standard)</p>
+                <p><strong>Shift Schedule:</strong> Night Shift</p>
+                <p><strong>Target Start Date:</strong> December 15, 2025</p>
+
+                <h4>Position Overview</h4>
+                <p>
+                    As a Technical Support Agent at Fliplet, you will provide first-line technical assistance to our
+                    customers, ensuring that platform issues are diagnosed and resolved efficiently. This role is vital in
+                    maintaining a high-quality customer experience by addressing technical challenges related to app
+                    configurations, workflows, data sources, and integrations. You will act as the primary point of contact
+                    for customer inquiries, manage escalation processes, and assist customers in navigating Fliplet's
+                    platform, all while ensuring timely resolution and adherence to company standards.
+                </p>
+                <p>
+                    You will also collaborate with the Engineering and Customer Success teams to ensure smooth
+                    operations and facilitate proactive problem-solving, all while contributing to the knowledge base and
+                    improving customer education.
+                </p>
+
+                <h4>Key Responsibilities</h4>
+
+                <h5 style="margin-top: 0.6rem; margin-bottom: 0.25rem; font-weight: 600; font-size: 13px;">Technical Troubleshooting & Issue Resolution</h5>
+                <ul>
+                    <li>Provide first-line support for technical inquiries via Intercom, email, and phone</li>
+                    <li>Diagnose and resolve Level 1 issues related to: app configuration, workflows, data sources, user roles, authentication, access control, device-specific behavior (iOS, Android, web), screen layouts, components, and visibility rules</li>
+                    <li>Use systematic troubleshooting techniques (logs, reproduction steps, test apps) for consistent issue resolution</li>
+                    <li>Push back on client requests that fall outside contractual scope</li>
+                </ul>
+
+                <h5 style="margin-top: 0.6rem; margin-bottom: 0.25rem; font-weight: 600; font-size: 13px;">Escalation Management</h5>
+                <ul>
+                    <li>Escalate Level 2 issues to Engineering or Customer Success with comprehensive diagnostic notes, including steps to reproduce, expected vs actual behavior, logs, and impact summary</li>
+                    <li>Resolve configuration or user error issues at first contact to minimize unnecessary escalations</li>
+                </ul>
+
+                <h5 style="margin-top: 0.6rem; margin-bottom: 0.25rem; font-weight: 600; font-size: 13px;">Platform Configuration Support</h5>
+                <ul>
+                    <li>Assist customers in setting up data sources, modifying app layouts, and adjusting basic HTML/CSS within the platform</li>
+                    <li>Guide clients in understanding Fliplet Studio components and functionality</li>
+                    <li>Directly resolve simple setup errors in client configurations</li>
+                </ul>
+
+                <h5 style="margin-top: 0.6rem; margin-bottom: 0.25rem; font-weight: 600; font-size: 13px;">Knowledge Base & Documentation</h5>
+                <ul>
+                    <li>Create and maintain troubleshooting guides, help articles, and internal technical documentation</li>
+                    <li>Ensure documentation is aligned with AI workflow requirements, including proper tagging and metadata</li>
+                    <li>Convert resolved tickets into knowledge articles to reduce ticket volume</li>
+                </ul>
+
+                <h5 style="margin-top: 0.6rem; margin-bottom: 0.25rem; font-weight: 600; font-size: 13px;">Support Operations & Quality</h5>
+                <ul>
+                    <li>Meet response and resolution SLAs, ensuring timely support for customers</li>
+                    <li>Accurately categorize and log tickets (e.g., bug, request, training need)</li>
+                    <li>Track support metrics and address recurring issues for continuous improvement</li>
+                    <li>Follow ISO-compliant processes, maintaining fully documented and audit-ready actions</li>
+                </ul>
+
+                <h5 style="margin-top: 0.6rem; margin-bottom: 0.25rem; font-weight: 600; font-size: 13px;">Client Enablement & Education</h5>
+                <ul>
+                    <li>Deliver short training sessions or walkthroughs to help users understand platform features</li>
+                    <li>Offer proactive recommendations to avoid repeat issues</li>
+                    <li>Support Customer Success with client onboarding and configuration-related queries</li>
+                </ul>
+
+                <h5 style="margin-top: 0.6rem; margin-bottom: 0.25rem; font-weight: 600; font-size: 13px;">Product Insight & Feedback Sharing</h5>
+                <ul>
+                    <li>Identify recurring product issues and usability challenges</li>
+                    <li>Share structured feedback with Product, CS, and Engineering teams for continuous improvement</li>
+                    <li>Participate in incident reviews to help refine processes and enhance product quality</li>
+                </ul>
+
+                <h4>KPI Metrics</h4>
+                <div id="kpi-metrics-summary" class="grid gap-4" aria-live="polite"></div>
+            </div>
+        `;
+
+        const SE_JD_CONTENT = `
+            <div class="legal-doc">
+                <h3>Software Engineer</h3>
+
+                <p><strong>Level:</strong> Mid / Senior</p>
+                <p><strong>Department:</strong> Engineering</p>
+
+                <h4>Position Summary</h4>
+                <p>Responsible for developing product features, collaborating with product and design, and maintaining code quality.</p>
+
+                <h4>Key Responsibilities</h4>
+                <ul>
+                    <li>Design and implement features in accordance with product requirements</li>
+                    <li>Write unit and integration tests; participate in code reviews</li>
+                    <li>Collaborate with cross-functional teams to deliver solutions</li>
+                </ul>
+
+                <h4>Minimum Requirements</h4>
+                <ul>
+                    <li>3+ years software development experience</li>
+                    <li>Proficiency in JavaScript/TypeScript and modern frameworks</li>
+                    <li>Familiarity with CI/CD, testing and source control</li>
+                </ul>
+            </div>
+        `;
+
+        const PD_JD_CONTENT = `
+            <div class="legal-doc">
+                <h3>Product Designer</h3>
+
+                <p><strong>Level:</strong> Mid</p>
+                <p><strong>Department:</strong> Product</p>
+
+                <h4>Position Summary</h4>
+                <p>Design user-centred experiences, collaborate with research, and produce high-fidelity assets and prototypes.</p>
+
+                <h4>Key Responsibilities</h4>
+                <ul>
+                    <li>Create UX flows and high-fidelity designs for product features</li>
+                    <li>Collaborate with product managers and engineers to refine requirements</li>
+                    <li>Maintain design systems and component libraries</li>
+                </ul>
+
+                <h4>Minimum Requirements</h4>
+                <ul>
+                    <li>2+ years product design experience</li>
+                    <li>Strong portfolio demonstrating UX and visual design</li>
+                    <li>Experience with prototyping and design systems</li>
+                </ul>
+            </div>
+        `;
+
+        // Initial welcome content (simplified)
+        const welcomeContent = `
+            <div class="py-6">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-3">Knowledge Base</h2>
+                <p class="text-gray-600 mb-6">Select a category from the left to open documents and templates.</p>
+
+                <div class="flex gap-4 max-w-md">
+                    <button id="kpi-roles" class="p-4 bg-white rounded border border-gray-200 text-left kpi-card" style="min-width:120px;">
+                        <div class="text-sm text-gray-600">Active Roles</div>
+                        <div id="kpi-active-roles" class="font-medium text-gray-900">0</div>
+                    </button>
+                    <button id="kpi-docs" class="p-4 bg-white rounded border border-gray-200 text-left kpi-card" style="min-width:120px;">
+                        <div class="text-sm text-gray-600">Documents</div>
+                        <div id="kpi-documents" class="font-medium text-gray-900">0</div>
+                    </button>
+                </div>
+
+                <div class="mt-8 p-4 bg-gray-50 rounded max-w-lg">
+                    <h4 class="font-medium text-gray-900 mb-2">Getting Started</h4>
+                    <ul class="text-sm text-gray-600" style="margin-left:1rem;">
+                        <li>Click a sidebar item to view its content</li>
+                        <li>Use the search to find documents quickly</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+
+        const tabContent = {
+            assessments: `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Assessment Forms</h2>
+                <p class="text-gray-600 mb-8">Technical and soft-skill evaluation criteria for all roles</p>
+
+                ${createAccordion('assess-tsr', 'Technical Support Representative (TSR)', TSR_ASSESSMENT_FULL)}
+
+                <div class="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <p class="text-sm text-gray-600">
+                        <span class="font-medium">Need help?</span> Contact the Talent Acquisition lead to submit updated assessment criteria.
+                    </p>
+                </div>
+            `,
+            'assess-scorecard': `
+                <div class="legal-doc">
+                    <h2 class="text-3xl font-bold mb-2 text-gray-900">Interview Scorecard</h2>
+                    <p class="text-gray-600 mb-4">Standard sections and weights for evaluating candidates.</p>
+
+                    <div class="scroll-container">
+                        <table class="data-table scorecard-table" style="width:100%; border-collapse:collapse;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left; width:30%;">Section</th>
+                                    <th style="text-align:left;">Description</th>
+                                    <th style="text-align:right; width:80px;">Weight</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Section A: General Background & Experience</td>
+                                    <td>Candidate’s work experience, relevant skills, familiarity with web/technical tools.</td>
+                                    <td style="text-align:right;">10%</td>
+                                </tr>
+                                <tr>
+                                    <td>Section B: Technical Assessment (Practical Test)</td>
+                                    <td>Hands-on tasks testing HTML/CSS, troubleshooting, web navigation, applying changes.</td>
+                                    <td style="text-align:right;">50%</td>
+                                </tr>
+                                <tr>
+                                    <td>Section C: Ticket Handling & Support Workflow</td>
+                                    <td>Realistic ticket prioritization, response, and escalation tasks.</td>
+                                    <td style="text-align:right;">20%</td>
+                                </tr>
+                                <tr>
+                                    <td>Section D: Documentation & Knowledge Sharing</td>
+                                    <td>Ability to create clear instructions and process flows.</td>
+                                    <td style="text-align:right;">10%</td>
+                                </tr>
+                                <tr>
+                                    <td>Section E: Communication & Empathy</td>
+                                    <td>Polite, empathetic, and clear customer interactions.</td>
+                                    <td style="text-align:right;">10%</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td style="text-align:right; font-weight:600;">Total</td>
+                                    <td style="text-align:right;">100%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Rating scale card -->
+                    <div class="mt-6 p-4 bg-white rounded-lg border border-gray-200">
+                        <div class="text-sm text-gray-700 mb-2"><strong>Candidate Rating Scale (1–10) for Technical Support / Web Support Role</strong></div>
+                        <div class="text-xs text-gray-500 mb-3">Rating Key: 1 = Poor / No competency &nbsp; • &nbsp; 10 = Excellent / Expert competency</div>
+
+                        <div class="scroll-container">
+                            <table class="data-table rating-table" style="width:100%; border-collapse:collapse;">
+                                <thead>
+                                    <tr>
+                                        <th style="width:80px; text-align:left;">Overall Rating</th>
+                                        <th style="text-align:left;">Summary Description</th>
+                                        <th style="width:320px; text-align:left;">Expected Technical Skills / Tools</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>Unsuitable: Lacks basic understanding and skills required for the role; would require extensive training and supervision.</td>
+                                        <td>No practical knowledge; unfamiliar with any of the required tools; basic computer literacy only.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>Very Poor: Minimal knowledge or ability; unable to perform most core tasks without guidance.</td>
+                                        <td>Very limited exposure to HTML/CSS, Google Docs/Sheets, basic web navigation; cannot debug issues.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td>Poor: Limited competency; struggles with standard tasks and requires constant supervision.</td>
+                                        <td>Basic understanding of web layouts, can perform trivial edits in HTML/CSS, very limited exposure to ticket handling (Freshdesk, HubSpot).</td>
+                                    </tr>
+                                    <tr>
+                                        <td>4</td>
+                                        <td>Below Average: Basic skills present but inconsistent performance; needs significant support and coaching.</td>
+                                        <td>Can navigate simple web interfaces, edit content in Google Docs/Sheets, can follow step-by-step instructions for minor issues, minimal troubleshooting ability.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>5</td>
+                                        <td>Average / Adequate: Meets minimum requirements; can perform routine tasks with occasional guidance.</td>
+                                        <td>Comfortable with HTML/CSS basics, can use Chrome DevTools for debugging, basic ticket logging, navigation of Google Apps (Sheets, Docs), understands standard workflow escalation.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>6</td>
+                                        <td>Satisfactory: Competent in most areas; can perform standard tasks independently; may need support in complex scenarios.</td>
+                                        <td>Able to debug HTML/CSS issues, work with JSFiddle/CodePen for testing, handle tickets with proper escalation, basic knowledge of workflow mapping tools (Canva/Drawings), basic communication with empathy.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>7</td>
+                                        <td>Good: Strong competency; handles most tasks independently and accurately; shows initiative and problem-solving skills.</td>
+                                        <td>Proficient in HTML/CSS troubleshooting, competent with Google Apps Script, can update mock dashboards, can document knowledge in Notion/Docs, handles tickets with clear structure and prioritization.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>8</td>
+                                        <td>Very Good: High-level competency; handles complex scenarios well; communicates clearly; demonstrates reliability and efficiency.</td>
+                                        <td>Strong troubleshooting and debugging in multiple environments (Chrome DevTools, JSONLint, CyberChef), confident in applying workflow logic, can guide users in technical tasks, creates clear and structured documentation, handles ticket workflow independently.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>9</td>
+                                        <td>Excellent: Expert-level capability; consistently exceeds expectations; can guide or mentor others; solves problems efficiently.</td>
+                                        <td>Expert in HTML/CSS, web UI understanding, practical deployment via Google Apps Script or dashboards, advanced troubleshooting, strong workflow design skills, mentoring capability, creates knowledge articles for team reference.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>10</td>
+                                        <td>Outstanding: Exceptional mastery in all required skills; highly proactive, resourceful, and capable of handling any task independently; role model for team.</td>
+                                        <td>Mastery of all technical competencies (web debugging, deployment, ticketing, workflow mapping, documentation), exceptional problem-solving, can train and mentor others, demonstrates initiative to improve processes, fully independent in all required tools and scenarios.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `,
+            'assess-technical': `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Technical Assessment</h2>
+                <p class="text-gray-600 mb-6">Real-world platform scenarios covering troubleshooting, configuration, and documentation. Each scenario tests practical job-relevant skills.</p>
+
+                <!-- SCENARIO 1: TROUBLESHOOTING A FAILED WORKFLOW -->
+                <div class="assessment-scenario">
+                    <div class="scenario-header">
+                        <h3 class="text-xl font-bold text-gray-900">Scenario 1: Troubleshooting a Failed Workflow</h3>
+                        <div class="scenario-time">45–60 min</div>
+                    </div>
+
+                    <div class="scenario-part">
+                        <div class="part-badge">Part A: Diagnosis &amp; Reproduction</div>
+                        <p class="text-sm text-gray-700 mt-2"><strong>Component Assessed:</strong> Systematic troubleshooting, attention to detail.</p>
+                        <p class="text-sm text-gray-600 mt-2"><strong>Context:</strong> You receive a support ticket: "Form submission keeps failing with a 500 error. It worked yesterday."</p>
+                        <p class="text-sm text-gray-600 mt-2"><strong>Your Task:</strong> Review the provided logs/screenshots and articulate clear reproduction steps.</p>
+                        <div class="ide-card mt-3">
+                            <div class="ide-header">
+                                <div class="ide-dots"><span class="ide-dot"></span><span class="ide-dot yellow"></span><span class="ide-dot green"></span></div>
+                                <div class="text-sm text-gray-700">Error Logs (snippet)</div>
+                            </div>
+                            <div class="ide-body" style="max-height:200px; overflow:auto;">
+                                <pre style="font-size:12px; color:#333;">2025-12-11T14:23:45Z [ERROR] Form ID: form-contact-001
+API Endpoint: /api/v1/submit
+Status: 500 Internal Server Error
+Message: Cannot connect to data source 'crm_postgres'
+Timestamp: 2025-12-11 14:23:45
+User: support_user_42
+IP: 192.168.1.105</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="scenario-part">
+                        <div class="part-badge">Part B: Root Cause Analysis</div>
+                        <p class="text-sm text-gray-700 mt-2"><strong>Component Assessed:</strong> App configuration, workflows, data sources, component logic.</p>
+                        <p class="text-sm text-gray-600 mt-2"><strong>Your Task:</strong> Analyze the error and identify the root cause from the following options:</p>
+                        <ul class="text-sm text-gray-700 mt-2 ml-4" style="list-style:decimal;">
+                            <li>Database connection string has incorrect IP address.</li>
+                            <li>API authentication token expired.</li>
+                            <li>Data source 'crm_postgres' is missing database name in connection config.</li>
+                            <li>Server running out of memory.</li>
+                        </ul>
+                        <p class="text-sm text-gray-600 mt-3 italic">Expected: Candidate selects root cause and explains the fix in 2–3 sentences.</p>
+                    </div>
+
+                    <div class="scenario-part">
+                        <div class="part-badge">Part C: Resolution &amp; Validation</div>
+                        <p class="text-sm text-gray-700 mt-2"><strong>Component Assessed:</strong> Platform configuration support, resolution verification.</p>
+                        <p class="text-sm text-gray-600 mt-2"><strong>Your Task:</strong> Propose the fix and confirm the workflow functions correctly.</p>
+                        <p class="text-sm text-gray-600 mt-3"><strong>Acceptance Criteria:</strong></p>
+                        <ul class="text-sm text-gray-600 ml-4 mt-2" style="list-style:disc;">
+                            <li>Form can be submitted without errors.</li>
+                            <li>Data appears in the CRM database within 5 seconds.</li>
+                            <li>Confirmation email sent to user.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- SCENARIO 2: PLATFORM CONFIGURATION & FRONT-END GUIDANCE -->
+                <div class="assessment-scenario">
+                    <div class="scenario-header">
+                        <h3 class="text-xl font-bold text-gray-900">Scenario 2: Platform Configuration & Front-End Guidance</h3>
+                        <div class="scenario-time">30–45 min</div>
+                    </div>
+
+                    <div class="scenario-part">
+                        <div class="part-badge">Part A: Basic HTML/CSS Application</div>
+                        <p class="text-sm text-gray-700 mt-2"><strong>Component Assessed:</strong> Basic HTML/CSS modification, component customization.</p>
+                        <p class="text-sm text-gray-600 mt-2"><strong>Context:</strong> Your client wants the "Submit" button to be blue instead of gray.</p>
+                        <p class="text-sm text-gray-600 mt-2"><strong>Your Task:</strong> Using the platform's CSS customization panel, change the button color and test it in the preview.</p>
+                        <div class="ide-card mt-3">
+                            <div class="ide-header">
+                                <div class="ide-dots"><span class="ide-dot"></span><span class="ide-dot yellow"></span><span class="ide-dot green"></span></div>
+                                <div class="text-sm text-gray-700">CSS Custom Styles</div>
+                            </div>
+                            <div class="ide-body">
+                                <div class="code-editor" id="css-button" aria-label="CSS button styles">
+                                    <div class="line"><div class="gutter">1</div><div class="source">/* Find the button element with class 'submit-btn' */</div></div>
+                                    <div class="line"><div class="gutter">2</div><div class="source">.submit-btn {</div></div>
+                                    <div class="line"><div class="gutter">3</div><div class="source">  background-color: #6b7280; /* Change this to #3b82f6 (blue) */</div></div>
+                                    <div class="line"><div class="gutter">4</div><div class="source">  padding: 10px 20px;</div></div>
+                                    <div class="line"><div class="gutter">5</div><div class="source">  border: none;</div></div>
+                                    <div class="line"><div class="gutter">6</div><div class="source">  border-radius: 4px;</div></div>
+                                    <div class="line"><div class="gutter">7</div><div class="source">  color: white;</div></div>
+                                    <div class="line"><div class="gutter">8</div><div class="source">}</div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="scenario-part">
+                        <div class="part-badge">Part B: User Role Access Control</div>
+                        <p class="text-sm text-gray-700 mt-2"><strong>Component Assessed:</strong> User roles, access control, visibility rules.</p>
+                        <p class="text-sm text-gray-600 mt-2"><strong>Your Task:</strong> Explain the steps to restrict a screen so only users with the "Admin" role can view it.</p>
+                        <p class="text-sm text-gray-600 mt-3"><strong>Expected Steps:</strong></p>
+                        <ol class="text-sm text-gray-700 ml-4 mt-2" style="list-style:decimal;">
+                            <li>Open Screen Properties.</li>
+                            <li>Navigate to "Visibility Rules" or "Access Control" tab.</li>
+                            <li>Set the condition: "User role" → "is" → "Admin".</li>
+                            <li>Save and test with both Admin and non-Admin accounts.</li>
+                        </ol>
+                    </div>
+
+                    <div class="scenario-part">
+                        <div class="part-badge">Part C: Client Walkthrough Simulation</div>
+                        <p class="text-sm text-gray-700 mt-2"><strong>Component Assessed:</strong> Client enablement, clear communication, technical translation.</p>
+                        <p class="text-sm text-gray-600 mt-2"><strong>Your Task:</strong> Verbally guide a non-technical assessor through adding a simple text component to a new screen. Speak clearly, use analogies, and confirm understanding.</p>
+                        <p class="text-sm text-gray-600 mt-3"><strong>Evaluation Criteria:</strong> Clarity, pace, verification of understanding, logical flow.</p>
+                    </div>
+                </div>
+
+                <!-- SCENARIO 3: ESCALATION & DOCUMENTATION -->
+                <div class="assessment-scenario">
+                    <div class="scenario-header">
+                        <h3 class="text-xl font-bold text-gray-900">Scenario 3: Escalation &amp; Documentation</h3>
+                        <div class="scenario-time">30–45 min</div>
+                    </div>
+
+                    <div class="scenario-part">
+                        <div class="part-badge">Part A: Escalation Note Drafting</div>
+                        <p class="text-sm text-gray-700 mt-2"><strong>Component Assessed:</strong> Diagnostic clarity, comprehensive documentation, technical writing.</p>
+                        <p class="text-sm text-gray-600 mt-2"><strong>Context:</strong> After troubleshooting (Scenario 1), the issue cannot be resolved at support level. You must escalate to Engineering.</p>
+                        <p class="text-sm text-gray-600 mt-2"><strong>Your Task:</strong> Draft a concise escalation ticket including:</p>
+                        <ul class="text-sm text-gray-700 ml-4 mt-2" style="list-style:disc;">
+                            <li>Steps to reproduce</li>
+                            <li>Expected vs actual behavior</li>
+                            <li>Error logs / attachments</li>
+                            <li>Business impact</li>
+                            <li>Customer name & SLA</li>
+                        </ul>
+                        <div class="ide-card mt-3">
+                            <div class="ide-header">
+                                <div class="ide-dots"><span class="ide-dot"></span><span class="ide-dot yellow"></span><span class="ide-dot green"></span></div>
+                                <div class="text-sm text-gray-700">Escalation Template</div>
+                            </div>
+                            <div class="ide-body" style="max-height:250px; overflow:auto;">
+                                <pre style="font-size:12px; color:#333; line-height:1.4;">ISSUE TITLE: Form Submission Returns 500 Error (Customer: Acme Corp)
+
+REPRODUCTION STEPS:
+1. Navigate to form: /forms/contact-form
+2. Fill in all required fields
+3. Click Submit
+4. Wait 5 seconds
+
+EXPECTED: Form submits successfully and redirects to confirmation page
+ACTUAL: 500 error displayed; no data saved
+
+ERROR LOGS:
+[ERROR] Form ID: form-contact-001, Status: 500, Message: Cannot connect to data source 'crm_postgres'
+
+BUSINESS IMPACT:
+Customer unable to receive leads; high-priority SLA: 4-hour resolution
+
+CURRENT STATUS:
+Support has confirmed database connectivity issue. Requires Engineering investigation.</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="scenario-part">
+                        <div class="part-badge">Part B: Knowledge Article Creation</div>
+                        <p class="text-sm text-gray-700 mt-2"><strong>Component Assessed:</strong> Knowledge Base & documentation, technical writing, clarity for non-experts.</p>
+                        <p class="text-sm text-gray-600 mt-2"><strong>Your Task:</strong> Draft a Knowledge Base article for the resolution of the troubleshooting scenario above. Include:</p>
+                        <ul class="text-sm text-gray-700 ml-4 mt-2" style="list-style:disc;">
+                            <li>Clear title & overview</li>
+                            <li>Symptoms / error messages</li>
+                            <li>Root cause explanation (in plain English)</li>
+                            <li>Step-by-step resolution</li>
+                            <li>Preventive measures</li>
+                        </ul>
+                        <p class="text-sm text-gray-600 mt-3"><strong>Tone:</strong> Helpful, non-technical, actionable.</p>
+                    </div>
+                </div>
+            `,
+            'assess-coding': `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Coding Challenges</h2>
+                <p class="text-gray-600 mb-6">Practical coding scenarios split into Basic, Intermediate and Expert tracks. Each challenge includes a short JD, interview questions, acceptance criteria and a simulated IDE for a short code snippet.</p>
+
+                <!-- BASIC -->
+                <div class="challenge-section difficulty-basic-section">
+                    <div class="challenge-meta">
+                        <div class="challenge-difficulty difficulty-basic">Basic</div>
+                        <div style="font-size: 12px; color: #6b7280;">30–45 min</div>
+                    </div>
+
+                    <h3 class="challenge-title">Challenge 1: HTML Markup & Accessibility</h3>
+
+                    <div class="challenge-role">
+                        <strong>Role:</strong> Junior Web Support — performs small content edits, locates layout issues.
+                    </div>
+
+                    <div class="challenge-task">
+                        <strong>Task:</strong> Given a small HTML snippet, make the phone number element visually bold and add an accessible label.
+                    </div>
+
+                    <div class="mt-3 ide-card">
+                        <div class="ide-header">
+                            <div class="ide-dots"><span class="ide-dot"></span><span class="ide-dot yellow"></span><span class="ide-dot green"></span></div>
+                            <div style="flex:1; font-weight: 500; color: #1f2937;">index.html</div>
+                            <div class="ide-toolbar">
+                                <button class="btn-ide secondary" data-action="copy" data-target="basic-code">Copy</button>
+                                <button class="btn-ide" data-action="run" data-target="basic-code">Run</button>
+                            </div>
+                        </div>
+                        <div class="ide-body">
+                            <div class="code-editor" id="basic-code" aria-label="Code editor - basic">
+                                <div class="line"><div class="gutter">1</div><div class="source">&lt;div class="contact"&gt;</div></div>
+                                <div class="line"><div class="gutter">2</div><div class="source">  &lt;span class="label"&gt;Phone:&lt;/span&gt; &lt;span class="phone"&gt;123-456-7890&lt;/span&gt;</div></div>
+                                <div class="line"><div class="gutter">3</div><div class="source">&lt;/div&gt;</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="interview-qs">
+                        <strong>Questions:</strong>
+                        <ul>
+                            <li>How did you make the phone more accessible?</li>
+                            <li>If the phone should be clickable on mobile, what would you add?</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- INTERMEDIATE -->
+                <div class="challenge-section difficulty-intermediate-section">
+                    <div class="challenge-meta">
+                        <div class="challenge-difficulty difficulty-intermediate">Intermediate</div>
+                        <div style="font-size: 12px; color: #6b7280;">45–75 min</div>
+                    </div>
+
+                    <h3 class="challenge-title">Challenge 2: JavaScript DOM Manipulation</h3>
+
+                    <div class="challenge-role">
+                        <strong>Role:</strong> Web Support — performs DOM edits, writes small JS helpers, diagnoses interactive issues.
+                    </div>
+
+                    <div class="challenge-task">
+                        <strong>Task:</strong> Build a small function that toggles visibility of a FAQ answer.
+                    </div>
+
+                    <div class="mt-3 ide-card">
+                        <div class="ide-header">
+                            <div class="ide-dots"><span class="ide-dot"></span><span class="ide-dot yellow"></span><span class="ide-dot green"></span></div>
+                            <div style="flex:1; font-weight: 500; color: #1f2937;">faq-toggle.js</div>
+                            <div class="ide-toolbar">
+                                <button class="btn-ide secondary" data-action="copy" data-target="int-code">Copy</button>
+                                <button class="btn-ide" data-action="run" data-target="int-code">Run</button>
+                            </div>
+                        </div>
+                        <div class="ide-body">
+                            <div class="code-editor" id="int-code" aria-label="Code editor - intermediate">
+                                <div class="line"><div class="gutter">1</div><div class="source">function toggleAnswer(id) {</div></div>
+                                <div class="line"><div class="gutter">2</div><div class="source">  const el = document.getElementById(id);</div></div>
+                                <div class="line"><div class="gutter">3</div><div class="source">  if (!el) return false;</div></div>
+                                <div class="line"><div class="gutter">4</div><div class="source">  el.hidden = !el.hidden;</div></div>
+                                <div class="line"><div class="gutter">5</div><div class="source">  return !el.hidden;</div></div>
+                                <div class="line"><div class="gutter">6</div><div class="source">}</div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="interview-qs">
+                        <strong>Questions:</strong>
+                        <ul>
+                            <li>How does your function behave if the element id is missing?</li>
+                            <li>How would you animate the toggle for better UX?</li>
+                            <li>How would you write a unit test for this helper?</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- EXPERT -->
+                <div class="challenge-section difficulty-expert-section">
+                    <div class="challenge-meta">
+                        <div class="challenge-difficulty difficulty-expert">Expert</div>
+                        <div style="font-size: 12px; color: #6b7280;">90–150 min</div>
+                    </div>
+
+                    <h3 class="challenge-title">Challenge 3: Cross-Browser Validation & Polyfills</h3>
+
+                    <div class="challenge-role">
+                        <strong>Role:</strong> Senior Web Support — debugs cross-browser issues, writes polyfills, optimizes compatibility.
+                    </div>
+
+                    <div class="challenge-task">
+                        <strong>Task:</strong> Write a polyfilled validation function that works on IE11+ and modern browsers, handling missing APIs gracefully.
+                    </div>
+
+                    <div class="mt-3 ide-card">
+                        <div class="ide-header">
+                            <div class="ide-dots"><span class="ide-dot"></span><span class="ide-dot yellow"></span><span class="ide-dot green"></span></div>
+                            <div style="flex:1; font-weight: 500; color: #1f2937;">validation.js</div>
+                            <div class="ide-toolbar">
+                                <button class="btn-ide secondary" data-action="copy" data-target="exp-code">Copy</button>
+                                <button class="btn-ide" data-action="run" data-target="exp-code">Run</button>
+                            </div>
+                        </div>
+                        <div class="ide-body">
+                            <div class="code-editor" id="exp-code" aria-label="Code editor - expert">
+                                <div class="line"><div class="gutter">1</div><div class="source">function isEmail(value) {</div></div>
+                                <div class="line"><div class="gutter">2</div><div class="source">  if (typeof value !== 'string') return false;</div></div>
+                                <div class="line"><div class="gutter">3</div><div class="source">  // Simple safe regex and fallback for older browsers</div></div>
+                                <div class="line"><div class="gutter">4</div><div class="source">  try {</div></div>
+                                <div class="line"><div class="gutter">5</div><div class="source">    var re = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;</div></div>
+                                <div class="line"><div class="gutter">6</div><div class="source">    return re.test(value);</div></div>
+                                <div class="line"><div class="gutter">7</div><div class="source">  } catch (e) {</div></div>
+                                <div class="line"><div class="gutter">8</div><div class="source">    return value.indexOf('@') > 0 && value.indexOf('.') > value.indexOf('@');</div></div>
+                                <div class="line"><div class="gutter">9</div><div class="source">  }</div></div>
+                                <div class="line"><div class="gutter">10</div><div class="source">}</div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="interview-qs">
+                        <strong>Questions:</strong>
+                        <ul>
+                            <li>What browsers and features would you polyfill for production?</li>
+                            <li>How would you measure and prevent regressions after shipping the fix?</li>
+                            <li>Discuss graceful degradation vs progressive enhancement for this form.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- ADDITIONAL CHALLENGE 1: API Integration -->
+                <div class="challenge-section difficulty-intermediate-section">
+                    <div class="challenge-meta">
+                        <div class="challenge-difficulty difficulty-intermediate">Intermediate</div>
+                        <div style="font-size: 12px; color: #6b7280;">60–90 min</div>
+                    </div>
+
+                    <h3 class="challenge-title">Challenge 4: API Integration with Caching</h3>
+
+                    <div class="challenge-role">
+                        <strong>Role:</strong> Support Engineer — integrates APIs, handles async operations, manages error states.
+                    </div>
+
+                    <div class="challenge-task">
+                        <strong>Task:</strong> Write a function that fetches user data, handles timeout/failure cases, and returns cached results on retry.
+                    </div>
+
+                    <div class="mt-3 ide-card">
+                        <div class="ide-header">
+                            <div class="ide-dots"><span class="ide-dot"></span><span class="ide-dot yellow"></span><span class="ide-dot green"></span></div>
+                            <div style="flex:1; font-weight: 500; color: #1f2937;">api-fetch.js</div>
+                            <div class="ide-toolbar">
+                                <button class="btn-ide secondary" data-action="copy" data-target="api-code">Copy</button>
+                                <button class="btn-ide" data-action="run" data-target="api-code">Run</button>
+                            </div>
+                        </div>
+                        <div class="ide-body">
+                            <div class="code-editor" id="api-code" aria-label="Code editor - API integration">
+                                <div class="line"><div class="gutter">1</div><div class="source">let cache = {};</div></div>
+                                <div class="line"><div class="gutter">2</div><div class="source">async function fetchUserWithFallback(userId) {</div></div>
+                                <div class="line"><div class="gutter">3</div><div class="source">  if (cache[userId]) return cache[userId];</div></div>
+                                <div class="line"><div class="gutter">4</div><div class="source">  try {</div></div>
+                                <div class="line"><div class="gutter">5</div><div class="source">    const url = '/api/users/' + userId;</div></div>
+                                <div class="line"><div class="gutter">6</div><div class="source">    const res = await fetch(url);</div></div>
+                                <div class="line"><div class="gutter">7</div><div class="source">    if (!res.ok) throw new Error('HTTP Error');</div></div>
+                                <div class="line"><div class="gutter">8</div><div class="source">    const data = await res.json();</div></div>
+                                <div class="line"><div class="gutter">9</div><div class="source">    cache[userId] = data;</div></div>
+                                <div class="line"><div class="gutter">10</div><div class="source">    return data;</div></div>
+                                <div class="line"><div class="gutter">11</div><div class="source">  } catch (err) {</div></div>
+                                <div class="line"><div class="gutter">12</div><div class="source">    console.error('Failed to fetch:', err);</div></div>
+                                <div class="line"><div class="gutter">13</div><div class="source">    return null;</div></div>
+                                <div class="line"><div class="gutter">14</div><div class="source">  }</div></div>
+                                <div class="line"><div class="gutter">15</div><div class="source">}</div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="interview-qs">
+                        <strong>Questions:</strong>
+                        <ul>
+                            <li>How would you implement a retry mechanism (e.g., exponential backoff)?</li>
+                            <li>What is the difference between fetch() and axios? When would you use each?</li>
+                            <li>How would you handle rate limiting from the API?</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- ADDITIONAL CHALLENGE 2: Form Data Parsing -->
+                <div class="challenge-section difficulty-basic-section">
+                    <div class="challenge-meta">
+                        <div class="challenge-difficulty difficulty-basic">Basic</div>
+                        <div style="font-size: 12px; color: #6b7280;">20–30 min</div>
+                    </div>
+
+                    <h3 class="challenge-title">Challenge 5: Contact Data Parser</h3>
+
+                    <div class="challenge-role">
+                        <strong>Role:</strong> Junior Developer — parses and validates user-submitted form data.
+                    </div>
+
+                    <div class="challenge-task">
+                        <strong>Task:</strong> Write a function that extracts email addresses and phone numbers from a comma-separated user input string and returns them as separate arrays.
+                    </div>
+
+                    <div class="mt-3 ide-card">
+                        <div class="ide-header">
+                            <div class="ide-dots"><span class="ide-dot"></span><span class="ide-dot yellow"></span><span class="ide-dot green"></span></div>
+                            <div style="flex:1; font-weight: 500; color: #1f2937;">parse-contacts.js</div>
+                            <div class="ide-toolbar">
+                                <button class="btn-ide secondary" data-action="copy" data-target="parse-code">Copy</button>
+                                <button class="btn-ide" data-action="run" data-target="parse-code">Run</button>
+                            </div>
+                        </div>
+                        <div class="ide-body">
+                            <div class="code-editor" id="parse-code" aria-label="Code editor - parsing">
+                                <div class="line"><div class="gutter">1</div><div class="source">function parseContacts(input) {</div></div>
+                                <div class="line"><div class="gutter">2</div><div class="source">  const emails = [];</div></div>
+                                <div class="line"><div class="gutter">3</div><div class="source">  const phones = [];</div></div>
+                                <div class="line"><div class="gutter">4</div><div class="source">  const items = input.split(',').map(s =&gt; s.trim());</div></div>
+                                <div class="line"><div class="gutter">5</div><div class="source">  items.forEach(item =&gt; {</div></div>
+                                <div class="line"><div class="gutter">6</div><div class="source">    if (item.includes('@')) emails.push(item);</div></div>
+                                <div class="line"><div class="gutter">7</div><div class="source">    else if (/^\\d{3}-\\d{3}-\\d{4}$/.test(item))</div></div>
+                                <div class="line"><div class="gutter">8</div><div class="source">      phones.push(item);</div></div>
+                                <div class="line"><div class="gutter">9</div><div class="source">  });</div></div>
+                                <div class="line"><div class="gutter">10</div><div class="source">  return { emails, phones };</div></div>
+                                <div class="line"><div class="gutter">11</div><div class="source">}</div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="interview-qs">
+                        <strong>Questions:</strong>
+                        <ul>
+                            <li>What edge cases might break this parser (e.g., invalid formats)?</li>
+                            <li>How would you handle international phone numbers?</li>
+                            <li>Would you validate email with regex or another method? Why?</li>
+                        </ul>
+                    </div>
+                </div>
+            `,
+            sops: `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Hiring Standard Operating Procedures</h2>
+                <p class="text-gray-600 mb-8">Official workflows for managing job requisitions by department or role</p>
+
+                ${createAccordion('sop-tsr', 'SOP-TSR-001: Technical Support Representative Process', TSR_SOP_DETAILS)}
+                
+                <div class="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <p class="text-sm text-blue-800">
+                        <span class="font-medium">Important:</span> All SOPs must be followed by HR, Recruitment, and Hiring Managers.
+                    </p>
+                </div>
+            `,
+            'sop-requisition': `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Requisition Process</h2>
+                <p class="text-gray-600 mb-6">Steps to raise and approve a new headcount request.</p>
+                <div class="scroll-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Step</th><th>Owner</th><th>Notes</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Submit Requisition</td><td>Hiring Manager</td><td>Include role justification</td></tr>
+                            <tr><td>Budget Approval</td><td>Finance</td><td>Confirm budget</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            `,
+            'sop-scheduling': `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Interview Scheduling</h2>
+                <p class="text-gray-600 mb-6">Guidelines for scheduling interviews and availability sync.</p>
+                <div class="p-4 bg-white rounded-lg border border-gray-200">
+                    <p class="text-sm text-gray-700">Includes calendar templates and timezone tips.</p>
+                </div>
+            `,
+            'sop-offer': `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Offer Approval Workflow</h2>
+                <p class="text-gray-600 mb-6">Approval matrix and steps to extend an offer to a candidate.</p>
+                <div class="p-4 bg-white rounded-lg border border-gray-200">
+                    <p class="text-sm text-gray-700">Contains sign-off requirements and typical SLA times.</p>
+                </div>
+            `,
+            jobdesc: `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Job Descriptions</h2>
+                <p class="text-gray-600 mb-8">Detailed role specifications and requirements</p>
+                
+                ${createAccordion('jd-tsr', 'Technical Support Representative (Tier 3)', TSR_JD_CONTENT)}
+            `,
+            'jobdesc-tsr': `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Technical Support Representative</h2>
+                ${TSR_JD_CONTENT}
+            `,
+            'jobdesc-se': `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Software Engineer</h2>
+                ${SE_JD_CONTENT}
+            `,
+            'jobdesc-pd': `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Product Designer</h2>
+                ${PD_JD_CONTENT}
+            `,
+            'jobdesc-csr': `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Customer Service Representative</h2>
+                <p class="text-sm text-gray-700">Placeholder: High-level job description and responsibilities for Customer Service Representatives. Add competencies, responsibilities, and assessment criteria here.</p>
+            `,
+            'jobdesc-csa': `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Customer Sales Associate</h2>
+                <p class="text-sm text-gray-700">Placeholder: High-level job description and responsibilities for Customer Sales Associates. Add competencies, responsibilities, and assessment criteria here.</p>
+            `,
+            'jobdesc-deo': `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Data Entry Operator</h2>
+                <p class="text-sm text-gray-700">Placeholder: High-level job description and responsibilities for Data Entry Operators. Add competencies, responsibilities, and assessment criteria here.</p>
+            `,
+            guides: `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">General Recruitment & Interview Guides</h2>
+                <p class="text-gray-600 mb-8">Best practices, compliance guidelines, and candidate management resources</p>
+                
+                <h3 class="font-semibold text-lg text-gray-800 mb-4 mt-8">General Hiring Resources</h3>
+                <div class="grid gap-3">
+                    <a href="#" class="p-4 border border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 group">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-medium text-gray-800 group-hover:text-blue-600">Behavioral Interview Question Bank</h4>
+                                <p class="text-sm text-gray-500 mt-1">Global questions for assessing soft skills</p>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </a>
+                    
+                    <a href="#" class="p-4 border border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 group">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-medium text-gray-800 group-hover:text-blue-600">Non-Discrimination & Bias Training</h4>
+                                <p class="text-sm text-gray-500 mt-1">Required compliance training for all interviewers</p>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </a>
+                    
+                    <a href="#" class="p-4 border border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 group">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-medium text-gray-800 group-hover:text-blue-600">Remote Work Equipment Standards</h4>
+                                <p class="text-sm text-gray-500 mt-1">Required equipment for remote employees</p>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </a>
+                </div>
+            `,
+            templates: `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Offer Templates</h2>
+                <p class="text-gray-600 mb-6">Pre-filled offer and email templates to speed up hiring.</p>
+
+                <div class="grid gap-4">
+                    <div class="p-4 bg-white rounded-lg border border-gray-200">
+                        <h4 class="font-semibold">Standard Offer Letter</h4>
+                        <p class="text-sm text-gray-600 mt-2">A baseline offer letter with salary, benefits, and start date placeholders.</p>
+                    </div>
+                    <div class="p-4 bg-white rounded-lg border border-gray-200">
+                        <h4 class="font-semibold">Contractor Engagement Template</h4>
+                        <p class="text-sm text-gray-600 mt-2">Terms and scope template for short-term contractors.</p>
+                    </div>
+                </div>
+            `,
+            trackers: `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Candidate Tracker</h2>
+                    <div class="flex items-start justify-between gap-4">
+                        <p class="text-gray-600 mb-6">Lightweight tracker to monitor candidate progress through the hiring funnel.</p>
+                        <div class="mb-6">
+                            <a href="https://docs.google.com/spreadsheets/d/REPLACE_WITH_ID" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-3 py-2 bg-blue-50 text-blue-700 border border-blue-100 rounded-lg text-sm">DMI Applicants (Google Sheet)</a>
+                        </div>
+                    </div>
+
+                    <div class="scroll-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Candidate</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Owner</th>
+                                <th>Last Update</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Jane Doe</td>
+                                <td>Technical Support Representative</td>
+                                <td>Interview Scheduled</td>
+                                <td>Recruiter A</td>
+                                <td>Dec 9, 2025</td>
+                            </tr>
+                            <tr>
+                                <td>John Smith</td>
+                                <td>Product Designer</td>
+                                <td>Offer Extended</td>
+                                <td>Hiring Manager</td>
+                                <td>Dec 1, 2025</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `,
+            'assess-scoring': `
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Behavioral & Competency Scoring Sheet</h2>
+                <p class="text-gray-600 mb-4">Editable assessment form for evaluating candidate responses across technical and soft-skill dimensions.</p>
+
+                <div style="display:flex; gap:16px; margin-bottom:20px; align-items:flex-start;">
+                    <div style="padding:8px 16px; background:#f3f4f6; border-radius:20px; font-weight:600; color:#374151; font-size:14px;">
+                        Total Score: <span id="total-score" style="font-weight:bold;">0 / 55</span>
+                    </div>
+                    <button onclick="printScoringSheet()" style="padding:8px 16px; background:#3b82f6; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:500; font-size:14px;">Print Assessment</button>
+                </div>
+
+                <div class="legal-doc" id="scoring-sheet-print">
+                    <p class="text-sm text-gray-600 mb-4"><strong>Instructions:</strong> Enter scores (0–Max) for each question. Notes are optional. Total auto-calculates above.</p>
+
+                    <div style="margin-bottom:16px; padding:12px; background:#white; border:1px solid #e5e7eb; border-radius:4px;">
+                        <div style="font-weight:600; color:#1f2937; margin-bottom:8px;">Scoring Guide</div>
+                        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; font-size:12px; color:#374151;">
+                            <div><strong>5:</strong> Excellent response</div>
+                            <div><strong>4:</strong> Good response</div>
+                            <div><strong>3:</strong> Fair response</div>
+                            <div><strong>2:</strong> Poor response</div>
+                            <div><strong>1:</strong> Very poor</div>
+                            <div><strong>0:</strong> No answer</div>
+                        </div>
+                    </div>
+
+                    <!-- Candidate info fields -->
+                    <div style="margin-bottom:12px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+                        <div>
+                            <label for="candidate-name" style="display:block; font-size:12px; color:#374151; font-weight:600; margin-bottom:4px;">Candidate Name</label>
+                            <input id="candidate-name" type="text" placeholder="Full name" style="width:100%; padding:8px; border:1px solid #d1d5db; border-radius:4px; font-size:13px;">
+                        </div>
+                        <div>
+                            <label for="candidate-phone" style="display:block; font-size:12px; color:#374151; font-weight:600; margin-bottom:4px;">Phone</label>
+                            <input id="candidate-phone" type="tel" placeholder="e.g. +1 555-555-5555" style="width:100%; padding:8px; border:1px solid #d1d5db; border-radius:4px; font-size:13px;">
+                        </div>
+                        <div>
+                            <label for="candidate-email" style="display:block; font-size:12px; color:#374151; font-weight:600; margin-bottom:4px;">Email</label>
+                            <input id="candidate-email" type="email" placeholder="name@example.com" style="width:100%; padding:8px; border:1px solid #d1d5db; border-radius:4px; font-size:13px;">
+                        </div>
+                    </div>
+
+                    <div class="scroll-container" style="margin: 16px 0;">
+                        <table class="data-table" style="width:100%; border-collapse:collapse; font-size:13px;">
+                            <thead>
+                                <tr style="background:#f3f4f6;">
+                                    <th style="text-align:left; padding:8px; border-bottom:2px solid #d1d5db; width:40px;">ID</th>
+                                    <th style="text-align:left; padding:8px; border-bottom:2px solid #d1d5db; width:25%;">Question</th>
+                                    <th style="text-align:left; padding:8px; border-bottom:2px solid #d1d5db; width:20%;">Key Responsibility</th>
+                                    <th style="text-align:left; padding:8px; border-bottom:2px solid #d1d5db; width:20%;">Assessment Criteria</th>
+                                    <th style="text-align:center; padding:8px; border-bottom:2px solid #d1d5db; width:60px;">Max Score</th>
+                                    <th style="text-align:center; padding:8px; border-bottom:2px solid #d1d5db; width:80px;">Score</th>
+                                    <th style="text-align:left; padding:8px; border-bottom:2px solid #d1d5db; width:200px;">Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scoring-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `,
+        };
+
+        // Campaign Overview content for Fliplet (JD-styled)
+        tabContent['campaign-fliplet'] = `
+            <div class="legal-doc">
+                <h2 class="text-3xl font-bold mb-2 text-gray-900">Fliplet</h2>
+                <p class="text-gray-600 mb-6">Fliplet is a low-code / no-code application development platform used to design, build, and deploy mobile and web applications quickly and efficiently. This document provides an overview for Tier 3 Technical Support.</p>
+
+                <h3 class="text-xl font-semibold mt-6">1. Company Overview</h3>
+
+                <h4 class="font-medium mt-4">1.1 About the Company</h4>
+                <p class="text-sm text-gray-700 mt-2">Fliplet is a <strong>low-code / no-code application development platform</strong> that enables organizations to design, build, and deploy mobile and web applications quickly and efficiently. The platform supports both <strong>non-technical business users</strong> and <strong>technical teams</strong>, allowing organizations to accelerate digital transformation without heavy development overhead.</p>
+
+                <p class="text-sm text-gray-700 mt-2">Fliplet serves a wide range of industries, including:</p>
+                <ul class="text-sm text-gray-700 ml-6 mt-2">
+                    <li>Enterprise organizations</li>
+                    <li>Internal IT and operations teams</li>
+                    <li>HR, communications, and training departments</li>
+                    <li>Product and innovation teams</li>
+                </ul>
+
+                <hr class="my-4">
+
+                <h4 class="font-medium">1.2 Company Mission</h4>
+                <p class="text-sm text-gray-700 mt-2">To empower businesses to create scalable, secure, and customizable applications with minimal development effort, while providing enterprise-grade flexibility and support.</p>
+
+                <hr class="my-4">
+
+                <h4 class="font-medium">1.3 Core Values</h4>
+                <ul class="text-sm text-gray-700 ml-6 mt-2">
+                    <li><strong>Customer Success First</strong> – Support is a critical part of the customer journey.</li>
+                    <li><strong>Simplicity with Power</strong> – Balance ease of use with advanced capabilities.</li>
+                    <li><strong>Continuous Improvement</strong> – Evolve the platform and support processes based on feedback.</li>
+                    <li><strong>Collaboration</strong> – Support, Product, and Engineering work closely together.</li>
+                </ul>
+
+                <hr class="my-6">
+
+                <h3 class="text-xl font-semibold">2. Platform Overview</h3>
+
+                <h4 class="font-medium mt-4">2.1 Fliplet Studio</h4>
+                <p class="text-sm text-gray-700 mt-2">Fliplet Studio is the central environment where customers:</p>
+                <ul class="text-sm text-gray-700 ml-6 mt-2">
+                    <li>Create and manage applications</li>
+                    <li>Configure layouts and components</li>
+                    <li>Connect and manage data sources</li>
+                    <li>Customize functionality using HTML, CSS, and JavaScript</li>
+                    <li>Preview, test, and publish applications</li>
+                </ul>
+                <p class="text-sm text-gray-700 mt-2"><strong>Tier 3 Focus:</strong> Deep familiarity with Fliplet Studio is essential.</p>
+
+                <hr class="my-4">
+
+                <h4 class="font-medium">2.2 Platform Architecture (High-Level)</h4>
+                <div class="scroll-container mt-3">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Layer</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>UI Layer</strong></td><td>App screens, layouts, themes, and widgets visible to end users</td></tr>
+                            <tr><td><strong>Component Layer</strong></td><td>Pre-built widgets such as forms, lists, charts, navigation, and media</td></tr>
+                            <tr><td><strong>Data Layer</strong></td><td>Data sources including CSV files, APIs, databases, and user-generated data</td></tr>
+                            <tr><td><strong>Customization Layer</strong></td><td>HTML/CSS/JS used to extend or override default behavior</td></tr>
+                            <tr><td><strong>Deployment Layer</strong></td><td>App publishing and distribution to mobile and web platforms</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr class="my-6">
+
+                <h3 class="text-xl font-semibold">3. Core Platform Features (In Depth)</h3>
+
+                <h4 class="font-medium mt-4">3.1 App Builder & Layout Management</h4>
+                <ul class="text-sm text-gray-700 ml-6 mt-2">
+                    <li>Drag-and-drop screen creation</li>
+                    <li>Layout containers (columns, rows, sections)</li>
+                    <li>Theme and styling controls</li>
+                    <li>Responsive design for mobile, tablet, and desktop</li>
+                </ul>
+                <p class="text-sm text-gray-700 mt-2"><strong>Tier 3 Focus:</strong> Debug layout conflicts; assist with advanced layout customizations; diagnose responsive design issues.</p>
+
+                <hr class="my-4">
+
+                <h4 class="font-medium">3.2 Components & Widgets</h4>
+                <p class="text-sm text-gray-700 mt-2">Common widgets include forms, data lists, media, navigation elements, and custom HTML blocks.</p>
+                <p class="text-sm text-gray-700 mt-2"><strong>Tier 3 Focus:</strong> Component configuration issues, widget interaction problems, component compatibility and limitations.</p>
+
+                <hr class="my-4">
+
+                <h4 class="font-medium">3.3 Data Sources & Integrations</h4>
+                <p class="text-sm text-gray-700 mt-2">Supported data sources: CSV uploads, REST APIs, internal databases, and user-generated app data.</p>
+                <p class="text-sm text-gray-700 mt-2"><strong>Tier 3 Focus:</strong> Troubleshooting data mismatches, resolving API errors, diagnosing sync and permission issues.</p>
+
+                <hr class="my-4">
+
+                <h4 class="font-medium">3.4 Customization (HTML / CSS / JavaScript)</h4>
+                <p class="text-sm text-gray-700 mt-2">Fliplet allows custom code for styling, layouts, and logic. Tier 3 focuses on debugging syntax and scope issues, resolving CSS conflicts, and ensuring performance.</p>
+
+                <hr class="my-6">
+
+                <h3 class="text-xl font-semibold">4. Tier 3 Technical Support Role Overview</h3>
+
+                <h4 class="font-medium mt-4">4.1 Role Purpose</h4>
+                <p class="text-sm text-gray-700 mt-2">Tier 3 Technical Support Representatives handle complex, technical, and platform-level issues that cannot be resolved by Tier 1 or Tier 2 support.</p>
+
+                <h4 class="font-medium mt-4">4.2 Key Responsibilities</h4>
+                <ul class="text-sm text-gray-700 ml-6 mt-2">
+                    <li>Resolve advanced configuration and setup issues</li>
+                    <li>Debug HTML/CSS-related problems</li>
+                    <li>Assist customers with complex app layouts and data sources</li>
+                    <li>Analyze error messages and logs; escalate bugs with detailed reproduction steps</li>
+                    <li>Provide workarounds and temporary solutions</li>
+                </ul>
+
+                <h4 class="font-medium mt-4">4.3 What Tier 3 Support Does NOT Do</h4>
+                <ul class="text-sm text-gray-700 ml-6 mt-2">
+                    <li>Build full apps on behalf of customers</li>
+                    <li>Perform custom development outside platform capabilities</li>
+                    <li>Modify production databases directly</li>
+                    <li>Commit code to core platform repositories</li>
+                </ul>
+
+                <hr class="my-6">
+
+                <h3 class="text-xl font-semibold">5. Support Workflow & Escalation</h3>
+
+                <h4 class="font-medium mt-4">5.1 Ticket Intake</h4>
+                <p class="text-sm text-gray-700 mt-2">Tickets may originate from Tier 1/2 escalation, enterprise customers, or platform monitoring. Required ticket details: App ID, Data source ID, Steps to reproduce, Screenshots/error messages, Browser/device info.</p>
+
+                <h4 class="font-medium mt-4">5.2 Troubleshooting Process</h4>
+                <ol class="text-sm text-gray-700 ml-6 mt-2">
+                    <li>Reproduce the issue in a test environment</li>
+                    <li>Review platform configurations</li>
+                    <li>Inspect HTML/CSS/JS (if applicable)</li>
+                    <li>Check data source mappings and permissions</li>
+                    <li>Validate against known issues or documentation</li>
+                    <li>Apply fix or provide workaround</li>
+                    <li>Document resolution clearly</li>
+                </ol>
+
+                <h4 class="font-medium mt-4">5.3 Escalation to Engineering</h4>
+                <p class="text-sm text-gray-700 mt-2">Escalate when the issue is a platform bug, impacts multiple customers, or poses performance/security risk. Include problem summary, reproduction steps, expected vs actual behavior, logs, and screenshots.</p>
+
+                <hr class="my-6">
+
+                <h3 class="text-xl font-semibold">6. Customer Communication Guidelines</h3>
+
+                <h4 class="font-medium mt-4">6.1 Communication Standards</h4>
+                <ul class="text-sm text-gray-700 ml-6 mt-2">
+                    <li>Use clear, non-technical language when possible</li>
+                    <li>Explain <strong>why</strong> an issue occurs, not just <strong>how</strong> to fix it</li>
+                    <li>Provide step-by-step instructions</li>
+                    <li>Set realistic timelines and expectations</li>
+                </ul>
+
+                <h4 class="font-medium mt-4">6.2 Example Response Structure</h4>
+                <ol class="text-sm text-gray-700 ml-6 mt-2">
+                    <li>Acknowledge the issue</li>
+                    <li>Summarize understanding</li>
+                    <li>Explain root cause</li>
+                    <li>Provide solution or workaround</li>
+                    <li>Confirm next steps</li>
+                </ol>
+
+                <hr class="my-6">
+
+                <h3 class="text-xl font-semibold">7. Tools & Resources</h3>
+                <div class="scroll-container mt-3">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>Tool</th><th>Purpose</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Fliplet Studio</td><td>Platform troubleshooting and app management</td></tr>
+                            <tr><td>Internal Knowledge Base</td><td>Known issues and documented solutions</td></tr>
+                            <tr><td>Ticketing System</td><td>Case tracking and escalation</td></tr>
+                            <tr><td>Browser Dev Tools</td><td>Debugging HTML/CSS/JS</td></tr>
+                            <tr><td>Logs & Monitoring Tools</td><td>Error investigation</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr class="my-6">
+
+                <h3 class="text-xl font-semibold">8. Success Metrics for Tier 3 Support</h3>
+                <div class="scroll-container mt-3">
+                    <table class="data-table">
+                        <thead><tr><th>Metric</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Resolution Time</td><td>Speed of resolving complex tickets</td></tr>
+                            <tr><td>First-Time Fix Rate</td><td>Issues resolved without rework</td></tr>
+                            <tr><td>Customer Satisfaction (CSAT)</td><td>Feedback from customers</td></tr>
+                            <tr><td>Escalation Quality</td><td>Clarity and completeness of engineering handoffs</td></tr>
+                            <tr><td>Knowledge Contribution</td><td>Documentation and internal knowledge sharing</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr class="my-6">
+
+                <h3 class="text-xl font-semibold">9. First 30–60–90 Days Expectations</h3>
+                <h4 class="font-medium mt-4">First 30 Days</h4>
+                <ul class="text-sm text-gray-700 ml-6 mt-2"><li>Learn Fliplet Studio basics</li><li>Shadow Tier 3 cases</li><li>Review documentation and known issues</li></ul>
+
+                <h4 class="font-medium mt-4">60 Days</h4>
+                <ul class="text-sm text-gray-700 ml-6 mt-2"><li>Handle Tier 3 tickets independently</li><li>Resolve HTML/CSS and data source issues</li><li>Begin contributing to documentation</li></ul>
+
+                <h4 class="font-medium mt-4">90 Days</h4>
+                <ul class="text-sm text-gray-700 ml-6 mt-2"><li>Serve as a subject matter expert</li><li>Mentor Tier 2 agents</li><li>Identify platform improvement opportunities</li></ul>
+
+                <hr class="my-6">
+
+                <h3 class="text-xl font-semibold">10. Summary</h3>
+                <p class="text-sm text-gray-700 mt-2">As a Tier 3 Technical Support Representative, you play a <strong>critical role in customer success</strong> by ensuring complex platform issues are resolved efficiently and professionally. Your technical expertise, problem-solving skills, and communication abilities directly impact customer trust and platform adoption.</p>
+            </div>
+        `;
+
+        // Simple accordion initializer
+        function initAccordions() {
+            const triggers = document.querySelectorAll('.accordion-trigger');
+            triggers.forEach(trigger => {
+                const targetId = trigger.getAttribute('data-target');
+                const content = document.getElementById(targetId);
+                if (!content) return;
+                // set ARIA states and initial icon rotation
+                trigger.setAttribute('aria-expanded', 'false');
+                content.setAttribute('aria-hidden', 'true');
+                const icon = trigger.querySelector('.accordion-icon');
+                if (icon) icon.style.transform = 'rotate(0deg)';
+
+                // remove duplicate handlers if re-initializing
+                trigger.replaceWith(trigger.cloneNode(true));
+            });
+
+            // re-query after clone
+            const freshTriggers = document.querySelectorAll('.accordion-trigger');
+            freshTriggers.forEach(trigger => {
+                const targetId = trigger.getAttribute('data-target');
+                const content = document.getElementById(targetId);
+                if (!content) return;
+                trigger.addEventListener('click', () => {
+                    const isHidden = content.classList.contains('hidden');
+                    const icon = trigger.querySelector('.accordion-icon');
+                    if (isHidden) {
+                        content.classList.remove('hidden');
+                        trigger.setAttribute('aria-expanded', 'true');
+                        content.setAttribute('aria-hidden', 'false');
+                        if (icon) icon.style.transform = 'rotate(180deg)';
+                    } else {
+                        content.classList.add('hidden');
+                        trigger.setAttribute('aria-expanded', 'false');
+                        content.setAttribute('aria-hidden', 'true');
+                        if (icon) icon.style.transform = 'rotate(0deg)';
+                    }
+                });
+            });
+        }
+
+        // KPI utilities: compute and render basic KPIs and wire interactions
+        function updateKPIs() {
+            try {
+                const keys = Object.keys(tabContent || {});
+                // Count active roles (keys that start with 'jobdesc-' plus explicit 'jobdesc' accordion)
+                const roleKeys = keys.filter(k => k.startsWith('jobdesc-'));
+                const activeRoles = roleKeys.length;
+                const documents = keys.length;
+
+                const elRoles = document.getElementById('kpi-active-roles');
+                const elDocs = document.getElementById('kpi-documents');
+                if (elRoles) elRoles.textContent = String(activeRoles);
+                if (elDocs) elDocs.textContent = String(documents);
+
+                // Populate KPI metrics summary if present
+                const ksum = document.getElementById('kpi-metrics-summary');
+                if (ksum) {
+                    ksum.innerHTML = `
+                        <div class="p-4 bg-white rounded-lg border border-gray-200">
+                            <div class="text-sm text-gray-600">Active Roles</div>
+                            <div class="font-medium text-gray-900">${activeRoles}</div>
+                        </div>
+                        <div class="mt-3 p-4 bg-white rounded-lg border border-gray-200">
+                            <div class="text-sm text-gray-600">Documents</div>
+                            <div class="font-medium text-gray-900">${documents}</div>
+                        </div>
+                    `;
+                }
+            } catch (e) { console.error('updateKPIs error', e); }
+        }
+
+        // Click handlers for KPI cards: show generated lists in content area
+        function wireKPIInteractions() {
+            const rolesBtn = document.getElementById('kpi-roles');
+            const docsBtn = document.getElementById('kpi-docs');
+            if (rolesBtn) {
+                rolesBtn.addEventListener('click', () => {
+                    const keys = Object.keys(tabContent || {}).filter(k => k.startsWith('jobdesc-'));
+                    if (!keys.length) {
+                        contentArea.innerHTML = `<div class="p-4 bg-white rounded border">No roles available.</div>`;
+                        return;
+                    }
+                    const list = keys.map(k => `<li><a href="#" class="tree-node" data-id="${k}">${(k.replace('jobdesc-','').toUpperCase().replace(/-/g,' '))}</a></li>`).join('');
+                    contentArea.innerHTML = `
+                        <div class="content-card">
+                            <h2 class="text-2xl font-semibold mb-3">Active Roles</h2>
+                            <ul class="text-sm text-gray-700 ml-4">${list}</ul>
+                        </div>
+                    `;
+                    initAccordions();
+                    // re-wire click handlers for the generated links to load proper content
+                    Array.from(contentArea.querySelectorAll('.tree-node')).forEach(link => {
+                        link.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const id = link.getAttribute('data-id');
+                            if (id && tabContent[id]) {
+                                contentArea.innerHTML = tabContent[id];
+                                initAccordions();
+                            }
+                        });
+                    });
+                });
+            }
+
+            if (docsBtn) {
+                docsBtn.addEventListener('click', () => {
+                    const keys = Object.keys(tabContent || {});
+                    const list = keys.map(k => `<li><a href="#" class="tree-node" data-id="${k}">${k}</a></li>`).join('');
+                    contentArea.innerHTML = `
+                        <div class="content-card">
+                            <h2 class="text-2xl font-semibold mb-3">Documents</h2>
+                            <ul class="text-sm text-gray-700 ml-4">${list}</ul>
+                        </div>
+                    `;
+                    Array.from(contentArea.querySelectorAll('.tree-node')).forEach(link => {
+                        link.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const id = link.getAttribute('data-id');
+                            if (id && tabContent[id]) {
+                                contentArea.innerHTML = tabContent[id];
+                                initAccordions();
+                            }
+                        });
+                    });
+                });
+            }
+        }
+
+        // Sidebar toggle buttons (expand/collapse groups)
+        function initSidebarToggles() {
+            const toggles = document.querySelectorAll('#tree-nav .toggle-btn');
+            toggles.forEach(btn => {
+                const li = btn.closest('li');
+                if (!li) return;
+                const group = li.querySelector('[role="group"]');
+                // Force collapsed state on init (keep tree collapsed by default)
+                li.setAttribute('aria-expanded', 'false');
+                btn.setAttribute('aria-expanded', 'false');
+                if (group) group.style.display = 'none';
+                btn.textContent = '▸';
+
+                // click handler (still allows manual toggle)
+                btn.addEventListener('click', () => {
+                    const isOpen = li.getAttribute('aria-expanded') === 'true';
+                    if (isOpen) {
+                        li.setAttribute('aria-expanded', 'false');
+                        btn.setAttribute('aria-expanded', 'false');
+                        if (group) group.style.display = 'none';
+                        btn.textContent = '▸';
+                    } else {
+                        li.setAttribute('aria-expanded', 'true');
+                        btn.setAttribute('aria-expanded', 'true');
+                        if (group) group.style.display = '';
+                        btn.textContent = '▾';
+                    }
+                });
+
+                // allow keyboard to toggle
+                btn.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        btn.click();
+                    }
+                });
+            });
+        }
+
+        // Search functionality: filters sidebar items and searches tabContent
+        function setupSearch() {
+            const input = document.querySelector('.search-input');
+            if (!input) return;
+            let timer = null;
+            input.addEventListener('input', (e) => {
+                clearTimeout(timer);
+                timer = setTimeout(() => runSearch(e.target.value.trim().toLowerCase()), 200);
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const first = document.querySelector('#tree-nav .tree-node.search-match');
+                    if (first) {
+                        first.click();
+                        first.focus();
+                    }
+                }
+            });
+        }
+
+        function runSearch(query) {
+            const nodes = Array.from(document.querySelectorAll('#tree-nav .tree-node'));
+            // reset
+            nodes.forEach(n => n.classList.remove('search-match'));
+
+            const groups = Array.from(document.querySelectorAll('#tree-nav [role="group"]'));
+            // hide all groups by default
+            groups.forEach(g => g.style.display = 'none');
+            // collapse top-level lis
+            const topLis = Array.from(document.querySelectorAll('#tree-nav > ul > li'));
+            topLis.forEach(li => {
+                if (li.querySelector('[role="group"]')) {
+                    li.setAttribute('aria-expanded', 'false');
+                    const btn = li.querySelector('.toggle-btn'); if (btn) btn.textContent = '▸';
+                }
+            });
+
+            if (!query) return;
+
+            let firstFound = null;
+            nodes.forEach(n => {
+                const text = (n.textContent || '').toLowerCase();
+                const dataId = (n.getAttribute('data-id') || '').toLowerCase();
+                let matched = false;
+                if (text.includes(query) || dataId.includes(query)) matched = true;
+                // also search inside tabContent value if available
+                try {
+                    if (!matched && window.tabContent && tabContent[dataId]) {
+                        const tmp = document.createElement('div'); tmp.innerHTML = tabContent[dataId];
+                        const contentText = (tmp.textContent || '').toLowerCase();
+                        if (contentText.includes(query)) matched = true;
+                    }
+                } catch (err) { /* ignore */ }
+
+                if (matched) {
+                    n.classList.add('search-match');
+                    if (!firstFound) firstFound = n;
+                    // expand parent groups so the result is visible
+                    const li = n.closest('li[role="treeitem"]');
+                    if (li) {
+                        let parent = li.parentElement;
+                        while (parent && parent.id !== 'tree-nav') {
+                            if (parent.getAttribute && parent.getAttribute('role') === 'group') {
+                                const containerLi = parent.closest('li[role="treeitem"]');
+                                if (containerLi) {
+                                    containerLi.setAttribute('aria-expanded', 'true');
+                                    const group = containerLi.querySelector('[role="group"]') || parent;
+                                    if (group) group.style.display = '';
+                                    const btn = containerLi.querySelector('.toggle-btn'); if (btn) btn.textContent = '▾';
+                                }
+                            }
+                            parent = parent.parentElement;
+                        }
+                    }
+                }
+            });
+
+            if (firstFound) firstFound.focus();
+        }
+
+        // Wire up sidebar navigation to load sample content
+        // Print function for scoring sheet
+        function printScoringSheet() {
+            const printArea = document.getElementById('scoring-sheet-print');
+            if (!printArea) return;
+            const printWindow = window.open('', '', 'height=600,width=900');
+            printWindow.document.write('<html><head><title>Behavioral & Competency Scoring Sheet</title>');
+            printWindow.document.write('<style>');
+            printWindow.document.write('body { font-family: Arial, sans-serif; margin: 20px; }');
+            printWindow.document.write('h2 { font-size: 24px; margin-bottom: 10px; }');
+            printWindow.document.write('table { width: 100%; border-collapse: collapse; margin-top: 20px; }');
+            printWindow.document.write('th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; font-size: 12px; }');
+            printWindow.document.write('th { background-color: #f3f4f6; font-weight: bold; }');
+            printWindow.document.write('tr:nth-child(even) { background-color: #f9fafb; }');
+            printWindow.document.write('.data-table { width: 100%; }');
+            printWindow.document.write('</style></head><body>');
+            printWindow.document.write('<h2>Behavioral & Competency Scoring Sheet</h2>');
+            printWindow.document.write('<p><strong>Total Score: </strong>' + document.getElementById('total-score').textContent + '</p>');
+            printWindow.document.write(printArea.innerHTML);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            setTimeout(() => { printWindow.print(); }, 250);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Place welcome content initially
+            if (contentArea) contentArea.innerHTML = welcomeContent;
+            initAccordions();
+            initSidebarToggles();
+            setupSearch();
+            // populate KPI cards on load and wire interactions
+            updateKPIs();
+            wireKPIInteractions();
+
+            const treeLinks = Array.from(document.querySelectorAll('.tree-node'));
+            function clearSelection() {
+                treeLinks.forEach(n => n.classList.remove('kb-selected'));
+            }
+
+            treeLinks.forEach((link, idx) => {
+                // ensure focusable
+                if (!link.hasAttribute('tabindex')) link.setAttribute('tabindex', '-1');
+
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    clearSelection();
+                    link.classList.add('kb-selected');
+                    const dataId = link.getAttribute('data-id') || '';
+                    const href = link.getAttribute('href') || '';
+                    const key = (dataId || href.replace(/^#/, '').trim()).trim();
+
+                    if (key && tabContent[key]) {
+                        contentArea.innerHTML = tabContent[key];
+                    } else if (key === 'jobdesc') {
+                        contentArea.innerHTML = tabContent.jobdesc;
+                    } else {
+                        contentArea.innerHTML = welcomeContent;
+                    }
+
+                    initAccordions();
+                    // update KPIs and rewire interactions when content changes back to welcome
+                    updateKPIs();
+                    wireKPIInteractions();
+                    
+                    // Initialize scoring sheet if navigating to that section
+                    if (key === 'assess-scoring') {
+                        setTimeout(() => initScoringSheet(), 0);
+                    }
+                    
+                    // focus first heading for accessibility
+                    const firstHeading = contentArea.querySelector('h2, h3, h4');
+                    if (firstHeading) {
+                        firstHeading.setAttribute('tabindex', '-1');
+                        firstHeading.focus();
+                    }
+                });
+
+                // keyboard navigation: Enter/Space to activate, arrows to move
+                link.addEventListener('keydown', (ev) => {
+                    if (ev.key === 'Enter' || ev.key === ' ') {
+                        ev.preventDefault();
+                        link.click();
+                    } else if (ev.key === 'ArrowDown') {
+                        ev.preventDefault();
+                        const next = treeLinks[idx + 1] || treeLinks[0];
+                        if (next) next.focus();
+                    } else if (ev.key === 'ArrowUp') {
+                        ev.preventDefault();
+                        const prev = treeLinks[idx - 1] || treeLinks[treeLinks.length - 1];
+                        if (prev) prev.focus();
+                    }
+                });
+            });
+
+            // IDE copy / run handlers for simulated IDE cards
+            function handleIDEAction(action, targetId) {
+                const el = document.getElementById(targetId);
+                if (!el) return;
+                const code = Array.from(el.querySelectorAll('.source')).map(s => s.textContent).join('\n');
+                if (action === 'copy') {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(code).then(()=>{ alert('Code copied to clipboard'); }).catch(()=>{ alert('Unable to copy'); });
+                    } else {
+                        // fallback
+                        const ta = document.createElement('textarea'); ta.value = code; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); alert('Code copied to clipboard'); } catch(e){ alert('Copy not available'); } ta.remove();
+                    }
+                } else if (action === 'run') {
+                    try {
+                        // Evaluate in a minimal sandbox: only expressions allowed
+                        // eslint-disable-next-line no-eval
+                        const result = eval(code);
+                        alert('Run complete. Result: ' + String(result));
+                    } catch (err) {
+                        alert('Run error: ' + err.message);
+                    }
+                }
+            }
+
+            document.addEventListener('click', function(e){
+                const btn = e.target.closest('[data-action]');
+                if (!btn) return;
+                const action = btn.getAttribute('data-action');
+                const target = btn.getAttribute('data-target');
+                handleIDEAction(action, target);
+            });
+
+            // Scoring table initialization
+            const scoringQuestions = [
+                { id: 'T1', question: 'Walk me through your systematic process for troubleshooting a novel application error.', responsibility: 'Technical Troubleshooting & Issue Resolution', criteria: 'Uses logical, step-by-step methodology. Prioritizes root cause.', max: 5 },
+                { id: 'T2', question: 'A customer reports app working on Android but not iPhone. What are the first three things you investigate?', responsibility: 'Device-specific behavior (iOS, Android, web)', criteria: 'Identifies OS/browser-specific differences as potential causes.', max: 4 },
+                { id: 'T3', question: 'Customer app workflow is failing due to incorrect data save. What diagnostic steps would you take?', responsibility: 'Technical Troubleshooting & Issue Resolution', criteria: 'Focuses on data flow, permissions, and configuration in platform components.', max: 5 },
+                { id: 'T4', question: 'Explain authentication error vs authorization error. How would you troubleshoot each?', responsibility: 'User roles, authentication, and access control', criteria: 'Clear conceptual distinction. Outlines distinct troubleshooting paths.', max: 4 },
+                { id: 'T5', question: 'How would you guide a customer to modify an HTML/CSS component background color?', responsibility: 'Platform Configuration Support (Basic technical guidance)', criteria: 'Clear, jargon-light instructions. Awareness of basic front-end concepts.', max: 3 },
+                { id: 'C1', question: 'Describe delivering an unpopular or contractual "push back" decision. How did you manage the conversation?', responsibility: 'Technical Troubleshooting & Issue Resolution (Handling scope)', criteria: 'Maintains professionalism. Cites scope/contract clearly. Offers viable alternatives.', max: 5 },
+                { id: 'C2', question: 'A highly frustrated client demands immediate fix for Level 2 bug requiring Engineering. How do you manage?', responsibility: 'Escalation Management', criteria: 'Shows empathy. Sets realistic expectations. Clearly explains escalation path/timeline.', max: 5 },
+                { id: 'C3', question: 'Customer repeatedly makes the same simple setup error. How do you address both immediate AND prevent recurrence?', responsibility: 'Client Enablement & Education', criteria: 'Moves beyond immediate fix. Addresses underlying knowledge gap. Focuses on prevention.', max: 4 },
+                { id: 'C4', question: 'How do you ensure written communication is both technically accurate and easily understood by non-technical customers?', responsibility: 'Support Operations & Quality (Communication standards)', criteria: 'Balances technical accuracy with clarity. Uses appropriate tone and structure.', max: 4 },
+                { id: 'P1', question: 'What information is essential when escalating a Level 2 issue to Engineering?', responsibility: 'Escalation Management (Diagnostic Notes)', criteria: 'Includes: Reproduction steps, expected vs actual, logs/attachments, business impact.', max: 5 },
+                { id: 'P2', question: 'Why convert resolved tickets to KB articles? Describe your process for creating from a ticket.', responsibility: 'Knowledge Base & Documentation', criteria: 'Understands value (reducing ticket volume). Outlines clear conversion/review steps.', max: 4 },
+                { id: 'P3', question: 'How do you prioritize tasks when facing multiple urgent tickets and looming SLA deadline?', responsibility: 'Support Operations & Quality (SLA management, prioritization)', criteria: 'Uses structured prioritization methods (impact vs urgency, P1/P2/P3 classification).', max: 5 },
+                { id: 'P4', question: 'Describe when your support work led to product or internal process improvement.', responsibility: 'Product Insight & Feedback Sharing', criteria: 'Demonstrates proactive behavior. Provides structured, actionable feedback examples.', max: 4 }
+            ];
+
+            function initScoringSheet() {
+                const tbody = document.getElementById('scoring-tbody');
+                if (!tbody) return;
+                
+                tbody.innerHTML = scoringQuestions.map(q => {
+                    const id = 'score-' + q.id;
+                    return '<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:8px; font-weight:600; color:#3b82f6;">' + q.id + '</td><td style="padding:8px; font-size:12px;">' + q.question + '</td><td style="padding:8px; font-size:12px; color:#666;">' + q.responsibility + '</td><td style="padding:8px; font-size:12px; color:#666;">' + q.criteria + '</td><td style="padding:8px; text-align:center; font-weight:600; color:#666;">' + q.max + '</td><td style="padding:8px; text-align:center;"><input type="number" id="' + id + '" min="0" max="' + q.max + '" class="score-input" data-id="' + q.id + '" data-max="' + q.max + '" style="width:60px; padding:4px; border:1px solid #d1d5db; border-radius:4px; text-align:center;" value="0"></td><td style="padding:8px;"><input type="text" class="notes-input" data-id="' + q.id + '" placeholder="Optional notes" style="width:100%; padding:4px; border:1px solid #d1d5db; border-radius:4px; font-size:12px;"></td></tr>';
+                }).join('');
+
+                // Attach event listeners
+                document.querySelectorAll('.score-input').forEach(input => {
+                    input.addEventListener('change', updateTotalScore);
+                    input.addEventListener('input', updateTotalScore);
+                });
+            }
+
+            function updateTotalScore() {
+                let total = 0;
+                document.querySelectorAll('.score-input').forEach(input => {
+                    const val = parseInt(input.value, 10) || 0;
+                    total += val;
+                });
+                const totalDiv = document.getElementById('total-score');
+                if (totalDiv) totalDiv.textContent = total + ' / 55';
+            }
+        });
+    </script>
+</body>
+</html>
