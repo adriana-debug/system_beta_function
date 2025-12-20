@@ -1,0 +1,90 @@
+{
+  "panel_info": {
+    "title": "Tech Support Admin Panel",
+    "version": "1.0.2",
+    "branding": {
+      "left_logo": "https://digitalmindsbpo.com/storage/2018/11/cropped-dm-favicon.png",
+      "right_logo": "https://cdn.fliplet.com/apps/205116/56714065a3b65b4990856e4e5b955198958-311-0501.png",
+      "divider_color": "#e2e8f0",
+      "footer_text": "© 2025 Tech Support"
+    }
+  },
+  "theme": {
+    "colors": {
+      "background_main": "#f8fafc",
+      "background_sidebar": "#ffffff",
+      "text_primary": "#1e293b",
+      "text_secondary": "#64748b",
+      "accent_color": "#3b82f6",
+      "border_color": "#e2e8f0",
+      "danger": "#ef4444",
+      "success": "#10b981"
+    },
+    "typography": {
+      "font_family": "Inter, system-ui, sans-serif",
+      "base_font_size": "16px",
+      "heading_weight": "700"
+    },
+    "layout": {
+      "sidebar_width": "260px",
+      "card_radius": "12px",
+      "button_radius": "8px"
+    }
+  },
+  "navigation": [
+    { "id": "dashboard", "label": "Dashboard", "active": true },
+    { "id": "tickets", "label": "Tickets", "active": false },
+    { "id": "customers", "label": "Customers", "active": false },
+    { "id": "errors", "label": "Errors", "active": false },
+    { "id": "settings", "label": "Settings", "active": false }
+  ],
+  "views": {
+    "dashboard": {
+      "header": "Dashboard Overview",
+      "stats_cards": [
+        { "title": "TICKETS", "total": 45, "rows": [{ "label": "Open", "value": 10 }, { "label": "Closed", "value": 35 }] },
+        { "title": "CUSTOMERS", "total": 120, "rows": [{ "label": "Active", "value": 80 }, { "label": "Inactive", "value": 40 }] },
+        { "title": "ERRORS", "total": 30, "rows": [{ "label": "Critical", "value": 5, "color_ref": "danger" }, { "label": "Minor", "value": 25 }] }
+      ]
+    },
+    "tickets": {
+      "header": "All Tickets",
+      "table": {
+        "columns": ["Ticket ID", "Customer", "Subject", "Status"],
+        "data": [
+          { "id": "#8821", "customer": "Global Logistics", "subject": "API Integration Failure", "status": "Open" },
+          { "id": "#8820", "customer": "Horizon Media", "subject": "Account Access Reset", "status": "Pending" },
+          { "id": "#8819", "customer": "Swift Solutions", "subject": "Billing Inquiry", "status": "Closed" }
+        ]
+      }
+    },
+    "customers": {
+      "header": "Customer Database",
+      "table": {
+        "columns": ["Organization", "Admin Email", "Plan", "Join Date"],
+        "data": [
+          { "org": "Digital Minds BPO", "email": "it@digitalminds.com", "plan": "Enterprise", "date": "Jan 2024" },
+          { "org": "Acme Corp", "email": "admin@acme.com", "plan": "Standard", "date": "Mar 2024" }
+        ]
+      }
+    },
+    "errors": {
+      "header": "System Errors",
+      "table": {
+        "columns": ["Timestamp", "Module", "Severity", "Description"],
+        "data": [
+          { "time": "14:02:11", "module": "Database", "severity": "Critical", "desc": "Connection timeout on DB-01" },
+          { "time": "11:12:30", "module": "Auth", "severity": "Minor", "desc": "Invalid token attempt" }
+        ]
+      }
+    },
+    "settings": {
+      "header": "Panel Settings",
+      "form_fields": [
+        { "label": "Environment Name", "type": "text", "value": "Production - Primary" },
+        { "label": "Notification Email", "type": "email", "value": "admin@techpanel.com" },
+        { "label": "Update Frequency", "type": "select", "options": ["Real-time", "Every hour"], "value": "Real-time" }
+      ]
+    }
+  }
+}
