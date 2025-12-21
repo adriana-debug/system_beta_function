@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Agents Admin Panel</title>
+
+    <style>
+        :root {
+            --bg-main: #f8fafc;
+            --bg-sidebar: #ffffff;
+            --border-color: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --accent: #3b82f6;
+            --card-bg: #ffffff;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .logo-left {
+            height: 44px;
+            width: auto;
+        }
+
+        .logo-right {
+            height: 36px;
+            width: auto;
+            background: #0b1220; /* dark background so white logo/text is visible */
+            padding: 6px 8px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .brand-divider {
+            width: 1px;
+            height: 24px;
+            background-color: var(--border-color);
+        }
+
+        .sidebar h2 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .sidebar nav a {
+            display: block;
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .sidebar nav a:hover {
+            background: #f1f5f9;
+            color: var(--accent);
+        }
+
+        .sidebar nav a.active {
+            background: #eff6ff;
+            color: var(--accent);
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 40px;
+            /* Allow main area to use the full remaining viewport width (sidebar is fixed at 260px)
+               and avoid an artificial max-width so the Knowledge Base can stretch. Add a little
+               right padding so content doesn't flush to the edge of the browser. */
+            max-width: none;
+            width: calc(100% - 260px);
+            padding-right: 28px;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        header {
+            margin-bottom: 32px;
+        }
+
+        header h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        /* Cards Grid */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
+
+        .card h3 {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .card .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .card .total {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        /* Tables */
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .table-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+            max-width: 100%;
+            margin-bottom: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            padding: 16px;
+            background: #fcfcfd;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Status Colors */
+        .text-success {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .text-danger {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        /* Settings Form Styles */
+        .form-section {
+            background: var(--card-bg);
+            padding: 32px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            max-width: 600px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 24px 0;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .main {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+
+        /* Knowledge Base Layout */
+.kb-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 24px;
+}
+
+/* Knowledge Base Navigation Tree */
+.kb-nav {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    height: fit-content;
+}
+
+.kb-nav h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.kb-nav ul {
+    list-style: none;
+}
+
+.kb-nav li {
+    margin-bottom: 6px;
+}
+
+.kb-nav a {
+    display: block;
+    padding: 8px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.kb-nav a:hover {
+    background: #f1f5f9;
+    color: var(--accent);
+}
+
+.kb-nav a.active {
+    background: #eff6ff;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.kb-article {
+    display: none;
+}
+
+.kb-article.active {
+    display: block;
+}
+
+.kb-nav .active-parent {
+    background: #eef2ff;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.kb-nav .category {
+    font-weight: 600;
+    margin-top: 12px;
+}
+
+.kb-nav .child {
+    margin-left: 12px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .kb-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Support Scripts (email-style) */
+.script-email {
+    background: linear-gradient(180deg,#ffffff 0%, #fbfdff 100%);
+    border-left: 4px solid var(--accent);
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    white-space: pre-wrap;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    box-shadow: 0 1px 2px rgba(15,23,42,0.03);
+}
+.script-email p { margin: 0 0 8px 0; }
+.script-section { margin-bottom: 12px; }
+.script-section h5 { margin: 8px 0; font-size: 0.98rem; color: var(--text-primary); }
+.script-title { font-weight: 700; margin-bottom: 6px; display:block; }
+
+/* KB Content Grid: step-by-step columns (left: meta, center: primary, right: optional) */
+.kb-article-content { display: grid; gap: 12px; }
+.kb-step {
+    display: grid;
+    grid-template-columns: 120px 1fr 240px;
+    gap: 16px;
+    align-items: start;
+    padding: 12px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(250,250,255,1) 0%, rgba(248,249,255,0.95) 100%);
+    border: 1px solid rgba(226,232,240,0.8);
+    box-shadow: 0 1px 2px rgba(2,6,23,0.02);
+    margin-bottom: 12px;
+}
+.step-left { text-align: center; color: var(--text-secondary); }
+.step-number { font-size: 1.25rem; font-weight: 800; color: var(--accent); }
+.step-cat { font-size: 0.85rem; margin-top: 6px; }
+.step-main { color: var(--text-primary); line-height: 1.5; }
+.step-main h4, .step-main h5 { margin-top: 0; }
+.step-right { color: var(--text-secondary); font-size: 0.9rem; }
+
+/* Responsive: hide right column on narrower screens, collapse to two columns */
+@media (max-width: 1100px) {
+    .kb-step { grid-template-columns: 100px 1fr; }
+    .step-right { display: none; }
+}
+@media (max-width: 700px) {
+    .kb-step { grid-template-columns: 1fr; }
+    .step-left { text-align: left; }
+    .step-left .step-number { display: inline-block; margin-right: 8px; }
+}
+
+/* KB visual cleanup: remove surrounding borders/backgrounds for a full-bleed view */
+.kb-layout .kb-nav,
+.kb-layout .card,
+.kb-layout .table-container {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+.kb-layout .kb-nav { padding: 0; }
+.kb-layout .kb-nav h3 { padding: 8px 0 12px 0; }
+.kb-layout .kb-nav a { padding: 6px 8px; }
+.kb-layout .kb-article.card { padding: 0; }
+.kb-article .kb-article-content { gap: 10px; padding: 4px 0; }
+
+/* Tickets table styling: zebra rows and status badges for clearer support ticket formatting */
+#view-tickets .table-container {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+#view-tickets table th, #view-tickets table td {
+    padding: 12px 10px;
+}
+#view-tickets tbody tr:nth-child(odd) { background: rgba(2,6,23,0.02); }
+.status-badge { display: inline-block; padding: 6px 10px; border-radius: 999px; font-weight: 700; font-size: 0.85rem; color: #fff; }
+.status-open { background: #3b82f6; }
+.status-pending { background: #f59e0b; }
+.status-closed { background: #10b981; }
+
+/* KB tables: stronger, full-bleed table styling for knowledge articles */
+.kb-article .table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+}
+.kb-article .table-container,
+.kb-article .table-container table,
+.kb-article .table-container th,
+.kb-article .table-container td {
+    border: 1px solid var(--border-color);
+}
+.kb-article .table-container th,
+.kb-article .table-container td {
+    padding: 12px;
+    text-align: left;
+    vertical-align: top;
+}
+.kb-article .table-container th { background: transparent; }
+
+/* Print styles: hide chrome, expand content, ensure tables print with clear borders */
+@media print {
+    body { background: #fff; color: #000; }
+    .sidebar, .kb-nav, footer, #sidebar-nav { display: none !important; }
+    .main { margin-left: 0 !important; width: 100% !important; padding: 12px !important; }
+    .kb-layout { grid-template-columns: 1fr !important; gap: 0; }
+    .kb-article .table-container table { border-color: #000; color: #000; }
+    .kb-article .table-container th, .kb-article .table-container td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    tr { page-break-inside: avoid; }
+}
+
+/* Credentials Table */
+.credentials-table td,
+.credentials-table th {
+    vertical-align: middle;
+    white-space: nowrap;
+    padding: 8px 10px;
+    font-size: 0. ninerem;
+}
+
+.credential {
+    font-family: monospace;
+    background: #f8fafc;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+
+    display: inline-block;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 8px;
+    font-size: 0.85rem;
+}
+
+.toggle-btn:hover {
+    text-decoration: underline;
+}
+
+    </style>
+
+    <!-- Quality dashboard styles inserted from user-provided snippet -->
+    <style>
+        :root {
+            --iron-grey: #3b4543;
+            --iron-grey-3: #454f49;
+            --dusty-olive: #577253;
+            --yellow-green: #a0cd39;
+            --turf-green: #097740;
+            --cool-steel: #9ca09f;
+            --bg-light: #f9fafb;
+        }
+
+        .quality-body { background-color: var(--bg-light); }
+
+        .quality-header {
+            border-left: 5px solid var(--turf-green);
+            padding-left: 20px;
+            margin-bottom: 16px;
+        }
+
+        .quality-header h1 { margin: 0; font-size: 20px; color: var(--iron-grey); }
+        .quality-header p { margin: 6px 0 0 0; color: var(--dusty-olive); font-size: 13px; }
+
+        .quality-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .quality-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 15px rgba(59,69,67,0.06);
+            border: 1px solid rgba(156,160,159,0.15);
+        }
+
+        .quality-card h3 { margin: 0 0 12px 0; font-size: 14px; color: var(--iron-grey-3); text-transform: uppercase; }
+
+        .quality-full { grid-column: span 2; }
+
+        .quality-table { width: 100%; border-collapse: collapse; }
+        .quality-table th { background: var(--iron-grey); color: #fff; padding: 12px 14px; text-align: left; }
+        .quality-table td { padding: 12px 14px; border-bottom: 1px solid #eee; color: var(--iron-grey-3); }
+
+        .status-pill { padding: 4px 12px; border-radius: 20px; font-size:12px; font-weight:600; display:inline-block; }
+        .critical { background:#fee2e2; color:#b91c1c; }
+        .healthy { background:#ecfdf5; color:var(--turf-green); }
+        .monitor { background:#fffbeb; color:#b45309; }
+        .currency { font-family: monospace; font-weight:600; }
+    </style>
+
+
+
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <aside class="sidebar">
+            <div class="brand-container">
+                <img src="https://digitalmindsbpo.com/storage/2018/11/cropped-dm-favicon.png" alt="Digital Minds"
+                    class="logo-left">
+                <div class="brand-divider"></div>
+                <img src="https://diamondassets.com/wp-content/uploads/2022/01/DA-logo-color-white.png.webp"
+                    alt="DiamondAssets2025" class="logo-right">
+            </div>
+
+            <nav id="sidebar-nav">
+                <a onclick="switchView('dashboard')" class="active" id="link-dashboard">Dashboard</a>
+                <a onclick="switchView('tickets')" id="link-tickets">Tickets</a>
+                <a onclick="switchView('customers')" id="link-customers">Customers</a>
+                <a onclick="switchView('errors')" id="link-errors">Quality</a>
+                <a onclick="switchView('knowledge')" id="link-knowledge">Knowledge Base</a>
+                <a onclick="switchView('settings')" id="link-settings">Settings</a>
+            </nav>
+
+            <footer>&copy; 2025 DMI — Internal Use Only</footer>
+        </aside>
+
+        <main class="main">
+
+            <div id="view-dashboard" class="view-section active">
+                <header>
+                    <h1>Dashboard Overview</h1>
+                </header>
+
+                <div class="cards">
+                    <div class="card">
+                        <h3>TICKETS</h3>
+                        <span class="total">45</span>
+                        <div class="stat-row"><span>Open</span> <strong>10</strong></div>
+                        <div class="stat-row"><span>Closed</span> <strong>35</strong></div>
+                    </div>
+                    <div class="card">
+                        <h3>CUSTOMERS</h3>
+                        <span class="total">120</span>
+                        <div class="stat-row"><span>Active</span> <strong>80</strong></div>
+                        <div class="stat-row"><span>Inactive</span> <strong>40</strong></div>
+                    </div>
+                    <div class="card">
+                        <h3>ERRORS</h3>
+                        <span class="total">30</span>
+                        <div class="stat-row"><span>Critical</span> <strong style="color: #ef4444;">5</strong></div>
+                        <div class="stat-row"><span>Minor</span> <strong>25</strong></div>
+                    </div>
+                </div>
+
+                <h2 class="section-title">Daily Performance Tracker</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Resolved</th>
+                                <th>Pending</th>
+                                <th>Critical Errors</th>
+                                <th>Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Oct 26, 2025</td>
+                                <td>12</td>
+                                <td>2</td>
+                                <td>0</td>
+                                <td class="text-success">↑ Improved</td>
+                            </tr>
+                            <tr>
+                                <td>Oct 25, 2025</td>
+                                <td>8</td>
+                                <td>5</td>
+                                <td>1</td>
+                                <td>– Stable</td>
+                            </tr>
+                            <tr>
+                                <td>Oct 24, 2025</td>
+                                <td>15</td>
+                                <td>0</td>
+                                <td>0</td>
+                                <td class="text-success">↑ High</td>
+                            </tr>
+                            <tr>
+                                <td>Oct 23, 2025</td>
+                                <td>4</td>
+                                <td>9</td>
+                                <td>3</td>
+                                <td class="text-danger">↓ Low</td>
+                            </tr>
+                            <tr>
+                                <td>Oct 22, 2025</td>
+                                <td>10</td>
+                                <td>4</td>
+                                <td>1</td>
+                                <td>– Stable</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-tickets" class="view-section">
+                <header>
+                    <h1>All Tickets</h1>
+                </header>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>Customer</th>
+                                <th>Subject</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#8821</td>
+                                <td>Global Logistics</td>
+                                <td>API Integration Failure</td>
+                                <td><span class="status-badge status-open">Open</span></td>
+                            </tr>
+                            <tr>
+                                <td>#8820</td>
+                                <td>Horizon Media</td>
+                                <td>Account Access Reset</td>
+                                <td><span class="status-badge status-pending">Pending</span></td>
+                            </tr>
+                            <tr>
+                                <td>#8819</td>
+                                <td>Swift Solutions</td>
+                                <td>Billing Inquiry</td>
+                                <td><span class="status-badge status-closed">Closed</span></td>
+                            </tr>
+                            <tr>
+                                <td>#8818</td>
+                                <td>Blue Marble</td>
+                                <td>Mobile App Crashing</td>
+                                <td><span class="status-badge status-open">Open</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-customers" class="view-section">
+                <header>
+                    <h1>Customer Database</h1>
+                </header>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Organization</th>
+                                <th>Admin Email</th>
+                                <th>Plan</th>
+                                <th>Join Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Digital Minds BPO</td>
+                                <td>it@digitalminds.com</td>
+                                <td>Enterprise</td>
+                                <td>Jan 2024</td>
+                            </tr>
+                            <tr>
+                                <td>Acme Corp</td>
+                                <td>admin@acme.com</td>
+                                <td>Standard</td>
+                                <td>Mar 2024</td>
+                            </tr>
+                            <tr>
+                                <td>Global Tech</td>
+                                <td>support@gtech.io</td>
+                                <td>Enterprise</td>
+                                <td>Jun 2024</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-errors" class="view-section">
+                <div class="quality-body">
+                    <div class="quality-header">
+                        <h1>E-commerce Operations Quality</h1>
+                        <p>Reporting Period: Q4 2025 | Brand Guidelines Applied</p>
+                    </div>
+
+                    <div class="quality-grid">
+                        <div class="quality-card">
+                            <h3>Defect Pareto (Logistics Issues)</h3>
+                            <div id="pareto_chart" style="height:300px;"></div>
+                        </div>
+
+                        <div class="quality-card">
+                            <h3>Returns Trend (%)</h3>
+                            <div id="trend_chart" style="height:300px;"></div>
+                        </div>
+
+                        <div class="quality-card">
+                            <h3>Order Fulfillment Health</h3>
+                            <div id="pie_chart" style="height:300px;"></div>
+                        </div>
+
+                        <div class="quality-card">
+                            <h3>Defects by Product Line</h3>
+                            <div id="bar_chart" style="height:300px;"></div>
+                        </div>
+
+                        <div class="quality-card quality-full">
+                            <h3>Operational Defect Log</h3>
+                            <div class="table-wrapper">
+                                <table class="quality-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Issue Category</th>
+                                            <th>Frequency</th>
+                                            <th>Recovery Cost</th>
+                                            <th>Resolution Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><b>Package Damage (LPM)</b></td>
+                                            <td>342</td>
+                                            <td class="currency">$12,450</td>
+                                            <td><span class="status-pill critical">High Priority</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>Late Dispatch (&gt;24h)</b></td>
+                                            <td>890</td>
+                                            <td class="currency">$4,200</td>
+                                            <td><span class="status-pill monitor">Under Review</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>Incorrect SKU Picked</b></td>
+                                            <td>124</td>
+                                            <td class="currency">$6,820</td>
+                                            <td><span class="status-pill critical">High Priority</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>Address Validation Errors</b></td>
+                                            <td>56</td>
+                                            <td class="currency">$840</td>
+                                            <td><span class="status-pill healthy">Improved</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>Return to Origin (RTO)</b></td>
+                                            <td>210</td>
+                                            <td class="currency">$3,150</td>
+                                            <td><span class="status-pill monitor">Stable</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+<div id="view-knowledge" class="view-section">
+    <header>
+        <h1>Knowledge Base</h1>
+    </header>
+
+    <div class="kb-layout">
+
+        <!-- Navigation Tree -->
+        <aside class="kb-nav">
+            <h3>Contents</h3>
+            <ul>
+                <li class="category">Orders & Returns</li>
+                <li class="child"><a class="kb-link" href="#" data-target="refunds-on-returns" onclick="showKbTopic('refunds-on-returns', this)">Refunds on Returns</a></li>
+                <li class="child"><a class="kb-link" href="#" data-target="chargeback" onclick="showKbTopic('chargeback', this)">Chargeback</a></li>
+                <li class="child"><a class="kb-link" href="#" data-target="prepaid-return-label" onclick="showKbTopic('prepaid-return-label', this)">Prepaid Return Label</a></li>
+                <li class="child"><a class="kb-link" href="#" data-target="charger-replacement" onclick="showKbTopic('charger-replacement', this)">Charger Replacement</a></li>
+                <li class="child"><a class="kb-link" href="#" data-target="amazon-cancellation" onclick="showKbTopic('amazon-cancellation', this)">Amazon Cancellation</a></li>
+                <li class="child"><a class="kb-link" href="#" data-target="backmarket-cancellation" onclick="showKbTopic('backmarket-cancellation', this)">BackMarket Cancellation</a></li>
+                <li class="child"><a class="kb-link" href="#" data-target="escalate-cancellation" onclick="showKbTopic('escalate-cancellation', this)">Escalate Cancellation</a></li>
+
+                <li class="category">Fraud & Claims</li>
+                <li class="child"><a class="kb-link" href="#" data-target="fraud-orders" onclick="showKbTopic('fraud-orders', this)">Fraud Orders</a></li>
+                <li class="child"><a class="kb-link" href="#" data-target="ebay-signature" onclick="showKbTopic('ebay-signature', this)">eBay Signature</a></li>
+                <li class="child"><a class="kb-link" href="#" data-target="a-z-claims" onclick="showKbTopic('a-z-claims', this)">A-Z Guarantee Claims</a></li>
+                <li class="child"><a class="kb-link" href="#" data-target="backmarket-invoice" onclick="showKbTopic('backmarket-invoice', this)">BackMarket Invoice</a></li>
+
+                <li class="category">User Management</li>
+                <li class="child"><a class="kb-link" href="#" data-target="user-management" onclick="showKbTopic('user-management', this)">User Management</a></li>
+                <li class="category">Operations</li>
+                <li class="child"><a class="kb-link" href="#" data-target="operations-handbook" onclick="showKbTopic('operations-handbook', this)">Operations Handbook</a></li>
+                <li class="child"><a class="kb-link" href="#" data-target="support-scripts" onclick="showKbTopic('support-scripts', this)">Support Scripts</a></li>
+            </ul>
+        </aside>
+
+        <!-- Content Area -->
+        <section>
+            <!-- KB overview (Search, Popular Articles, All Articles) removed per request -->
+
+            <!-- Knowledge articles (hidden until selected) -->
+            <div id="kb-articles">
+                <div id="kb-welcome" class="kb-article card">
+                    <h3>What is a knowledge base article?</h3>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Category / Steps</th>
+                                    <th>Details / Directions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>What is a knowledge base article?</strong></td>
+                                    <td>
+                                        A knowledge base article is a self-service resource designed to empower customers and employees with information. It can help them in different ways, like guiding them step-by-step through tasks, troubleshooting solutions for problems, or providing quick resolutions to FAQs. An article’s overall goal is to provide clear answers to user questions, allowing them to find solutions and complete tasks independently.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="refunds-on-returns" class="kb-article card">
+                    <h3>Refunds on Returns — DiamondAssets</h3>
+                    <p>This article covers DiamondAssets' campaign return and refund policy. For marketplace orders (Amazon / eBay), follow the platform-specific refund timelines: Amazon usually processes refunds within 3–5 business days after receiving returned items; eBay refunds depend on the seller's return policy. Use the relevant TOOL NAME (Seller Central / eBay Messages) to confirm return receipts and issue refunds.</p>
+                </div>
+
+                <div id="chargeback" class="kb-article card">
+                    <h3>Chargeback — Payment Disputes</h3>
+                    <p>How DiamondAssets responds to chargebacks: collect order proof, shipping/tracking, proof of delivery, and communication logs. For Amazon/Amazon Pay and eBay disputes, gather platform-specific evidence from the TOOL NAME (Seller Central / eBay Resolution Center) and escalate according to platform timelines.</p>
+                </div>
+
+                <div id="prepaid-return-label" class="kb-article card">
+                    <h3>Prepaid Return Label</h3>
+                    <p>When to issue prepaid return labels under DiamondAssets campaigns. Use approved carriers (UPS, FedEx) and record the label/return tracking in the order's notes in the TOOL NAME dashboard. Prepaid labels should only be issued when returns meet policy conditions.</p>
+                </div>
+
+                <div id="charger-replacement" class="kb-article card">
+                    <h3>Charger Replacement</h3>
+                    <p>Replacement workflow for faulty chargers under DiamondAssets warranty: verify serials, confirm purchase/campaign eligibility, and ship replacement with RMA reference. Update the case in the TOOL NAME used for that marketplace.</p>
+                </div>
+
+                <div id="amazon-cancellation" class="kb-article card">
+                    <h3>Amazon Cancellation</h3>
+                    <p>Amazon-specific cancellation steps for DiamondAssets listings: cancel in Seller Central before fulfillment, confirm inventory, and notify customer. Use the Seller Central TOOL NAME to submit cancellations and check for potential A-to-Z exposure.</p>
+                </div>
+
+                <div id="backmarket-cancellation" class="kb-article card">
+                    <h3>BackMarket Cancellation</h3>
+                    <p>BackMarket cancellations require using the BackMarket seller portal. Follow platform rules, issue refunds in the BackMarket TOOL NAME, and log cancellations on the DiamondAssets order record.</p>
+                </div>
+
+                <div id="escalate-cancellation" class="kb-article card">
+                    <h3>Escalate Cancellation</h3>
+                    <p>Escalate cancellations when customer disputes, chargebacks, or marketplace restrictions apply. Provide supervisor with order history, tool screenshots (TOOL NAME), and reason for escalation.</p>
+                </div>
+
+                <div id="fraud-orders" class="kb-article card">
+                    <h3>Fraud Orders</h3>
+                    <p>DiamondAssets fraud detection: hold suspicious orders, verify billing/shipping, request ID where required, and consult the payment provider. Record findings in the TOOL NAME and follow reporting procedures for Amazon/eBay marketplaces.</p>
+                </div>
+
+                <div id="ebay-signature" class="kb-article card">
+                    <h3>eBay Signature</h3>
+                    <p>Signature confirmation requirements for high-value eBay items. Use carrier signature services, retain proof, and attach signature evidence to the eBay case in the TOOL NAME when handling disputes.</p>
+                </div>
+
+                <div id="a-z-claims" class="kb-article card">
+                    <h3>A-Z Guarantee Claims</h3>
+                    <p>Responding to Amazon A-to-Z claims: compile order, shipping, and communication logs from the Seller Central TOOL NAME. Submit evidence promptly and follow Amazon dispute timelines.</p>
+                </div>
+
+                <div id="backmarket-invoice" class="kb-article card">
+                    <h3>BackMarket Invoice</h3>
+                    <p>How to provide invoices for BackMarket orders: retrieve order invoice from DiamondAssets billing, upload to BackMarket TOOL NAME when requested, and keep matching internal records.</p>
+                </div>
+
+                <div id="operations-handbook" class="kb-article card">
+                    <h3>Operations Handbook</h3>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Category / Steps</th>
+                                    <th>Details / Directions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Knowledge Base Definition row removed per request -->
+
+                                <tr>
+                                    <td><strong>2. Order Management &amp; Logistics</strong></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>Daily Cancellation Procedures</td>
+                                    <td>
+                                        1. <strong>Tag Identification:</strong> Search Sellercloud for "EXPORTED" tag. If "IsExportedToPVX", it can still be cancelled.<br>
+                                        2. <strong>Escalation:</strong> If already "EXPORTED", get approval from Ma’am Rachel (Zoom - EcomSupport).<br>
+                                        3. <strong>Marketplace Specifics:</strong> Amazon (use "Buyer Canceled"); Back Market (use "Set Cancelled Internally").
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Fraud Detection</td>
+                                    <td>
+                                        Check daily for high-value items (e.g., iPhone 16).<br>
+                                        <strong>Markers:</strong> Shipping to Bear/New Castle, DE or Port Reading, NJ.<br>
+                                        <strong>Method:</strong> Items marked delivered but later "returned-to-sender" without a physical return.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>High-Value Shipping</td>
+                                    <td>Any eBay order exceeding <strong>$700</strong> must be set to <strong>Signature Required</strong> in Sellercloud.</td>
+                                </tr>
+
+                                <tr>
+                                    <td><strong>3. Claims, Disputes, and Refunds</strong></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>A-Z Claims &amp; Chargebacks</td>
+                                    <td>
+                                        <strong>A-Z Claims:</strong> Provide tracking and proof of delivery (POD).<br>
+                                        <strong>Chargebacks:</strong> Represent the case on Amazon Seller Central with ship date, carrier, and POD.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Returns and Refund Policy</td>
+                                    <td>
+                                        <strong>Policy:</strong> 30-day refund and 90-day replacement warranty.<br>
+                                        <strong>Processing:</strong> Use Return Tracker and marketplace portals after verifying tracking ID.<br>
+                                        <strong>Exceptions:</strong> Altered devices are ineligible for full credit; offer $20 goodwill compensation instead.
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td><strong>4. Technical Troubleshooting</strong></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>MacBook Overheating</td>
+                                    <td>Ensure vents are clear, minimize multitasking, and update software.</td>
+                                </tr>
+                                <tr>
+                                    <td>iPad/iPhone Black Screen</td>
+                                    <td>Perform a hard reset or charge for at least one hour.</td>
+                                </tr>
+                                <tr>
+                                    <td>Password Removal (iPad)</td>
+                                    <td>Put device into Recovery Mode using a computer, then select Restore.</td>
+                                </tr>
+                                <tr>
+                                    <td>Bluetooth Pairing</td>
+                                    <td>Select "Forget This Device" in settings, restart the device, and repair.</td>
+                                </tr>
+                                <tr>
+                                    <td>Battery Health</td>
+                                    <td>Perform a Power Cycle: Charge to 100% and drain to 0% once a month.</td>
+                                </tr>
+
+                                <tr>
+                                    <td><strong>5. Customer Service Communication</strong></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>Shipping &amp; Delivery Issues</td>
+                                    <td>
+                                        <strong>DNR:</strong> Ask customer to check with neighbors/porches. Direct to carrier claims (UPS: 1-800-742-5877; FedEx: 1-800-463-3339).<br>
+                                        <strong>Delays:</strong> Empathize and explain warehouse volume; reassure that tracking is coming.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Phone Interaction Guidelines</td>
+                                    <td>
+                                        <strong>Opening:</strong> "Thank you for calling... This is [Agent]. How may I help you?"<br>
+                                        <strong>Empathy:</strong> "If I were in your shoes, I would feel the same way."<br>
+                                        <strong>Hold:</strong> Always ask permission and thank them for waiting.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Marketplace Specifics</td>
+                                    <td>
+                                        <strong>Back Market:</strong> Download invoice from Sellercloud ("Print Invoice to PDF") and upload to Customer Care tab.<br>
+                                        <strong>Groupon:</strong> Redirect customers to groupon.com/customer_support if merchant assistance isn't possible.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="support-scripts" class="kb-article card">
+                    <h3>Support Scripts — DiamondAssets</h3>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Category / Steps</th>
+                                    <th>Details / Directions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>1. Order Status &amp; Shipping</strong></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>Order with Tracking Number</td>
+                                    <td>Great news! Your order is on its way. We are glad to inform you that your order has been dispatched from our warehouse via [Carrier] with tracking number ______. You can follow the progress of your parcel by using this link: [Tracking Link].</td>
+                                </tr>
+                                <tr>
+                                    <td>Order without Tracking (Processing)</td>
+                                    <td>We are getting your order ready to be shipped. If you haven't yet received a tracking number, that means we're working on processing your order. Your tracking number will be sent via email as soon as your order leaves our warehouse.</td>
+                                </tr>
+                                <tr>
+                                    <td>Shipping Delay Explanation</td>
+                                    <td>We apologize if you are experiencing a delay. Due to the high load of the warehouse, the processing time has slowed down. We are doing our best to ship your package in a timely manner.</td>
+                                </tr>
+                                <tr>
+                                    <td>International Shipping Denial</td>
+                                    <td>Since we do not ship internationally we are afraid that the system will not confirm an order if it's not a US address. We suggest placing an order with a US shipping address and once received you can look for any carrier that can ship it internationally.</td>
+                                </tr>
+
+                                <tr>
+                                    <td><strong>2. Delivery Issues (DNR)</strong></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>General DNR Check</td>
+                                    <td>Your package says it was delivered to your address, please check around porches, at back doors, behind planters, neighbors, or with other household members or the leasing/central receiving office if applicable.</td>
+                                </tr>
+                                <tr>
+                                    <td>UPS DNR</td>
+                                    <td>We would recommend that you reach out to UPS directly so they can have a detailed investigation regarding your package. You can give UPS a call at 1 (800) 742-5877.</td>
+                                </tr>
+                                <tr>
+                                    <td>FedEx DNR</td>
+                                    <td>We would recommend that you reach out to FedEx directly... You can give FedEx a call at 1 (800) 463-3339.</td>
+                                </tr>
+                                <tr>
+                                    <td>USPS DNR</td>
+                                    <td>We would recommend that you reach out to USPS directly... You can give USPS a call at (1-800-275-8777).</td>
+                                </tr>
+                                <tr>
+                                    <td>Amazon-Labeled DNR</td>
+                                    <td>The shipping label for your order is labeled by Amazon. We highly recommend opening a case with Amazon in order for them to file a claim to UPS. You can give Amazon Customer Service a call at 888-280-4331.</td>
+                                </tr>
+                                <tr>
+                                    <td>eBay DNR</td>
+                                    <td>We would recommend that you file a case with eBay. From the eBay homepage &gt; My eBay &gt; purchase history &gt; find the transaction &gt; choose 'I didn’t receive it'.</td>
+                                </tr>
+
+                                <tr>
+                                    <td><strong>3. Cancellations &amp; Address Changes</strong></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>Successful Cancellation</td>
+                                    <td>Your cancellation request for this order has been approved and your order has been canceled on our end. A refund has been issued today and may take 3-5 business days to appear in your account.</td>
+                                </tr>
+                                <tr>
+                                    <td>Cancellation Denied (Shipped)</td>
+                                    <td>We are sorry to inform you we cannot make any changes once the order has been placed and shipped... For now, we suggest you wait for your order to arrive then decide later.</td>
+                                </tr>
+                                <tr>
+                                    <td>Address Change Denial</td>
+                                    <td>We are sorry to inform you we cannot make any changes once the order has been placed and shipped. We would recommend that you reach out to UPS directly [or sign up for UPS My Choice] to request a change.</td>
+                                </tr>
+                                <tr>
+                                    <td>Fraud-Related Cancellation</td>
+                                    <td>Our system flagged this as a potential risk and unfortunately, we had to cancel the order as per our company's security protocols. This decision is to ensure the safety of all transactions.</td>
+                                </tr>
+
+                                <tr>
+                                    <td><strong>4. Technical Troubleshooting</strong></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>Hard Reset (iPad/iPhone)</td>
+                                    <td>Press and quickly release the volume button nearest to the top button. Press and quickly release the volume button farthest from the top button. Press and hold the top button until the Apple logo appears.</td>
+                                </tr>
+                                <tr>
+                                    <td>Black Screen (iPhone)</td>
+                                    <td>When your iPhone has a black screen and is unresponsive, you can hard reset the iPhone to troubleshoot... It's also an Apple-recommended way to fix many subtle system errors.</td>
+                                </tr>
+                                <tr>
+                                    <td>MacBook Password Removal</td>
+                                    <td>Go to Apple Menu &gt; System Preferences &gt; Users &amp; Groups. Click the lock, enter your password, and click Login Options. Choose the desired account from the Automatic login dropdown.</td>
+                                </tr>
+                                <tr>
+                                    <td>iPad Recovery Mode (Locked)</td>
+                                    <td>You need to use a computer to put their iPad in recovery mode. This process deletes data and settings, including the passcode... Choose Restore when you see the option.</td>
+                                </tr>
+                                <tr>
+                                    <td>MacBook/iPad Overheating</td>
+                                    <td>Don't block vents, minimize multitasking, and keep software up to date. For iPads, try a power cycle (charge to 100% and drain completely) once a month.</td>
+                                </tr>
+                                <tr>
+                                    <td>Bluetooth/Wi-Fi Issues</td>
+                                    <td>Open Settings &gt; Bluetooth &gt; 'Forget This Device'. For Wi-Fi, go to Settings &gt; General &gt; Transfer or Reset &gt; Reset Network Settings.</td>
+                                </tr>
+
+                                <tr>
+                                    <td><strong>5. Returns, Refunds &amp; Warranty</strong></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>Refund Processed</td>
+                                    <td>We have proceeded with the refund to your account. It may take 1-3 business days to appear in your account depending on the payment you used.</td>
+                                </tr>
+                                <tr>
+                                    <td>Warranty Expiration</td>
+                                    <td>Your order is backed up with a 30 Days Refund Policy and 90 Days Replacement Warranty from the date you received your order. We regret to inform you that your request to return was no longer accommodated as it is beyond this period.</td>
+                                </tr>
+                                <tr>
+                                    <td>Ineligible Altered Device</td>
+                                    <td>Once the device has been altered, this is ineligible for credit. As our sincere apology, we can only offer you $20 as compensation.</td>
+                                </tr>
+                                <tr>
+                                    <td>Wrong Item Returned</td>
+                                    <td>We received your returned item; however, upon checking, the device is not associated with our store. We will only process a refund once we receive the correct device.</td>
+                                </tr>
+
+                                <tr>
+                                    <td><strong>6. Feedback &amp; Reviews</strong></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>Review Request</td>
+                                    <td>We would be glad to hear about your experience. If you feel inclined and are happy with our team and product, please leave us a review! Reviews really go a long way for our store!</td>
+                                </tr>
+                                <tr>
+                                    <td>Feedback Revision Request</td>
+                                    <td>We understand that your time is valuable, however, we would appreciate it if you could consider editing your review [in exchange for a resolved issue].</td>
+                                </tr>
+                                <tr>
+                                    <td>Declining Free Review Units</td>
+                                    <td>All our reviews come from authentic buyers who have purchased our products... we must decline your offer [to provide a device in exchange for a review] at this time.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="user-management" class="kb-article card">
+                    <h3>User Management</h3>
+                </div>
+            </div>
+
+            <!-- User Management roles table removed as requested -->
+
+            <h3 class="section-title kb-hide-on-preview">Access Control</h3>
+            <div class="card kb-hide-on-preview" style="margin-bottom:16px;">
+                <p class="text-secondary">Roles define what actions users can perform. Use least-privilege principles: grant only necessary permissions and regularly review access. For external tools, store credentials securely and restrict who can view them.</p>
+            </div>
+
+            <h2 class="section-title kb-hide-on-preview" data-visible-for="user-management">Tools & Credentials</h2>
+
+            <div class="table-container kb-hide-on-preview" data-visible-for="user-management">
+                <table class="credentials-table">
+                    <thead>
+                        <tr>
+                            <th>TOOL NAME</th>
+                            <th>USERNAME / EMAIL</th>
+                            <th>PASSWORD</th>
+                            <th>LINK</th>
+                            <th>NOTES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Amazon Seller Central</td>
+                            <td>Own email and password</td>
+                            <td>
+                                <span class="credential" data-hidden="true" data-real="">••••••••</span>
+                                <button class="toggle-btn" onclick="togglePassword(this)">View</button>
+                            </td>
+                            <td><a href="https://sellercentral.amazon.com/messaging/inbox?fi=responseNeeded" target="_blank">Seller Central Inbox</a></td>
+                            <td></td>
+                        </tr>
+
+                        <tr>
+                            <td>Back Market</td>
+                            <td>ecommsales@diamondassets.com</td>
+                            <td>
+                                <span class="credential" data-hidden="true" data-real="Qyqmex-migvy6-xigqiz">••••••••</span>
+                                <button class="toggle-btn" onclick="togglePassword(this)">View</button>
+                            </td>
+                            <td><a href="https://www.backmarket.com/bo-seller/customer-care/all-requests" target="_blank">BackMarket Seller</a></td>
+                            <td></td>
+                        </tr>
+
+                        <tr>
+                            <td>eBay</td>
+                            <td>ever_green</td>
+                            <td>
+                                <span class="credential" data-hidden="true" data-real="UWU4xyf7pah*rtw.yvt">••••••••</span>
+                                <button class="toggle-btn" onclick="togglePassword(this)">View</button>
+                            </td>
+                            <td><a href="https://www.ebay.com/cnt/ViewMessage?_caprdt=1&group_type=CORE" target="_blank">eBay Messages</a></td>
+                            <td></td>
+                        </tr>
+
+                        <tr>
+                            <td>Temu</td>
+                            <td>Own email and password</td>
+                            <td>
+                                <span class="credential" data-hidden="true" data-real="">••••••••</span>
+                                <button class="toggle-btn" onclick="togglePassword(this)">View</button>
+                            </td>
+                            <td>—</td>
+                            <td></td>
+                        </tr>
+
+                        <tr>
+                            <td>Shein</td>
+                            <td>Own email and password</td>
+                            <td>
+                                <span class="credential" data-hidden="true" data-real="">••••••••</span>
+                                <button class="toggle-btn" onclick="togglePassword(this)">View</button>
+                            </td>
+                            <td>—</td>
+                            <td></td>
+                        </tr>
+
+                        <tr>
+                            <td>Rebelo</td>
+                            <td>Own email and password</td>
+                            <td>
+                                <span class="credential" data-hidden="true" data-real="">••••••••</span>
+                                <button class="toggle-btn" onclick="togglePassword(this)">View</button>
+                            </td>
+                            <td><a href="https://cobalt.reebelo.com/login" target="_blank">Rebelo Login</a></td>
+                            <td></td>
+                        </tr>
+
+                        <tr>
+                            <td>Sellercloud</td>
+                            <td>applerusecommerce@gmail.com</td>
+                            <td>
+                                <span class="credential" data-hidden="true" data-real="DiamondAssets2025!">••••••••</span>
+                                <button class="toggle-btn" onclick="togglePassword(this)">View</button>
+                            </td>
+                            <td><a href="https://sv.delta.sellercloud.com/" target="_blank">Sellercloud</a></td>
+                            <td></td>
+                        </tr>
+
+                        <tr>
+                            <td>Endicia</td>
+                            <td>DAecommsales</td>
+                            <td>
+                                <span class="credential" data-hidden="true" data-real="ec0m1850!@Putman">••••••••</span>
+                                <button class="toggle-btn" onclick="togglePassword(this)">View</button>
+                            </td>
+                            <td><a href="https://print.endicia.com/Webpostage/default2.aspx?isAuth0SignInMode=true" target="_blank">Endicia</a></td>
+                            <td></td>
+                        </tr>
+
+                        <tr>
+                            <td>EveryMac</td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td><a href="https://everymac.com/ultimate-mac-lookup/" target="_blank">EveryMac Lookup</a></td>
+                            <td>No login required</td>
+                        </tr>
+
+                        <tr>
+                            <td>Zoom</td>
+                            <td>Own email and password</td>
+                            <td>
+                                <span class="credential" data-hidden="true" data-real="">••••••••</span>
+                                <button class="toggle-btn" onclick="togglePassword(this)">View</button>
+                            </td>
+                            <td>—</td>
+                            <td></td>
+                        </tr>
+
+                        <tr>
+                            <td>UPS</td>
+                            <td>dalogistics</td>
+                            <td>
+                                <span class="credential" data-hidden="true" data-real="GdBveY8*3U&Dz7Z">••••••••</span>
+                                <button class="toggle-btn" onclick="togglePassword(this)">View</button>
+                            </td>
+                            <td>—</td>
+                            <td></td>
+                        </tr>
+
+                        <tr>
+                            <td>FedEx</td>
+                            <td>DiamondAssets5</td>
+                            <td>
+                                <span class="credential" data-hidden="true" data-real="DAconde401">••••••••</span>
+                                <button class="toggle-btn" onclick="togglePassword(this)">View</button>
+                            </td>
+                            <td>—</td>
+                            <td></td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+
+
+        </section>
+
+    </div>
+</div>
+
+
+            <div id="view-settings" class="view-section">
+                <header>
+                    <h1>Panel Settings</h1>
+                </header>
+                <div class="form-section">
+                    <div class="form-group">
+                        <label>Environment Name</label>
+                        <input type="text" value="Production - Primary">
+                    </div>
+                    <div class="form-group">
+                        <label>Notification Email</label>
+                        <input type="email" value="admin@techpanel.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Update Frequency</label>
+                        <select>
+                            <option>Real-time</option>
+                            <option>Every 5 minutes</option>
+                            <option>Every hour</option>
+                        </select>
+                    </div>
+                    <button
+                        style="background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;">Save
+                        Configurations</button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script>
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(view => {
+                view.classList.remove('active');
+            });
+            document.getElementById('view-' + viewName).classList.add('active');
+            document.querySelectorAll('#sidebar-nav a').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.getElementById('link-' + viewName).classList.add('active');
+            // If switching to Quality (errors view renamed to Quality), draw charts if available
+            try { if (viewName === 'errors' && typeof drawCharts === 'function') drawCharts(); } catch(e){}
+        }
+
+        function showKbTopic(topicId, linkEl) {
+            const hideEls = document.querySelectorAll('.kb-hide-on-preview');
+            const articlesContainer = document.getElementById('kb-articles');
+
+            // clear any previous active-parent markers
+            document.querySelectorAll('.kb-nav .active-parent').forEach(c => c.classList.remove('active-parent'));
+
+            if (!topicId) {
+                // Welcome/default view: hide other KB sections and show only welcome
+                hideEls.forEach(e => e.style.display = 'none');
+                if (articlesContainer) articlesContainer.style.display = 'block';
+
+                document.querySelectorAll('.kb-article').forEach(a => a.classList.remove('active'));
+                const welcome = document.getElementById('kb-welcome');
+                if (welcome) welcome.classList.add('active');
+
+                document.querySelectorAll('.kb-link').forEach(l => l.classList.remove('active'));
+                return;
+            }
+
+            // Topic selected: hide other KB sections and show only the selected article
+            hideEls.forEach(e => {
+                const showFor = (e.dataset && e.dataset.visibleFor) ? e.dataset.visibleFor.split(',').map(s=>s.trim()) : null;
+                if (showFor && showFor.length) {
+                    // if this element is intended to be visible for this topic, show it, otherwise hide
+                    if (showFor.includes(topicId)) e.style.display = '';
+                    else e.style.display = 'none';
+                } else {
+                    e.style.display = 'none';
+                }
+            });
+            if (articlesContainer) articlesContainer.style.display = 'block';
+
+            document.querySelectorAll('.kb-article').forEach(a => a.classList.remove('active'));
+            const el = document.getElementById(topicId);
+            if (el) el.classList.add('active');
+
+            // Format article into step-by-step layout if not already formatted
+            if (el) formatArticleForSteps(el);
+
+            // update nav active state
+            document.querySelectorAll('.kb-link').forEach(l => l.classList.remove('active'));
+            if (linkEl) linkEl.classList.add('active');
+
+            // Mark parent category (find nearest previous .category li)
+            if (linkEl) {
+                let li = linkEl.closest('li');
+                let parentCat = null;
+                while (li) {
+                    let prev = li.previousElementSibling;
+                    while (prev) {
+                        if (prev.classList && prev.classList.contains('category')) { parentCat = prev; break; }
+                        prev = prev.previousElementSibling;
+                    }
+                    if (parentCat) break;
+                    li = li.parentElement ? li.parentElement.closest('li') : null;
+                }
+                if (parentCat) parentCat.classList.add('active-parent');
+            }
+
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Show welcome on initial load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Format all KB articles consistently, but skip ones that already include tables
+            document.querySelectorAll('.kb-article').forEach(a => formatArticleForSteps(a));
+            showKbTopic(null);
+        });
+
+    function togglePassword(button) {
+        const span = button.previousElementSibling;
+        const realPassword = span.dataset.real || '';
+
+        if (span.dataset.hidden === "true") {
+            span.textContent = realPassword;
+            span.dataset.hidden = "false";
+            button.textContent = "Hide";
+        } else {
+            span.textContent = "••••••••";
+            span.dataset.hidden = "true";
+            button.textContent = "View";
+        }
+    }
+
+    // Convert article content into a uniform two-column table layout that matches the
+    // welcome/support-scripts format. Articles that already contain a table are skipped.
+    function formatArticleForSteps(article) {
+        if (!article || article.dataset.formatted === 'true') return;
+
+        // If the article already contains a table, leave it as-is
+        if (article.querySelector && article.querySelector('table')) {
+            article.dataset.formatted = 'true';
+            return;
+        }
+
+        const h4s = Array.from(article.querySelectorAll(':scope > h4'));
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'table-container';
+
+        const table = document.createElement('table');
+        const thead = document.createElement('thead');
+        thead.innerHTML = '<tr><th>Category / Steps</th><th>Details / Directions</th></tr>';
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+
+        if (h4s.length) {
+            // Each H4 becomes its own row (left = heading, right = content until next H4)
+            h4s.forEach(h4 => {
+                const tdLeft = document.createElement('td');
+                tdLeft.innerHTML = '<strong>' + h4.textContent + '</strong>';
+
+                const tdRight = document.createElement('td');
+                // collect nodes until next H4
+                let node = h4.nextSibling;
+                while (node && !(node.nodeType === 1 && node.tagName === 'H4')) {
+                    tdRight.appendChild(node.cloneNode(true));
+                    node = node.nextSibling;
+                }
+
+                const tr = document.createElement('tr');
+                tr.appendChild(tdLeft);
+                tr.appendChild(tdRight);
+                tbody.appendChild(tr);
+            });
+        } else {
+            // Single-row overview: left = Overview, right = all content excluding the H3
+            // If there is no content other than the H3 (empty article), skip generating
+            // an empty Overview row to avoid showing a header + blank content.
+            const contentNodes = Array.from(article.childNodes).filter(node => {
+                // skip the H3 heading node
+                if (node.nodeType === 1 && node.tagName === 'H3') return false;
+                // skip empty text nodes
+                if (node.nodeType === 3 && node.textContent.trim() === '') return false;
+                return true;
+            });
+
+            if (!contentNodes.length) {
+                // Mark formatted so we don't attempt again and leave article unchanged
+                article.dataset.formatted = 'true';
+                table.appendChild(tbody);
+                wrapper.appendChild(table);
+                // don't replace the article's innerHTML — leave the original heading only
+                return;
+            }
+
+            const tdLeft = document.createElement('td');
+            tdLeft.innerHTML = '<strong>Overview</strong>';
+
+            const tdRight = document.createElement('td');
+            contentNodes.forEach(node => tdRight.appendChild(node.cloneNode(true)));
+
+            const tr = document.createElement('tr');
+            tr.appendChild(tdLeft);
+            tr.appendChild(tdRight);
+            tbody.appendChild(tr);
+        }
+
+        table.appendChild(tbody);
+        wrapper.appendChild(table);
+
+        article.innerHTML = '';
+        article.appendChild(wrapper);
+        article.dataset.formatted = 'true';
+    }
+
+    // Google Charts: load and draw a simple column chart for the Quality view
+    try {
+        google.charts.load('current', { packages: ['corechart'] });
+    } catch (e) {
+        // loader may not be available if script blocked; ignore silently
+    }
+
+    function drawQualityChart() {
+        try {
+            if (!google || !google.visualization) return;
+            var data = google.visualization.arrayToDataTable([
+                ['Week', 'Defects'],
+                ['W1', 12],
+                ['W2', 8],
+                ['W3', 15],
+                ['W4', 6],
+                ['W5', 10]
+            ]);
+
+            var options = {
+                legend: { position: 'none' },
+                colors: ['#3b82f6'],
+                chartArea: { left: 40, top: 10, right: 10, bottom: 30 },
+                vAxis: { minValue: 0 }
+            };
+
+            var el = document.getElementById('quality-chart');
+            if (!el) return;
+            var chart = new google.visualization.ColumnChart(el);
+            chart.draw(data, options);
+        } catch (err) {
+            console.warn('Google Chart draw failed', err);
+        }
+    }
+
+    // Draw full dashboard charts when Google Charts finishes loading
+    try {
+        if (google && google.charts && google.charts.setOnLoadCallback) {
+            google.charts.setOnLoadCallback(function() {
+                if (typeof drawCharts === 'function') drawCharts();
+            });
+        }
+    } catch (e) {}
+
+    // Full dashboard draw function (pareto, trend, pie, bar)
+    function drawCharts() {
+        try {
+            if (!google || !google.visualization) return;
+
+            // --- PARETO (combo: bars + cumulative line) ---
+            var paretoData = google.visualization.arrayToDataTable([
+                ['Issue', 'Frequency', 'Cumulative %'],
+                ['Late Dispatch', 890, 55],
+                ['Package Damage', 342, 76],
+                ['RTO Issues', 210, 89],
+                ['Wrong SKU', 124, 96],
+                ['Other', 56, 100]
+            ]);
+            var paretoOptions = {
+                chartArea: {width: '80%', height: '70%'},
+                series: { 0: {type: 'bars', color: '#097740'}, 1: {type: 'line', color: '#a0cd39', targetAxisIndex: 1, pointSize: 4} },
+                vAxes: { 0: {title: 'Units'}, 1: {title: 'Percentage', format: "#'%'"} },
+                legend: {position: 'bottom'},
+                animation: { startup: true, duration: 800, easing: 'out' }
+            };
+            var paretoEl = document.getElementById('pareto_chart');
+            if (paretoEl) new google.visualization.ComboChart(paretoEl).draw(paretoData, paretoOptions);
+
+            // --- TREND (line) ---
+            var trendData = google.visualization.arrayToDataTable([
+                ['Month', 'Return Rate %'],
+                ['Jul', 4.2], ['Aug', 3.8], ['Sep', 5.1], ['Oct', 3.9], ['Nov', 3.2], ['Dec', 2.8]
+            ]);
+            var trendOptions = { colors: ['#a0cd39'], curveType: 'function', chartArea: {width: '85%'}, legend: 'none' };
+            var trendEl = document.getElementById('trend_chart');
+            if (trendEl) new google.visualization.LineChart(trendEl).draw(trendData, trendOptions);
+
+            // --- PIE ---
+            var pieData = google.visualization.arrayToDataTable([
+                ['Status', 'Volume'],
+                ['Delivered Perfect', 14500],
+                ['Minor Issues', 1200],
+                ['Major Defects', 300]
+            ]);
+            var pieOptions = { pieHole: 0.5, colors: ['#097740','#a0cd39','#3b4543'], chartArea: {width: '90%'}, legend: {position: 'right'} };
+            var pieEl = document.getElementById('pie_chart');
+            if (pieEl) new google.visualization.PieChart(pieEl).draw(pieData, pieOptions);
+
+            // --- BAR (by product line) ---
+            var barData = google.visualization.arrayToDataTable([
+                ['Category', 'Defects', { role: 'style' }],
+                ['Electronics', 450, '#3b4543'],
+                ['Fashion', 820, '#097740'],
+                ['Home', 310, '#577253'],
+                ['Beauty', 120, '#a0cd39']
+            ]);
+            var barOptions = { legend: 'none', chartArea: {width: '70%'}, hAxis: { minValue: 0 } };
+            var barEl = document.getElementById('bar_chart');
+            if (barEl) new google.visualization.BarChart(barEl).draw(barData, barOptions);
+
+        } catch (err) {
+            console.warn('drawCharts failed', err);
+        }
+    }
+
+    // Redraw on resize for responsiveness
+    window.addEventListener('resize', function() { try { if (typeof drawCharts === 'function') drawCharts(); } catch(e){} });
+</script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Support Portal | Internal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================================
+           BRAND CONFIGURATION: Update these values 
+           ========================================= */
+        :root {
+            --brand-primary: #7b4123;     /* Main Accent Color */
+            --brand-dark: #1f1513;        /* Headers/Text */
+            --brand-surface: #fbfaf7;     /* Soft background/highlight */
+            --brand-muted: #9b908f;       /* Muted chart/text colors */
+            
+            --bg-main: #ffffff;
+            --bg-sidebar: #fbfbfb;
+            --border-color: #e6e9ec;
+            --text-primary: #0f1724;
+            --text-secondary: #5b6570;
+            --muted: #6b7280;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-main); 
+            color: var(--text-primary);
+            font-size: 13px; 
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .wrapper { display: flex; min-height: 100vh; }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            padding: 32px 24px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .brand-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .logo-agency-placeholder { font-weight: 700; color: var(--text-primary); }
+        .logo-divider { width: 1px; height: 30px; background: var(--border-color); }
+        .logo-client-placeholder { font-weight: 700; color: var(--brand-primary); }
+
+        .sidebar nav a {
+            display: block;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            transition: 0.2s;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .sidebar nav a:hover { background: #f8fafc; color: var(--brand-primary); }
+        .sidebar nav a.active { background: var(--brand-surface); color: var(--brand-primary); font-weight: 600; }
+
+        .sidebar-footer {
+            margin-top: auto;
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Layout & Content */
+        .main { flex: 1; margin-left: 280px; padding: 60px; max-width: 1400px; }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+
+        h1, h2, h3, h4 { font-family: 'Playfair Display', serif; color: var(--brand-dark); }
+        .clean-title { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+        .clean-subtitle { color: var(--brand-primary); font-size: 1.1rem; font-weight: 700; margin-bottom: 32px; }
+
+        .grid-layout { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        .chart-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 6px 18px rgba(15,23,42,0.04);
+        }
+
+        .chart-card h3 {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 18px;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--brand-surface);
+            padding-bottom: 10px;
+        }
+
+        .full-width { grid-column: span 2; }
+        .table-wrapper { border-radius: 8px; overflow: hidden; margin-top: 10px; }
+
+        /* Unified Table Styles */
+        .brand-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border-color); }
+        .brand-table th { 
+            text-align: left; padding: 15px 20px; background: var(--brand-surface);
+            font-size: 10px; color: var(--text-secondary); text-transform: uppercase;
+            border: 1px solid var(--border-color);
+        }
+        .brand-table td { padding: 18px 20px; border: 1px solid var(--border-color); font-size: 13px; vertical-align: top; }
+        .status-tag { font-size: 11px; font-weight: 700; color: var(--brand-primary); }
+
+        /* Agent Performance Logic */
+        .formula-box { margin-top: 8px; font-style: italic; color: var(--muted); font-size: 11px; }
+
+        /* KB Layout */
+        .kb-layout { display: grid; grid-template-columns: 260px 1fr; gap: 20px; }
+        .kb-nav h3 { font-size: 16px; margin-bottom: 15px; }
+        .kb-tree { list-style: none; }
+        .kb-tree .parent { font-weight: 700; margin-bottom: 10px; border-left: 2px solid var(--brand-primary); padding-left: 10px; }
+        .kb-tree ul { margin-bottom: 20px; list-style: none; padding-left: 10px; }
+        .kb-tree a { display: block; padding: 6px 10px; color: var(--text-secondary); text-decoration: none; border-radius: 6px; }
+        .kb-tree a.active { background: #f1f5f9; color: var(--brand-primary); font-weight: 700; }
+        .kb-article { display: none; margin-top: 0 !important; }
+        .kb-article ol { padding-left: 20px; color: var(--text-secondary); }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <aside class="sidebar">
+            <div class="brand-header">
+                <div class="logo-agency-placeholder">AGENCY LOGO</div>
+                <div class="logo-divider"></div>
+                <div class="logo-client-placeholder">CLIENT LOGO</div>
+            </div>
+
+            <nav id="sidebar-nav">
+                <a onclick="switchView('dashboard')" class="active" id="link-dashboard">Overview</a>
+                <a onclick="switchView('agents')" id="link-agents">Agent Performance</a>
+                <a onclick="switchView('quality')" id="link-quality">Quality Metrics</a>
+                <a onclick="switchView('knowledge')" id="link-knowledge">Knowledge Base</a>
+                <a onclick="switchView('settings')" id="link-settings">Settings</a>
+            </nav>
+
+            <div class="sidebar-footer">&copy; 2025 Portal Boilerplate — Internal</div>
+        </aside>
+
+        <main class="main">
+            <div id="view-dashboard" class="view-section active">
+                <h1 class="clean-title">Operational Overview</h1>
+                <p class="clean-subtitle">Key Performance Indicators</p>
+                <div class="chart-card">Placeholder for general dashboard analytics.</div>
+            </div>
+
+            <div id="view-agents" class="view-section">
+                <h1 class="clean-title">Agent Performance Criteria</h1>
+                <p class="clean-subtitle">Metrics and scoring guidance for agents</p>
+
+                <div class="chart-card">
+                    <div class="table-wrapper">
+                        <table class="brand-table">
+                            <thead>
+                                <tr>
+                                    <th colspan="2">Criteria & Description</th>
+                                    <th>Guidelines</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><b>Average wait time</b></td>
+                                    <td>The average time it takes for an agent to accept or respond to an incoming call.</td>
+                                    <td><ul><li>30s and below</li><li>45s</li><li>60s</li><li>90s</li><li>120s+</li></ul></td>
+                                    <td><ul><li>10 - Excellent</li><li>8 - Good</li><li>6 - Satisfactory</li><li>4 - Needs Improvement</li><li>2 - Poor</li></ul></td>
+                                </tr>
+                                <tr>
+                                    <td><b>Missed Call (%)</b></td>
+                                    <td>Percentage of incoming calls not answered.
+                                        <p class="formula-box">Missed Call (%) = (Missed ÷ Total Incoming) × 100</p>
+                                    </td>
+                                    <td><ul><li>5% and below</li><li>10%</li><li>15%</li><li>20%</li><li>25%+</li></ul></td>
+                                    <td><ul><li>10 - Excellent</li><li>8 - Good</li><li>6 - Satisfactory</li><li>4 - Needs Improvement</li><li>2 - Poor</li></ul></td>
+                                </tr>
+                                <tr>
+                                    <td><b>Recovery Rate (%)</b></td>
+                                    <td>Abandoned carts converted to orders.
+                                        <p class="formula-box">Recovery Rate (%) = (Called ÷ Recovered) × 100</p>
+                                    </td>
+                                    <td><ul><li>20%+</li><li>15%</li><li>10%</li><li>5%</li><li>0%</li></ul></td>
+                                    <td><ul><li>10 - Excellent</li><li>8 - Good</li><li>6 - Satisfactory</li><li>4 - Needs Improvement</li><li>2 - Poor</li></ul></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-quality" class="view-section">
+                <h1 class="clean-title">Quality Assurance</h1>
+                <p class="clean-subtitle">Compliance & Accuracy Tracking</p>
+
+                <div class="grid-layout">
+                    <div class="chart-card"><h3>Defect Pareto Analysis</h3><div id="pareto_chart" style="height: 300px;"></div></div>
+                    <div class="chart-card"><h3>Error Rate Trend</h3><div id="trend_chart" style="height: 300px;"></div></div>
+                    <div class="chart-card"><h3>Integrity Audit</h3><div id="pie_chart" style="height: 300px;"></div></div>
+                    <div class="chart-card"><h3>Department Returns</h3><div id="bar_chart" style="height: 300px;"></div></div>
+
+                    <div class="full-width chart-card">
+                        <h3>Operational Log</h3>
+                        <div class="table-wrapper">
+                            <table class="brand-table">
+                                <thead>
+                                    <tr><th>Category</th><th>Volume</th><th>Cost Impact</th><th>Escalation</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td><b>System Delay</b></td><td>214</td><td>$8,560</td><td class="status-tag">HIGH</td></tr>
+                                    <tr><td><b>Item Damage</b></td><td>42</td><td>$12,100</td><td class="status-tag">CRITICAL</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-knowledge" class="view-section">
+                <h1 class="clean-title">Knowledge Base</h1>
+                <p class="clean-subtitle">Internal SOPs & Documentation</p>
+                <div class="kb-layout">
+                    <aside class="kb-nav">
+                        <h3>Contents</h3>
+                        <ul class="kb-tree">
+                            <li class="parent">Operations</li>
+                            <li><ul><li><a href="#" data-target="kb-fulfillment" onclick="showKbArticle('kb-fulfillment', this);return false;">Fulfillment Process</a></li></ul></li>
+                            <li class="parent">Support</li>
+                            <li><ul><li><a href="#" data-target="kb-escalation" onclick="showKbArticle('kb-escalation', this);return false;">Escalation Protocol</a></li></ul></li>
+                        </ul>
+                    </aside>
+                    <section class="kb-content">
+                        <div id="kb-fulfillment" class="kb-article chart-card" style="display:block;">
+                            <h3>Order Fulfillment Process</h3>
+                            <p>Generic steps for order processing:</p>
+                            <ol><li>Verify details</li><li>Pick & Pack</li><li>Ship & Notify</li></ol>
+                        </div>
+                        <div id="kb-escalation" class="kb-article chart-card">
+                            <h3>Escalation Protocol</h3>
+                            <p>Standard escalation steps:</p>
+                            <ol><li>Gather Logs</li><li>Document Reason</li><li>Notify Lead</li></ol>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <div id="view-settings" class="view-section">
+                <h1 class="clean-title">Settings</h1>
+                <p class="clean-subtitle">Global Configurations</p>
+                <div class="chart-card">Admin configuration tools.</div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script>
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + viewName).classList.add('active');
+            document.querySelectorAll('#sidebar-nav a').forEach(l => l.classList.remove('active'));
+            document.getElementById('link-' + viewName).classList.add('active');
+            if (viewName === 'quality') setTimeout(drawCharts, 100);
+        }
+
+        google.charts.load('current', { packages: ['corechart'] });
+        google.charts.setOnLoadCallback(drawCharts);
+
+        function drawCharts() {
+            // Updated to use CSS Variables dynamically if needed, or hardcoded brand matches
+            const colors = ['#7b4123', '#4e4343', '#1f1513', '#9b908f'];
+            
+            var d1 = google.visualization.arrayToDataTable([['X', 'Y', 'Z'], ['A', 214, 52], ['B', 124, 78], ['C', 42, 100]]);
+            new google.visualization.ComboChart(document.getElementById('pareto_chart')).draw(d1, {
+                series: { 0: {type: 'bars', color: colors[0]}, 1: {type: 'line', color: colors[1], targetAxisIndex: 1} },
+                chartArea: {width: '85%', height: '75%'}, legend: 'none', backgroundColor: 'transparent'
+            });
+
+            var d2 = google.visualization.arrayToDataTable([['W', 'R'], ['1', 4.5], ['2', 3.8], ['3', 3.2], ['4', 2.9]]);
+            new google.visualization.LineChart(document.getElementById('trend_chart')).draw(d2, {
+                colors: [colors[0]], curveType: 'function', chartArea: {width: '85%'}, legend: 'none'
+            });
+
+            var d3 = google.visualization.arrayToDataTable([['S', 'V'], ['P1', 85], ['P2', 10], ['P3', 5]]);
+            new google.visualization.PieChart(document.getElementById('pie_chart')).draw(d3, {
+                pieHole: 0.6, colors: [colors[2], colors[0], colors[3]], chartArea: {width: '85%'}, legend: {position: 'bottom'}
+            });
+
+            var d4 = google.visualization.arrayToDataTable([['D', 'V'], ['Dept1', 120], ['Dept2', 85], ['Dept3', 34]]);
+            new google.visualization.BarChart(document.getElementById('bar_chart')).draw(d4, {
+                colors: [colors[0]], chartArea: {width: '70%'}, legend: 'none'
+            });
+        }
+        window.addEventListener('resize', drawCharts);
+        
+        function showKbArticle(id, linkEl) {
+            document.querySelectorAll('.kb-article').forEach(a => a.style.display = 'none');
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'block';
+            document.querySelectorAll('.kb-nav a').forEach(a => a.classList.remove('active'));
+            if (linkEl) linkEl.classList.add('active');
+        }
+    </script>
+</body>
+</html>
