@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; }
+    .nav-active { background-color: #f1f5f9; color: #0f172a; border-right: 3px solid #0f172a; }
+    .glass-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; transition: all 0.2s ease; }
+    .glass-card:hover { border-color: #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .hidden { display: none; }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+  </style>
+</head>
+<body class="flex">
+
+  <aside class="w-64 h-screen bg-white border-r border-slate-200 fixed flex flex-col">
+    <div class="p-6 border-b border-slate-100 mb-4">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white">
+          <i data-lucide="layers" class="w-5 h-5"></i>
+        </div>
+        <span class="font-bold text-slate-900 tracking-tight text-lg">NEXUS</span>
+      </div>
+    </div>
+    
+    <nav class="flex-1 px-3 space-y-1">
+      <button onclick="setView('dashboard')" id="btn-dashboard" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-500 hover:bg-slate-50 rounded-lg transition-all nav-active">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+      </button>
+      <button onclick="setView('agents')" id="btn-agents" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-500 hover:bg-slate-50 rounded-lg transition-all">
+        <i data-lucide="users" class="w-4 h-4"></i> Agent Performance
+      </button>
+      <button onclick="setView('quality')" id="btn-quality" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-500 hover:bg-slate-50 rounded-lg transition-all">
+        <i data-lucide="shield-check" class="w-4 h-4"></i> Quality Metrics
+      </button>
+      <button onclick="setView('knowledge')" id="btn-knowledge" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-500 hover:bg-slate-50 rounded-lg transition-all">
+        <i data-lucide="book-open" class="w-4 h-4"></i> Knowledge Base
+      </button>
+      <button onclick="setView('settings')" id="btn-settings" class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-500 hover:bg-slate-50 rounded-lg transition-all">
+        <i data-lucide="settings" class="w-4 h-4"></i> Settings
+      </button>
+    </nav>
+
+    <div class="p-4 border-t border-slate-100">
+      <div class="bg-slate-50 p-3 rounded-lg flex items-center gap-3">
+        <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-slate-600 text-xs font-bold">JD</div>
+        <div class="overflow-hidden">
+          <p class="text-xs font-bold text-slate-900 truncate">Jane Doe</p>
+          <p class="text-[10px] text-slate-500 truncate font-medium">Ops Manager</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="ml-64 flex-1 p-10 min-h-screen">
+    
+    <section id="view-dashboard" class="view-content animate-in fade-in">
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-slate-900">Operational Overview</h1>
+        <p class="text-slate-500 text-sm">System-wide performance for the current billing cycle.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="glass-card p-6">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Inbound</p>
+          <div class="flex items-end justify-between">
+            <h2 class="text-2xl font-bold text-slate-900">12,482</h2>
+            <span class="text-emerald-600 text-xs font-bold flex items-center"><i data-lucide="arrow-up-right" class="w-3 h-3"></i> 12%</span>
+          </div>
+        </div>
+        <div class="glass-card p-6">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Avg Handling Time</p>
+          <div class="flex items-end justify-between">
+            <h2 class="text-2xl font-bold text-slate-900">4m 12s</h2>
+            <span class="text-rose-500 text-xs font-bold flex items-center"><i data-lucide="arrow-down-right" class="w-3 h-3"></i> 2%</span>
+          </div>
+        </div>
+        <div class="glass-card p-6">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">CSAT Score</p>
+          <div class="flex items-end justify-between">
+            <h2 class="text-2xl font-bold text-slate-900">94.2%</h2>
+            <span class="text-emerald-600 text-xs font-bold flex items-center"><i data-lucide="arrow-up-right" class="w-3 h-3"></i> 0.5%</span>
+          </div>
+        </div>
+        <div class="glass-card p-6 bg-slate-900 text-white border-none">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Active Agents</p>
+          <div class="flex items-end justify-between">
+            <h2 class="text-2xl font-bold">142</h2>
+            <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mb-2"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-8 h-80 flex flex-col items-center justify-center text-slate-400 border-dashed border-2">
+        <i data-lucide="bar-chart-3" class="w-12 h-12 mb-4 opacity-20"></i>
+        <p class="text-sm font-medium">Analytics Visualization Placeholder</p>
+        <p class="text-xs">Connect to a Sheet to populate real-time trends</p>
+      </div>
+    </section>
+
+    <section id="view-agents" class="view-content hidden animate-in">
+      <div class="flex justify-between items-end mb-8">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900">Agent Performance</h1>
+          <p class="text-slate-500 text-sm">Quality scoring and KPI tracking per representative.</p>
+        </div>
+        <button class="bg-white border border-slate-200 px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-slate-50">
+          <i data-lucide="download" class="w-4 h-4"></i> EXPORT CSV
+        </button>
+      </div>
+
+      <div class="glass-card overflow-hidden">
+        <table class="w-full text-left">
+          <thead class="bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase">Agent Name</th>
+              <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase">AHT</th>
+              <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase">Resolution Rate</th>
+              <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase">Quality Score</th>
+              <th class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr>
+              <td class="px-6 py-4 flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600">AM</div>
+                <span class="text-sm font-semibold">Alex Miller</span>
+              </td>
+              <td class="px-6 py-4 text-sm text-slate-500">3m 45s</td>
+              <td class="px-6 py-4 text-sm font-medium">92%</td>
+              <td class="px-6 py-4">
+                <div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="w-4/5 h-full bg-slate-900"></div>
+                </div>
+              </td>
+              <td class="px-6 py-4"><span class="px-2 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded">ONLINE</span></td>
+            </tr>
+            <tr>
+              <td class="px-6 py-4 flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600">SW</div>
+                <span class="text-sm font-semibold">Sarah Williams</span>
+              </td>
+              <td class="px-6 py-4 text-sm text-slate-500">4m 10s</td>
+              <td class="px-6 py-4 text-sm font-medium">88%</td>
+              <td class="px-6 py-4">
+                <div class="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="w-[60%] h-full bg-slate-900"></div>
+                </div>
+              </td>
+              <td class="px-6 py-4"><span class="px-2 py-1 bg-amber-50 text-amber-700 text-[10px] font-bold rounded">IN CALL</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="view-knowledge" class="view-content hidden">
+      <div class="flex gap-8">
+        <div class="w-1/3 space-y-4">
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+            <input type="text" placeholder="Search SOPs..." class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-slate-900/5">
+          </div>
+          <div class="space-y-2">
+            <div class="p-4 bg-slate-900 text-white rounded-xl shadow-lg shadow-slate-200">
+              <h3 class="text-sm font-bold mb-1 italic flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4"></i> Nexus AI</h3>
+              <p class="text-[11px] opacity-70 leading-relaxed mb-3">Ask about fulfillment, refunds, or escalation rules.</p>
+              <button class="w-full py-2 bg-white/10 hover:bg-white/20 rounded-lg text-[10px] font-bold uppercase transition-all">Start New Chat</button>
+            </div>
+            <div class="p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
+              <p class="text-xs font-bold text-slate-900">Order Fulfillment</p>
+              <p class="text-[10px] text-slate-500">Last updated 2 days ago</p>
+            </div>
+            <div class="p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
+              <p class="text-xs font-bold text-slate-900">Refund Policy (V4.2)</p>
+              <p class="text-[10px] text-slate-500">Last updated 1 week ago</p>
+            </div>
+          </div>
+        </div>
+        <div class="flex-1 glass-card p-10">
+          <div class="max-w-2xl">
+            <span class="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold rounded uppercase mb-4 inline-block tracking-widest">Operations</span>
+            <h2 class="text-3xl font-bold text-slate-900 mb-6 tracking-tight">Order Fulfillment Process</h2>
+            <div class="space-y-6 text-sm text-slate-600 leading-relaxed">
+              <p>The standard order fulfillment process ensures that customer orders are picked, packed, and shipped within 24 hours of payment verification.</p>
+              <div class="bg-slate-50 p-6 rounded-xl border border-slate-100">
+                <h4 class="font-bold text-slate-900 mb-4 text-xs uppercase tracking-widest">Mandatory Steps</h4>
+                <ul class="space-y-3 list-decimal list-inside font-medium">
+                  <li>Verify customer shipping address in WMS.</li>
+                  <li>Perform quality check on physical items.</li>
+                  <li>Scan tracking ID into CRM.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-settings" class="view-content hidden">
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-slate-900">Portal Settings</h1>
+        <p class="text-slate-500 text-sm">Configure system thresholds and visual identity.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="glass-card p-8">
+          <h3 class="text-sm font-bold text-slate-900 mb-6 uppercase tracking-widest border-b border-slate-50 pb-4">Performance Thresholds</h3>
+          <div class="space-y-6">
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Max Wait Time (sec)</label>
+                <input type="number" value="45" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Target Resolution (%)</label>
+                <input type="number" value="90" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
+              </div>
+            </div>
+            <button class="bg-slate-900 text-white w-full py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-800 transition-all">Save Changes</button>
+          </div>
+        </div>
+        <div class="glass-card p-8 bg-slate-50/50">
+          <h3 class="text-sm font-bold text-slate-900 mb-6 uppercase tracking-widest border-b border-slate-50 pb-4">Platform Branding</h3>
+          <div class="space-y-4">
+            <div class="p-4 border border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center gap-2">
+              <i data-lucide="upload" class="w-4 h-4 text-slate-400"></i>
+              <span class="text-[10px] font-bold text-slate-400 uppercase">Upload Company Logo</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-6 h-6 rounded bg-slate-900"></div>
+              <div class="w-6 h-6 rounded bg-slate-400"></div>
+              <div class="w-6 h-6 rounded bg-slate-200"></div>
+              <span class="text-[10px] font-bold text-slate-500 uppercase ml-2">Active Palette: Neutral Slate</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // VIEW NAVIGATION
+    function setView(viewId) {
+      // Update Sidebar Buttons
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.classList.remove('nav-active');
+      });
+      document.getElementById('btn-' + viewId).classList.add('nav-active');
+
+      // Update Visibility
+      document.querySelectorAll('.view-content').forEach(view => {
+        view.classList.add('hidden');
+      });
+      document.getElementById('view-' + viewId).classList.remove('hidden');
+    }
+
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // EX: Handling Server-Side communication
+    function handleServerAction() {
+      google.script.run
+        .withSuccessHandler((response) => console.log(response))
+        .getAIResponse("Tell me about the escalation rule");
+    }
+  </script>
+</body>
+</html>
