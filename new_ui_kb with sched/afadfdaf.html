@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeHub Master Plan | Tactical Command Center</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <!-- Custom Config for Tailwind to match TimeHub Brand -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'big-stone': '#16213E',
+                        'brand-lime': '#E3F47C',
+                        'neutral-bg': '#F4F4F4',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['monospace'], // For terminal aesthetic
+                    },
+                    borderRadius: {
+                        'tactical': '2.5rem',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Styles for Tactical UI */
+        body {
+            background-color: #F8FAFC; /* Light background as requested */
+            color: #16213E;
+        }
+
+        /* Micro-label style from Source Report */
+        .micro-label {
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #64748B;
+        }
+
+        /* Chart Container Strict Styling */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Base height */
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Semantic Badges */
+        .status-emerald { @apply bg-emerald-100 text-emerald-800 border-emerald-200; }
+        .status-amber { @apply bg-amber-100 text-amber-800 border-amber-200; }
+        .status-rose { @apply bg-rose-100 text-rose-800 border-rose-200; }
+
+        /* Scrollbar hiding for cleaner UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+
+    <!-- Placeholder Comments Required by Prompt -->
+    <!-- Chosen Palette: TimeHub Official (Big Stone #16213E, Brand Lime #E3F47C, Slate/Neutral foundations) -->
+    <!-- Application Structure Plan: The SPA mimics the 'Tactical Command Center' described in the report. It uses a Dashboard layout with a sidebar for navigation. Content is divided into 'Mission Control' (Summary), 'Blueprint' (Features), 'Economics' (Financials/Billing), 'Protocol' (RBAC/Approvals), and 'Infrastructure' (Tech Stack). This structure was chosen to transform static report text into interactive simulations (e.g., Salary Calculators, Role Filters) that demonstrate the system's logic rather than just reading about it. -->
+    <!-- Visualization & Content Choices: 
+         1. Mission Control: Dynamic Counters for KPIs to show 'Information Velocity'.
+         2. Economics: Stacked Bar Chart (Chart.js) to visualize the Billing Arbitrage (Salary vs Client Rate) defined in Rule 9.1. Interactive Statutory Calculator to demonstrate PH Compliance logic.
+         3. Protocol: Interactive Role Matrix to filter permissions, implementing the RBAC rules visually.
+         4. Roadmap: Horizontal Timeline for project phases.
+         Justification: No SVG/Mermaid used. Canvas charts chosen for performance and strict layout control. Interactions focused on 'What-If' scenarios for the user to understand the BPO business model embedded in TimeHub.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+</head>
+<body class="flex h-screen overflow-hidden text-sm">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-20 lg:w-64 bg-big-stone flex flex-col justify-between transition-all duration-300 z-20 shadow-2xl">
+        <div>
+            <!-- Branding -->
+            <div class="h-24 flex items-center justify-center lg:justify-start lg:px-8 border-b border-white/10">
+                <div class="w-10 h-10 bg-brand-lime rounded-xl flex items-center justify-center text-big-stone font-black text-xl shadow-[0_0_15px_rgba(227,244,124,0.3)]">
+                    T
+                </div>
+                <div class="hidden lg:block ml-4">
+                    <h1 class="text-white font-black tracking-tighter text-lg italic">TIMEHUB</h1>
+                    <div class="micro-label text-brand-lime">Master Plan v2.0</div>
+                </div>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="mt-8 flex flex-col gap-2 px-2 lg:px-4" id="main-nav">
+                <!-- Links injected by JS -->
+            </nav>
+        </div>
+
+        <!-- User Profile Stub -->
+        <div class="p-4 border-t border-white/10">
+            <div class="bg-white/5 rounded-2xl p-2 lg:p-3 flex items-center justify-center lg:justify-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-lime to-emerald-400 flex items-center justify-center text-[10px] font-bold text-big-stone">
+                    SA
+                </div>
+                <div class="hidden lg:block">
+                    <div class="text-white font-bold text-xs">System Admin</div>
+                    <div class="text-[10px] text-white/50">Full Access</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col relative overflow-hidden bg-[#F8FAFC]">
+        
+        <!-- Top Bar -->
+        <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 z-10">
+            <div>
+                <div id="section-micro-label" class="micro-label text-slate-400">Overview</div>
+                <h2 id="section-title" class="text-2xl font-black text-big-stone tracking-tight">Mission Control</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex flex-col items-end">
+                    <span class="micro-label">Status</span>
+                    <span class="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                        ● ONLINE (Cloud Run)
+                    </span>
+                </div>
+                <button class="bg-big-stone text-white px-6 py-3 rounded-full font-bold text-xs hover:bg-opacity-90 transition shadow-lg border border-brand-lime/20">
+                    Download PDF
+                </button>
+            </div>
+        </header>
+
+        <!-- Content Scroll Area -->
+        <div id="content-area" class="flex-1 overflow-y-auto p-4 lg:p-8 pb-20 no-scrollbar">
+            <!-- Dynamic Content Injected Here -->
+        </div>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- DATA STORE (Based on Source Report) ---
+        const appData = {
+            roles: [
+                { code: 'OPS-CSR', title: 'Customer Service Rep', base: 20000, type: 'Billable', access: 'Basic' },
+                { code: 'OPS-TSR', title: 'Tech Support Rep', base: 25000, type: 'Billable', access: 'Basic' },
+                { code: 'OPS-MED', title: 'Medical Analyst', base: 35000, type: 'Billable', access: 'Basic' },
+                { code: 'ADM-IT', title: 'IT Support', base: 30000, type: 'Non-Billable', access: 'Admin' },
+                { code: 'MGT-PM', title: 'Project Manager', base: 85000, type: 'Non-Billable', access: 'Manager' }
+            ],
+            rbac: [
+                { role: 'Admin', scope: 'Global', override: true, features: ['Dashboard', 'Config', 'Payroll', 'Billing', 'Logs'] },
+                { role: 'Executive', scope: 'Aggregate', override: false, features: ['Dashboard', 'Financials', 'Strategy'] },
+                { role: 'Project Manager', scope: 'Campaign', override: false, features: ['Dashboard', 'OT Approval', 'Timesheets', 'Team'] },
+                { role: 'Supervisor', scope: 'Team', override: false, features: ['Dashboard', 'Attendance', 'Team'] },
+                { role: 'Finance', scope: 'Financial', override: false, features: ['Payroll', 'Audit', 'Billing'] },
+                { role: 'HR', scope: 'Personnel', override: false, features: ['Onboarding', 'DMS Vault'] },
+                { role: 'Employee', scope: 'Personal', override: false, features: ['My Dashboard', 'My Payslip', 'My Schedule'] }
+            ],
+            roadmap: [
+                { phase: 'Phase 1', q: 'Q1', focus: 'Foundation', items: ['Identity (Firebase)', 'Timekeeping', 'DMS Vault'], status: 'completed' },
+                { phase: 'Phase 2', q: 'Q2', focus: 'Compliance', items: ['Statutory Engine', 'PH Payroll', 'Approvals'], status: 'active' },
+                { phase: 'Phase 3', q: 'Q3', focus: 'Revenue', items: ['Billing Engine', 'Invoicing', 'Attrition AI'], status: 'pending' },
+                { phase: 'Phase 4', q: 'Q4', focus: 'Scale', items: ['Mobile App', 'Advanced Reporting'], status: 'pending' }
+            ],
+            billing: {
+                rateUSD: 8.00,
+                fxRate: 56.00, // Approximate PHP conversion
+                hours: 160 // Standard month
+            }
+        };
+
+        // --- STATE MANAGEMENT ---
+        let state = {
+            currentTab: 'mission-control',
+            salaryInput: 25000
+        };
+
+        // --- DOM ELEMENTS ---
+        const navContainer = document.getElementById('main-nav');
+        const contentArea = document.getElementById('content-area');
+        const titleEl = document.getElementById('section-title');
+        const labelEl = document.getElementById('section-micro-label');
+
+        // --- NAVIGATION CONFIG ---
+        const navItems = [
+            { id: 'mission-control', label: 'Mission Control', icon: '⚡' },
+            { id: 'blueprint', label: 'Blueprint & PRD', icon: '📝' },
+            { id: 'economics', label: 'Economics & Billing', icon: '💰' },
+            { id: 'protocol', label: 'Protocol & RBAC', icon: '🛡️' },
+            { id: 'infrastructure', label: 'Tech Infrastructure', icon: '🏗️' },
+            { id: 'roadmap', label: 'Strategic Roadmap', icon: '🚩' }
+        ];
+
+        // --- INITIALIZATION ---
+        function init() {
+            renderNav();
+            loadTab(state.currentTab);
+        }
+
+        // --- RENDER FUNCTIONS ---
+
+        function renderNav() {
+            navContainer.innerHTML = navItems.map(item => `
+                <button 
+                    onclick="loadTab('${item.id}')"
+                    class="w-full flex items-center gap-4 p-3 rounded-2xl transition-all duration-200 group ${state.currentTab === item.id ? 'bg-brand-lime text-big-stone shadow-lg shadow-brand-lime/20' : 'text-slate-400 hover:bg-white/5 hover:text-white'}"
+                >
+                    <span class="text-lg">${item.icon}</span>
+                    <span class="hidden lg:block font-bold text-xs uppercase tracking-wide">${item.label}</span>
+                </button>
+            `).join('');
+        }
+
+        function loadTab(tabId) {
+            state.currentTab = tabId;
+            renderNav();
+            
+            const item = navItems.find(i => i.id === tabId);
+            titleEl.textContent = item.label;
+            labelEl.textContent = 'TimeHub Master Plan v2.0';
+
+            // Route content rendering
+            switch(tabId) {
+                case 'mission-control': renderMissionControl(); break;
+                case 'blueprint': renderBlueprint(); break;
+                case 'economics': renderEconomics(); break;
+                case 'protocol': renderProtocol(); break;
+                case 'infrastructure': renderInfrastructure(); break;
+                case 'roadmap': renderRoadmap(); break;
+            }
+        }
+
+        // --- TAB: MISSION CONTROL ---
+        function renderMissionControl() {
+            contentArea.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    ${kpiCard('Infrastructure Cost', '$0.00', 'Month', 'emerald')}
+                    ${kpiCard('Clock-In Accuracy', '99.9%', 'Target', 'brand-lime')}
+                    ${kpiCard('Payroll Latency', '< 30s', 'Batch Calc', 'emerald')}
+                    ${kpiCard('Uptime SLA', '99.95%', 'Cloud Run', 'big-stone')}
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Executive Summary Card -->
+                    <div class="lg:col-span-2 bg-white rounded-tactical p-8 border border-slate-200 shadow-sm">
+                        <div class="micro-label mb-4 text-brand-lime bg-big-stone inline-block px-2 py-1 rounded">Executive Summary</div>
+                        <h3 class="text-xl font-bold text-big-stone mb-4">Tactical Command Center for BPO Ops</h3>
+                        <p class="text-slate-600 mb-6 leading-relaxed">
+                            TimeHub removes operational friction. By centralizing timekeeping, campaign mapping, and localized payroll, we achieve 
+                            <strong class="text-big-stone">Information Velocity</strong>. 
+                            The system is architected on a zero-cost stack (Google Free Tier) but designed for mission-critical reliability.
+                        </p>
+                        <div class="flex gap-4">
+                            <div class="bg-slate-50 p-4 rounded-3xl border border-slate-100 flex-1">
+                                <div class="text-2xl mb-2">🚀</div>
+                                <div class="font-bold text-big-stone text-xs uppercase">Zero-Cost Stack</div>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-3xl border border-slate-100 flex-1">
+                                <div class="text-2xl mb-2">🇵🇭</div>
+                                <div class="font-bold text-big-stone text-xs uppercase">PH Localized</div>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-3xl border border-slate-100 flex-1">
+                                <div class="text-2xl mb-2">⚡</div>
+                                <div class="font-bold text-big-stone text-xs uppercase">Fast Approval</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tech Stack Summary -->
+                    <div class="bg-big-stone rounded-tactical p-8 text-white relative overflow-hidden">
+                        <div class="absolute -right-10 -top-10 w-40 h-40 bg-brand-lime rounded-full blur-[60px] opacity-20"></div>
+                        <div class="relative z-10">
+                            <div class="micro-label text-brand-lime mb-4">Core Stack</div>
+                            <ul class="space-y-4 font-mono text-xs">
+                                <li class="flex justify-between border-b border-white/10 pb-2">
+                                    <span class="text-white/60">Compute</span>
+                                    <span class="text-brand-lime font-bold">Google Cloud Run</span>
+                                </li>
+                                <li class="flex justify-between border-b border-white/10 pb-2">
+                                    <span class="text-white/60">Database</span>
+                                    <span class="text-brand-lime font-bold">Supabase (PG)</span>
+                                </li>
+                                <li class="flex justify-between border-b border-white/10 pb-2">
+                                    <span class="text-white/60">Frontend</span>
+                                    <span class="text-brand-lime font-bold">Firebase Hosting</span>
+                                </li>
+                                <li class="flex justify-between border-b border-white/10 pb-2">
+                                    <span class="text-white/60">Auth</span>
+                                    <span class="text-brand-lime font-bold">Firebase Auth</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function kpiCard(label, value, sub, color) {
+            const textColor = color === 'big-stone' ? 'text-big-stone' : (color === 'brand-lime' ? 'text-big-stone' : `text-${color}-600`);
+            const bgColor = color === 'brand-lime' ? 'bg-brand-lime' : 'bg-white';
+            
+            return `
+                <div class="${bgColor} rounded-tactical p-6 shadow-sm border border-slate-100 flex flex-col justify-between h-40 group hover:shadow-md transition-all">
+                    <div class="micro-label opacity-70 ${color === 'big-stone' ? 'text-white' : ''}">${label}</div>
+                    <div>
+                        <div class="text-4xl font-black tracking-tighter ${textColor} mb-1">${value}</div>
+                        <div class="text-[10px] font-bold uppercase opacity-60 ${color === 'big-stone' ? 'text-white' : 'text-slate-500'}">${sub}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- TAB: BLUEPRINT (PRD) ---
+        function renderBlueprint() {
+            contentArea.innerHTML = `
+                <div class="max-w-4xl mx-auto space-y-12">
+                    
+                    <!-- PRD Intro -->
+                    <div class="text-center mb-12">
+                        <h3 class="text-2xl font-black text-big-stone mb-2">Functional Requirements</h3>
+                        <p class="text-slate-500">Core capabilities defined for the MVP and beyond.</p>
+                    </div>
+
+                    <!-- Modules Grid -->
+                    <div class="grid md:grid-cols-2 gap-8">
+                        ${featureCard('Workforce Management', '📍', [
+                            'Real-Time Roster (Homebase View)',
+                            'Geo-fenced Clock-in',
+                            'Attrition Analytics (ML Ready)'
+                        ])}
+                        ${featureCard('Financial Ops', '💸', [
+                            'Billing Arbitrage Engine',
+                            'Disbursement Hub (GCash/Maya)',
+                            'Automated Invoicing'
+                        ])}
+                        ${featureCard('Document Vault', '🗄️', [
+                            'Automated Contract Gen (Puppeteer)',
+                            'Sequential Digital Signatures',
+                            'Secure GCS Storage (AES-256)'
+                        ])}
+                        ${featureCard('Timekeeping', '⏱️', [
+                            'Mislog Correction Workflow',
+                            'Overtime Approval Chain',
+                            'Zero-Gap Attendance Tracking'
+                        ])}
+                    </div>
+
+                    <!-- Non-Functional Requirements -->
+                    <div class="bg-white rounded-tactical p-8 border border-slate-200">
+                        <div class="micro-label mb-6">Non-Functional Constraints</div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div class="p-4 bg-slate-50 rounded-2xl">
+                                <div class="font-black text-xl text-big-stone">< 200ms</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase">Latency</div>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-2xl">
+                                <div class="font-black text-xl text-big-stone">AES-256</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase">Encryption</div>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-2xl">
+                                <div class="font-black text-xl text-big-stone">5,000</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase">Concurrent Users</div>
+                            </div>
+                            <div class="p-4 bg-slate-50 rounded-2xl">
+                                <div class="font-black text-xl text-big-stone">99.95%</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase">Uptime</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function featureCard(title, icon, items) {
+            return `
+                <div class="bg-white p-6 rounded-tactical border border-slate-200 hover:border-brand-lime transition-colors group">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-xl group-hover:bg-brand-lime transition-colors">${icon}</div>
+                        <h4 class="font-bold text-big-stone">${title}</h4>
+                    </div>
+                    <ul class="space-y-2">
+                        ${items.map(i => `<li class="text-xs text-slate-600 flex items-start gap-2"><span class="text-brand-lime font-bold">›</span> ${i}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        // --- TAB: ECONOMICS (Interactive) ---
+        function renderEconomics() {
+            contentArea.innerHTML = `
+                <div class="grid lg:grid-cols-3 gap-8 h-full">
+                    <!-- Left: Arbitrage Visualizer -->
+                    <div class="lg:col-span-2 flex flex-col gap-8">
+                        
+                        <div class="bg-white p-8 rounded-tactical border border-slate-200 shadow-sm">
+                            <div class="flex justify-between items-start mb-6">
+                                <div>
+                                    <div class="micro-label text-brand-lime bg-big-stone px-2 py-1 rounded inline-block mb-2">Rule 9.1: The Arbitrage Engine</div>
+                                    <h3 class="text-xl font-black text-big-stone">Billing vs. Cost Analysis</h3>
+                                    <p class="text-xs text-slate-500 mt-1">Comparing monthly base salary against billable revenue ($${appData.billing.rateUSD}/hr @ ₱${appData.billing.fxRate}).</p>
+                                </div>
+                            </div>
+                            <!-- Chart Container -->
+                            <div class="chart-container">
+                                <canvas id="arbitrageChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Billability Rules -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-emerald-50 p-6 rounded-3xl border border-emerald-100">
+                                <div class="micro-label text-emerald-800 mb-2">Billable Roles</div>
+                                <div class="text-sm font-bold text-emerald-900">Operations (CSR, TSR, Med)</div>
+                                <div class="text-xs text-emerald-700 mt-1">Generates Client Invoice</div>
+                            </div>
+                            <div class="bg-slate-100 p-6 rounded-3xl border border-slate-200">
+                                <div class="micro-label text-slate-600 mb-2">Non-Billable Overhead</div>
+                                <div class="text-sm font-bold text-slate-700">Admin, IT, Management</div>
+                                <div class="text-xs text-slate-500 mt-1">Internal Cost Only</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Statutory Calculator (Interactive) -->
+                    <div class="bg-big-stone text-white p-8 rounded-tactical flex flex-col gap-6 shadow-2xl">
+                        <div>
+                            <div class="micro-label text-brand-lime mb-2">PH Statutory Engine</div>
+                            <h3 class="text-lg font-bold">Deduction Simulator</h3>
+                            <p class="text-xs text-white/60 mt-1">Based on TRAIN Law & 2025 Contributions.</p>
+                        </div>
+
+                        <!-- Input -->
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold uppercase tracking-wider text-white/70">Monthly Base Salary (PHP)</label>
+                            <input type="number" id="salaryInput" value="${state.salaryInput}" 
+                                class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white font-mono focus:outline-none focus:border-brand-lime transition"
+                                oninput="updateStatutory(this.value)">
+                        </div>
+
+                        <!-- Output Display -->
+                        <div class="space-y-4 bg-black/20 p-6 rounded-3xl font-mono text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-white/60">SSS (Est.)</span>
+                                <span class="text-brand-lime" id="outSSS">₱1,125.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-white/60">PhilHealth (2.5%)</span>
+                                <span class="text-brand-lime" id="outPHIC">₱625.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-white/60">Pag-IBIG</span>
+                                <span class="text-brand-lime" id="outHDMF">₱100.00</span>
+                            </div>
+                            <div class="h-px bg-white/10 my-2"></div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold uppercase">Total Deductions</span>
+                                <span class="text-white font-bold" id="outTotalDed">₱1,850.00</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-auto pt-6 border-t border-white/10">
+                             <div class="flex justify-between items-end">
+                                <span class="text-xs font-bold uppercase text-white/50">Net Pay (Est)</span>
+                                <span class="text-3xl font-black text-white" id="outNet">₱23,150</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Initialize Chart after DOM injection
+            setTimeout(initArbitrageChart, 0);
+            // Run initial calc
+            updateStatutory(state.salaryInput);
+        }
+
+        function initArbitrageChart() {
+            const ctx = document.getElementById('arbitrageChart').getContext('2d');
+            
+            // Filter only billable roles for comparison + 1 non-billable for contrast
+            const roles = appData.roles.filter(r => r.type === 'Billable');
+            const labels = roles.map(r => r.code);
+            const salaries = roles.map(r => r.base);
+            
+            // Calculate Billable Revenue: $8 * 56 * 160 = 71,680 PHP
+            const monthlyRevenue = appData.billing.rateUSD * appData.billing.fxRate * appData.billing.hours;
+            const revenues = roles.map(() => monthlyRevenue);
+            const margins = roles.map(r => monthlyRevenue - r.base);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Base Salary Cost (PHP)',
+                            data: salaries,
+                            backgroundColor: '#16213E', // Big Stone
+                            borderRadius: 6,
+                        },
+                        {
+                            label: 'Gross Margin (Arbitrage)',
+                            data: margins,
+                            backgroundColor: '#E3F47C', // Brand Lime
+                            borderRadius: 6,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, grid: { display: false } },
+                        y: { stacked: true, grid: { color: '#f1f5f9' }, ticks: { callback: v => '₱' + v/1000 + 'k' } }
+                    },
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: '#16213E',
+                            titleColor: '#E3F47C',
+                            callbacks: {
+                                footer: (items) => {
+                                    const total = items.reduce((a, b) => a + b.raw, 0);
+                                    return `Total Revenue: ₱${total.toLocaleString()}`;
+                                }
+                            }
+                        },
+                        legend: { position: 'bottom', labels: { usePointStyle: true, font: { family: 'Inter' } } }
+                    }
+                }
+            });
+        }
+
+        function updateStatutory(salary) {
+            const s = parseFloat(salary) || 0;
+            // Simplified Logic for Demo based on Source Report
+            const sss = Math.min(s * 0.045, 1350); // Mock bracket logic
+            const phic = s * 0.025; // 2.5% EE share
+            const hdmf = 100; // Fixed
+            const total = sss + phic + hdmf;
+            const net = s - total;
+
+            document.getElementById('outSSS').innerText = `₱${sss.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('outPHIC').innerText = `₱${phic.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('outHDMF').innerText = `₱${hdmf.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('outTotalDed').innerText = `₱${total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('outNet').innerText = `₱${net.toLocaleString(undefined, {maximumFractionDigits: 0})}`;
+        }
+
+        // --- TAB: PROTOCOL (RBAC) ---
+        function renderProtocol() {
+            contentArea.innerHTML = `
+                <div class="space-y-8">
+                    <!-- Workflow Visualization -->
+                    <div class="bg-white p-8 rounded-tactical border border-slate-200">
+                        <div class="micro-label mb-6">Process Logic: Mislog Correction</div>
+                        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                            ${stepCard('1. Initiation', 'Agent', 'Files Request', 'slate')}
+                            <div class="hidden md:block text-slate-300 text-2xl">➔</div>
+                            ${stepCard('2. Validation', 'Supervisor', 'Verifies Evidence', 'amber')}
+                            <div class="hidden md:block text-slate-300 text-2xl">➔</div>
+                            ${stepCard('3. Sign-off', 'Project Manager', 'Final Audit', 'emerald')}
+                        </div>
+                        <div class="mt-6 p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4">
+                            <span class="text-xl">⚠️</span>
+                            <div>
+                                <div class="text-xs font-bold text-big-stone uppercase">Escalation Rule</div>
+                                <div class="text-xs text-slate-500">If pending > 24 hours, auto-escalate to next tier.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interactive RBAC Matrix -->
+                    <div class="bg-white p-8 rounded-tactical border border-slate-200">
+                        <div class="flex justify-between items-center mb-6">
+                            <div class="micro-label">Access Control Matrix</div>
+                            <select id="roleFilter" onchange="renderRBACRows(this.value)" class="bg-slate-100 border-none text-xs font-bold rounded-lg px-4 py-2 text-big-stone focus:ring-2 focus:ring-brand-lime">
+                                <option value="All">Show All Roles</option>
+                                ${appData.rbac.map(r => `<option value="${r.role}">${r.role}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-100 text-xs text-slate-400 uppercase tracking-wider">
+                                        <th class="pb-4 font-bold">Role</th>
+                                        <th class="pb-4 font-bold">Data Scope</th>
+                                        <th class="pb-4 font-bold">Key Privileges</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rbacTableBody" class="text-sm">
+                                    <!-- Injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            renderRBACRows('All');
+        }
+
+        function stepCard(title, role, action, color) {
+            const colors = {
+                slate: 'bg-slate-100 text-slate-600',
+                amber: 'bg-amber-50 text-amber-700 border-amber-100',
+                emerald: 'bg-emerald-50 text-emerald-700 border-emerald-100'
+            };
+            return `
+                <div class="flex-1 w-full p-6 rounded-3xl border ${colors[color].includes('border') ? '' : 'border-transparent'} ${colors[color]} flex flex-col items-center text-center">
+                    <div class="micro-label opacity-60 mb-2">${title}</div>
+                    <div class="font-black text-lg mb-1">${role}</div>
+                    <div class="text-xs font-bold uppercase opacity-80">${action}</div>
+                </div>
+            `;
+        }
+
+        function renderRBACRows(filter) {
+            const tbody = document.getElementById('rbacTableBody');
+            const data = filter === 'All' ? appData.rbac : appData.rbac.filter(r => r.role === filter);
+            
+            tbody.innerHTML = data.map(row => `
+                <tr class="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors">
+                    <td class="py-4 font-bold text-big-stone">${row.role}</td>
+                    <td class="py-4">
+                        <span class="px-2 py-1 rounded text-[10px] font-black uppercase ${row.scope === 'Global' ? 'bg-rose-100 text-rose-700' : 'bg-slate-200 text-slate-600'}">
+                            ${row.scope}
+                        </span>
+                    </td>
+                    <td class="py-4">
+                        <div class="flex gap-2 flex-wrap">
+                            ${row.features.map(f => `<span class="px-2 py-1 border border-slate-200 rounded text-xs text-slate-600">${f}</span>`).join('')}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // --- TAB: INFRASTRUCTURE (Tech Stack) ---
+        function renderInfrastructure() {
+            contentArea.innerHTML = `
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Schema Visualizer -->
+                    <div class="bg-white p-8 rounded-tactical border border-slate-200">
+                        <div class="micro-label mb-6">Database Schema Relationships</div>
+                        <div class="relative space-y-6">
+                            ${dbTable('employees', ['id (PK)', 'role_code', 'base_salary', 'status'], true)}
+                            <div class="flex justify-center h-8">
+                                <div class="w-0.5 bg-slate-300"></div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                ${dbTable('timesheets', ['id', 'employee_id (FK)', 'clock_in', 'billing_status'])}
+                                ${dbTable('campaign_assignments', ['id', 'employee_id (FK)', 'campaign_id', 'rate'])}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CI/CD Pipeline -->
+                    <div class="bg-big-stone text-white p-8 rounded-tactical">
+                        <div class="micro-label text-brand-lime mb-6">Deployment Pipeline</div>
+                        <div class="space-y-6 font-mono text-xs">
+                            <div class="flex gap-4">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-3 h-3 bg-brand-lime rounded-full"></div>
+                                    <div class="w-0.5 h-full bg-white/20"></div>
+                                </div>
+                                <div class="pb-6">
+                                    <div class="text-brand-lime font-bold">PUSH to 'main'</div>
+                                    <div class="text-white/60 mt-1">GitHub Actions Trigger</div>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-3 h-3 bg-white rounded-full"></div>
+                                    <div class="w-0.5 h-full bg-white/20"></div>
+                                </div>
+                                <div class="pb-6">
+                                    <div class="font-bold">Docker Build</div>
+                                    <div class="text-white/60 mt-1">Multi-stage build node:20</div>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-3 h-3 bg-white rounded-full"></div>
+                                    <div class="w-0.5 h-full bg-white/20"></div>
+                                </div>
+                                <div class="pb-6">
+                                    <div class="font-bold">Artifact Registry</div>
+                                    <div class="text-white/60 mt-1">gcr.io/timehub/api:sha</div>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                                </div>
+                                <div>
+                                    <div class="text-emerald-400 font-bold">Deploy Cloud Run</div>
+                                    <div class="text-white/60 mt-1">Traffic routed 100%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function dbTable(name, fields, main=false) {
+            return `
+                <div class="bg-slate-50 border ${main ? 'border-brand-lime shadow-lg' : 'border-slate-200'} rounded-2xl p-4">
+                    <div class="font-black text-big-stone mb-2 border-b border-slate-200 pb-1">${name}</div>
+                    <ul class="space-y-1">
+                        ${fields.map(f => `<li class="text-xs text-slate-500 font-mono">${f}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        // --- TAB: ROADMAP ---
+        function renderRoadmap() {
+            contentArea.innerHTML = `
+                <div class="bg-white p-8 rounded-tactical border border-slate-200 overflow-x-auto">
+                    <div class="micro-label mb-8">Strategic Execution Plan</div>
+                    <div class="flex min-w-[800px] justify-between relative">
+                        <!-- Connecting Line -->
+                        <div class="absolute top-6 left-0 w-full h-1 bg-slate-100 z-0"></div>
+                        
+                        ${appData.roadmap.map((item, index) => `
+                            <div class="relative z-10 w-1/4 px-2">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 rounded-full border-4 border-white flex items-center justify-center text-lg font-bold mb-4 shadow-sm
+                                        ${item.status === 'completed' ? 'bg-emerald-500 text-white' : 
+                                          item.status === 'active' ? 'bg-brand-lime text-big-stone' : 'bg-slate-200 text-slate-400'}">
+                                        ${item.status === 'completed' ? '✓' : index + 1}
+                                    </div>
+                                    <div class="font-black text-big-stone text-lg">${item.phase}</div>
+                                    <div class="text-xs font-bold uppercase text-slate-400 mb-4">${item.q} - ${item.focus}</div>
+                                    <ul class="space-y-2">
+                                        ${item.items.map(i => `<li class="text-xs text-slate-600 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">${i}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- Start App ---
+        init();
+
+    </script>
+</body>
+</html>
