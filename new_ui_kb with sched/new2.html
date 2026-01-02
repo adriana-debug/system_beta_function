@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Performance report - Gorgias Help Center</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gorgiasBlack: '#121212',
+                        gorgiasOrange: '#F25430',
+                        gorgiasText: '#2D2D2D',
+                        gorgiasGray: '#F5F6F8'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Smooth transition for layout changes */
+        #main-content {
+            transition: all 0.3s ease-in-out;
+        }
+        .sidebar-transition {
+            transition: all 0.3s ease-in-out;
+            overflow: hidden;
+        }
+        /* Hide scrollbar for cleaner sidebar look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-white text-gorgiasText font-sans antialiased">
+
+    <nav class="bg-gorgiasBlack text-white py-4 px-6 md:px-12 flex items-center justify-between sticky top-0 z-50">
+        <div class="flex items-center gap-2">
+            <div class="border-2 border-white p-1 rounded-md">
+                <i class="fa-regular fa-square fa-lg"></i>
+            </div>
+            <span class="text-xl font-semibold tracking-wide">gorgias</span>
+        </div>
+        
+        <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+            <a href="#" class="hover:text-gray-300">What's new</a>
+            <a href="#" class="hover:text-gray-300">Webinars</a>
+            <a href="#" class="hover:text-gray-300">Academy</a>
+            <a href="#" class="hover:text-gray-300">Community</a>
+            <a href="#" class="hover:text-gray-300">Main website</a>
+        </div>
+    </nav>
+
+    <div class="max-w-[1400px] mx-auto px-4 sm:px-8 py-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            
+            <div class="flex items-center flex-wrap gap-2 text-sm text-gray-500">
+                <a href="#" class="hover:text-gorgiasBlack"><i class="fa-solid fa-house"></i></a>
+                <span class="text-xs"><i class="fa-solid fa-chevron-right"></i></span>
+                <a href="#" class="hover:text-gorgiasBlack hover:underline">All articles</a>
+                <span class="text-xs"><i class="fa-solid fa-chevron-right"></i></span>
+                <a href="#" class="hover:text-gorgiasBlack hover:underline">Reporting</a>
+                <span class="text-xs"><i class="fa-solid fa-chevron-right"></i></span>
+                <a href="#" class="hover:text-gorgiasBlack hover:underline">Support performance</a>
+                <span class="text-xs"><i class="fa-solid fa-chevron-right"></i></span>
+                <span class="text-gray-400">Agent Performance report</span>
+            </div>
+
+            <div class="relative w-full md:w-64">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="text" placeholder="Search" class="w-full border border-gray-200 rounded-md py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-gray-400 shadow-sm">
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-[1400px] mx-auto px-4 sm:px-6 pb-20 flex relative">
+
+        <aside id="left-sidebar" class="sidebar-transition w-0 opacity-0 -translate-x-4 border-r border-transparent h-[calc(100vh-200px)] sticky top-32 overflow-y-auto no-scrollbar">
+            <div class="w-64 pr-6 pb-10">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-bold text-lg text-gray-800">All articles</h3>
+                    <button onclick="toggleSidebar('left')" class="text-gorgiasOrange hover:text-orange-700">
+                        <i class="fa-solid fa-angles-left"></i>
+                    </button>
+                </div>
+
+                <ul class="space-y-4 text-sm font-medium text-gray-600">
+                    <li class="flex items-center gap-2 cursor-pointer hover:text-gorgiasBlack"><i class="fa-solid fa-caret-right text-gray-300"></i> Get started</li>
+                    <li class="flex items-center gap-2 cursor-pointer hover:text-gorgiasBlack"><i class="fa-solid fa-caret-right text-gray-300"></i> Resources</li>
+                    <li class="flex items-center gap-2 cursor-pointer hover:text-gorgiasBlack"><i class="fa-solid fa-caret-right text-gray-300"></i> AI Agent & automation features</li>
+                    <li class="flex items-center gap-2 cursor-pointer hover:text-gorgiasBlack"><i class="fa-solid fa-caret-right text-gray-300"></i> Daily operations</li>
+                    <li class="flex items-center gap-2 cursor-pointer hover:text-gorgiasBlack"><i class="fa-solid fa-caret-right text-gray-300"></i> Account setup</li>
+                    <li class="flex items-center gap-2 cursor-pointer hover:text-gorgiasBlack"><i class="fa-solid fa-caret-right text-gray-300"></i> Integrations (Apps)</li>
+                    
+                    <li>
+                        <div class="flex items-center gap-2 text-gorgiasBlack font-bold cursor-pointer mb-2">
+                            <i class="fa-solid fa-caret-down text-gray-400"></i> Reporting
+                        </div>
+                        <ul class="pl-6 space-y-3 border-l-2 border-gray-100 ml-1.5">
+                            <li class="cursor-pointer hover:text-gorgiasBlack">Statistics 101</li>
+                            <li class="cursor-pointer hover:text-gorgiasBlack">Refine your Gorgias statistics</li>
+                            <li class="cursor-pointer hover:text-gorgiasBlack text-black font-semibold">Support performance</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <main id="main-content" class="flex-1 min-w-0 transition-all duration-300 relative mx-auto max-w-4xl">
+            
+            <button id="left-toggle-btn" onclick="toggleSidebar('left')" class="absolute -left-12 top-0 p-2 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-sm text-gorgiasOrange transition-opacity duration-200">
+                <i class="fa-solid fa-list-ul"></i>
+            </button>
+            
+            <button id="right-toggle-btn" onclick="toggleSidebar('right')" class="absolute -right-12 top-0 p-2 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-sm text-gorgiasOrange transition-opacity duration-200">
+                <i class="fa-solid fa-list-ul fa-flip-horizontal"></i>
+            </button>
+
+
+            <div class="px-2">
+                <h1 class="text-4xl font-bold text-gray-900 mb-2">Agent Performance report</h1>
+                <p class="text-sm text-gray-500 mb-8">Updated 3 months ago</p>
+
+                <div class="prose prose-lg text-gray-700 max-w-none space-y-6">
+                    <p>
+                        You can use the Agents performance report to evaluate the effectiveness of your agents over a specific period of time.
+                    </p>
+                    <p>
+                        By comparing detailed performance metrics for each individual agent, team leaders can distribute work more efficiently and identify areas where team members can improve.
+                    </p>
+                    <p>
+                        In the report, you’ll find industry-standard metrics for customer support, including satisfaction scores, first response time, resolution time, ticket handle time, message sent, one-touch tickets, and more. The report also includes performance metrics for <span class="text-gorgiasOrange cursor-pointer hover:underline">AI Agent</span>.
+                    </p>
+
+                    <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">Requirements</h2>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>Any role in Gorgias can view this report</li>
+                        <li>Only Team Leads and Admins can download data</li>
+                    </ul>
+
+                    <h2 class="text-2xl font-bold text-gray-900 mt-10 mb-4">Open and filter data in the report</h2>
+                    <p>
+                        Open AI Agent Support report in your Statistics. Use the filters to adjust and change your view of the data.
+                    </p>
+                    
+                    <div class="h-32"></div>
+                </div>
+            </div>
+        </main>
+
+        <aside id="right-sidebar" class="sidebar-transition w-0 opacity-0 translate-x-4 border-l border-transparent h-[calc(100vh-200px)] sticky top-32 overflow-y-auto no-scrollbar">
+            <div class="w-64 pl-6 pb-10">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-bold text-lg text-gray-800">Table of content</h3>
+                    <button onclick="toggleSidebar('right')" class="text-gorgiasOrange hover:text-orange-700">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    </button>
+                </div>
+
+                <ul class="space-y-3 text-sm text-gray-600 border-l border-gray-200">
+                    <li class="pl-4 border-l-2 border-gorgiasBlack text-gorgiasBlack font-semibold cursor-pointer">Agent Performance report</li>
+                    <li class="pl-4 border-l-2 border-transparent hover:border-gray-300 cursor-pointer">Requirements</li>
+                    <li class="pl-4 border-l-2 border-transparent hover:border-gray-300 cursor-pointer">Open and filter data in the report</li>
+                    <li class="pl-4 border-l-2 border-transparent hover:border-gray-300 cursor-pointer">Top performers</li>
+                    <li class="pl-4 border-l-2 border-transparent hover:border-gray-300 cursor-pointer">Agent performance metrics</li>
+                    <li class="pl-4 border-l-2 border-transparent hover:border-gray-300 cursor-pointer">Edit the Agent Performance table</li>
+                    <li class="pl-4 border-l-2 border-transparent hover:border-gray-300 cursor-pointer">How averages and totals are calculated</li>
+                </ul>
+            </div>
+        </aside>
+
+    </div>
+
+    <script>
+        // State management
+        const state = {
+            leftOpen: false,
+            rightOpen: false
+        };
+
+        const leftSidebar = document.getElementById('left-sidebar');
+        const rightSidebar = document.getElementById('right-sidebar');
+        const leftBtn = document.getElementById('left-toggle-btn');
+        const rightBtn = document.getElementById('right-toggle-btn');
+
+        function toggleSidebar(side) {
+            if (side === 'left') {
+                state.leftOpen = !state.leftOpen;
+                if (state.leftOpen) {
+                    // Open Left Sidebar
+                    leftSidebar.classList.remove('w-0', 'opacity-0', '-translate-x-4');
+                    leftSidebar.classList.add('w-auto', 'opacity-100', 'translate-x-0');
+                    leftBtn.classList.add('opacity-0', 'pointer-events-none');
+                } else {
+                    // Close Left Sidebar
+                    leftSidebar.classList.add('w-0', 'opacity-0', '-translate-x-4');
+                    leftSidebar.classList.remove('w-auto', 'opacity-100', 'translate-x-0');
+                    leftBtn.classList.remove('opacity-0', 'pointer-events-none');
+                }
+            } 
+            
+            else if (side === 'right') {
+                state.rightOpen = !state.rightOpen;
+                if (state.rightOpen) {
+                    // Open Right Sidebar
+                    rightSidebar.classList.remove('w-0', 'opacity-0', 'translate-x-4');
+                    rightSidebar.classList.add('w-auto', 'opacity-100', 'translate-x-0');
+                    rightBtn.classList.add('opacity-0', 'pointer-events-none');
+                } else {
+                    // Close Right Sidebar
+                    rightSidebar.classList.add('w-0', 'opacity-0', 'translate-x-4');
+                    rightSidebar.classList.remove('w-auto', 'opacity-100', 'translate-x-0');
+                    rightBtn.classList.remove('opacity-0', 'pointer-events-none');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
