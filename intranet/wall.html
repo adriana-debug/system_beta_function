@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Minds BPO Service Inc - Wall</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    rel="stylesheet"
+  />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            haiti: "#090f28",
+            pear: "#c8de27",
+          },
+        },
+      },
+    };
+  </script>
+</head>
+
+<body class="bg-gray-100 min-h-screen overflow-x-hidden">
+
+
+
+  <!-- Top Bar -->
+  <header class="bg-haiti text-white h-16 flex items-center px-6 justify-between relative z-50">
+    <div class="flex items-center gap-4">
+      <a href="index.html">
+        <img src="https://via.placeholder.com/150x50?text=Digital+Minds+Logo" alt="Digital Minds BPO Service Inc Logo" class="h-8">
+      </a>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-pear flex items-center justify-center text-haiti font-bold text-sm">
+          JD
+        </div>
+        <span class="hidden sm:block">Juan Dela Cruz</span>
+      </div>
+      <i class="fa-solid fa-gear cursor-pointer"></i>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-6 py-12">
+    <h1 class="text-2xl font-bold text-gray-800 mb-8">Company Wall</h1>
+
+    <div class="space-y-8 max-w-2xl mx-auto">
+      <!-- Post Form -->
+      <div class="bg-white p-6 rounded-lg shadow-lg">
+        <textarea
+          class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pear mb-4"
+          rows="3"
+          placeholder="What's on your mind, Juan?"
+        ></textarea>
+        <div class="flex justify-end">
+          <button class="bg-pear text-haiti font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors">
+            Post Update
+          </button>
+        </div>
+      </div>
+
+      <!-- Wall Post 1 -->
+      <div class="bg-white p-6 rounded-lg shadow-lg">
+        <div class="flex items-center mb-4">
+          <img src="https://i.pravatar.cc/40?img=68" class="w-10 h-10 rounded-full mr-3" alt="User Avatar">
+          <div>
+            <p class="font-semibold text-gray-800">Maria Rodriguez</p>
+            <p class="text-xs text-gray-500">2 hours ago</p>
+          </div>
+        </div>
+        <p class="text-gray-700 mb-4">
+          Excited to share that our Q4 project has hit all its milestones ahead of schedule!
+          Great teamwork everyone! 🎉
+        </p>
+        <div class="flex items-center text-gray-500 text-sm">
+          <i class="fa-regular fa-thumbs-up mr-1 cursor-pointer hover:text-pear"></i> <span>15 Likes</span>
+          <i class="fa-regular fa-comment ml-4 mr-1 cursor-pointer hover:text-pear"></i> <span>3 Comments</span>
+        </div>
+      </div>
+
+      <!-- Wall Post 2 -->
+      <div class="bg-white p-6 rounded-lg shadow-lg">
+        <div class="flex items-center mb-4">
+          <img src="https://i.pravatar.cc/40?img=33" class="w-10 h-10 rounded-full mr-3" alt="User Avatar">
+          <div>
+            <p class="font-semibold text-gray-800">Carlos Sanchez</p>
+            <p class="text-xs text-gray-500">Yesterday</p>
+          </div>
+        </div>
+        <p class="text-gray-700 mb-4">
+          Reminder: The company-wide charity run is next Saturday! Don't forget to sign up and support a great cause.
+        </p>
+        <div class="flex items-center text-gray-500 text-sm">
+          <i class="fa-regular fa-thumbs-up mr-1 cursor-pointer hover:text-pear"></i> <span>22 Likes</span>
+          <i class="fa-regular fa-comment ml-4 mr-1 cursor-pointer hover:text-pear"></i> <span>5 Comments</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- JS -->
+  <script>
+  </script>
+
+</body>
+</html>

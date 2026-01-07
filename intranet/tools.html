@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Minds BPO Service Inc - Tools</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    rel="stylesheet"
+  />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            haiti: "#090f28",
+            pear: "#c8de27",
+          },
+        },
+      },
+    };
+  </script>
+</head>
+
+<body class="bg-gray-100 min-h-screen overflow-x-hidden">
+
+  <!-- Top Bar -->
+  <header class="bg-haiti text-white h-16 flex items-center px-6 justify-between relative z-50">
+    <div class="flex items-center gap-4">
+      <a href="index.html">
+        <img src="https://via.placeholder.com/150x50?text=Digital+Minds+Logo" alt="Digital Minds BPO Service Inc Logo" class="h-8">
+      </a>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-pear flex items-center justify-center text-haiti font-bold text-sm">
+          JD
+        </div>
+        <span class="hidden sm:block">Juan Dela Cruz</span>
+      </div>
+      <i class="fa-solid fa-gear cursor-pointer"></i>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-6 py-12">
+    <h1 class="text-2xl font-bold text-gray-800 mb-8">Company Tools</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Tool Card 1 -->
+      <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center text-center">
+        <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+          <i class="fa-solid fa-code text-blue-600 text-3xl"></i>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-800 mb-2">Development IDE</h2>
+        <p class="text-gray-600 mb-4">Integrated Development Environment for coding projects.</p>
+        <a href="#" class="bg-pear text-haiti font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors">Access Tool</a>
+      </div>
+
+      <!-- Tool Card 2 -->
+      <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center text-center">
+        <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
+          <i class="fa-solid fa-chart-line text-green-600 text-3xl"></i>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-800 mb-2">Analytics Dashboard</h2>
+        <p class="text-gray-600 mb-4">Monitor performance metrics and data insights.</p>
+        <a href="#" class="bg-pear text-haiti font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors">Access Tool</a>
+      </div>
+
+      <!-- Tool Card 3 -->
+      <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center text-center">
+        <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mb-4">
+          <i class="fa-solid fa-comments text-purple-600 text-3xl"></i>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-800 mb-2">Team Communication</h2>
+        <p class="text-gray-600 mb-4">Platform for real-time team collaboration and messaging.</p>
+        <a href="#" class="bg-pear text-haiti font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors">Access Tool</a>
+      </div>
+
+      <!-- Tool Card 4 -->
+      <div class="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center text-center">
+        <div class="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center mb-4">
+          <i class="fa-solid fa-cloud text-yellow-600 text-3xl"></i>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-800 mb-2">Cloud Storage</h2>
+        <p class="text-gray-600 mb-4">Secure cloud storage for all company documents and files.</p>
+        <a href="#" class="bg-pear text-haiti font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors">Access Tool</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- JS -->
+  <script>
+  </script>
+
+</body>
+</html>
