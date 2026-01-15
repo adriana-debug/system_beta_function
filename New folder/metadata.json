@@ -1,8 +1,0 @@
-
-{
-  "name": "Opex 360",
-  "description": "Opex 360 - Operational Excellence Center. A modern SaaS dashboard for Business Process Outsourcing operations, featuring workforce management, performance analytics, and AI-driven insights.",
-  "requestFramePermissions": [
-    "microphone"
-  ]
-}
