@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Employee Lifecycle - Detailed UX Flow</title>
+    <style>
+        :root {
+            --bg-color: #fcfcfc;
+            --box-bg: #eeeeee;
+            --line-color: #b5b5b5;
+            --text-main: #1a1a1a;
+            --text-sub: #666666;
+            --panel-bg: #f4f4f4;
+            --danger-tint: #fff1f1;
+        }
+
+        body {
+            font-family: "Inter", -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Fixes the left-alignment issue */
+        }
+
+        .header-section {
+            width: 100%;
+            max-width: 1300px;
+            margin-bottom: 50px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 2px solid var(--text-main);
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+        .flow-container {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        /* Sidebar Nav Vertical Line */
+        .sidebar-nav {
+            position: relative;
+            padding-left: 30px;
+            border-left: 2px solid var(--line-color);
+        }
+
+        .nav-tag {
+            position: absolute;
+            left: -80px;
+            top: 20px;
+            font-size: 11px;
+            color: var(--line-color);
+            text-transform: uppercase;
+            font-weight: bold;
+            transform: rotate(-90deg);
+        }
+
+        .main-nodes {
+            display: flex;
+            flex-direction: column;
+            gap: 45px;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Horizontal connections */
+        .row::before {
+            content: "";
+            position: absolute;
+            left: -30px;
+            width: 30px;
+            height: 2px;
+            background-color: var(--line-color);
+        }
+
+        .node-box {
+            background-color: var(--box-bg);
+            width: 180px;
+            height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            text-align: center;
+            padding: 0 15px;
+            border: 1px solid #dcdcdc;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.05);
+            z-index: 2;
+        }
+
+        .details {
+            margin-left: 20px;
+            font-size: 12px;
+            color: var(--text-sub);
+            width: 180px;
+            line-height: 1.5;
+        }
+
+        .details b {
+            color: var(--text-main);
+            display: block;
+            text-transform: uppercase;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        /* Connecting Arrows */
+        .arrow-line {
+            width: 50px;
+            height: 2px;
+            background-color: var(--line-color);
+            position: relative;
+            margin: 0 10px;
+        }
+
+        .arrow-line::after {
+            content: "▶";
+            position: absolute;
+            right: -4px;
+            top: -5px;
+            font-size: 9px;
+            color: var(--line-color);
+        }
+
+        /* Extended Process Panel */
+        .process-panel {
+            background-color: var(--panel-bg);
+            border: 1px solid #d0d0d0;
+            padding: 30px;
+            display: flex;
+            gap: 50px;
+            align-items: flex-start;
+            position: relative;
+        }
+
+        .sub-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .status-pill {
+            border: 1px solid #bbb;
+            padding: 10px;
+            background: white;
+            font-size: 11px;
+            text-align: center;
+            min-width: 130px;
+        }
+
+        .v-arrow {
+            text-align: center;
+            color: var(--line-color);
+            font-size: 10px;
+            margin: -5px 0;
+        }
+
+        .audit-tag {
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background: #000;
+            color: #fff;
+            padding: 2px 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .dispute-box {
+            background-color: var(--danger-tint);
+            border: 1px dashed #ff9999;
+            padding: 15px;
+            font-size: 11px;
+            margin-top: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header-section">
+        <div class="title">Enterprise HRIS: Employee Journey Map</div>
+    </div>
+
+    <div class="flow-container">
+        <div class="sidebar-nav">
+            <div class="nav-tag">Workflow Engine</div>
+            
+            <div class="main-nodes">
+                
+                <div class="row">
+                    <div class="node-box">Talent Acquisition</div>
+                    <div class="details">
+                        <b>Verification</b>
+                        Background Check (BI)<br>Medical Fitness (PME)<br>Degree Authentication
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="node-box">Payroll Engine</div>
+                    <div class="arrow-line"></div>
+                    <div class="details">
+                        <b>Gross-to-Net</b>
+                        DTR Synchronization<br>Tax Alphanumeric Codes<br>Government Remittance
+                    </div>
+                    <div class="arrow-line"></div>
+                    <div class="dispute-box">
+                        <b>Dispute Processing</b>
+                        1. Ticket Filing<br>2. HR/Payroll Validation<br>3. Adjustment / Retro-pay<br>4. Disbursement
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="node-box">Employee Relations</div>
+                    <div class="arrow-line"></div>
+                    <div class="process-panel">
+                        <div class="audit-tag">RISK & AUDIT GATE</div>
+                        
+                        <div class="sub-column">
+                            <b>Development</b>
+                            <div class="status-pill">Skills Assessment</div>
+                            <div class="v-arrow">▼</div>
+                            <div class="status-pill">Coaching & Mentorship</div>
+                            <div class="v-arrow">▼</div>
+                            <div class="status-pill">Internal Promotion</div>
+                        </div>
+
+                        <div class="sub-column">
+                            <b>Disciplinary (IR)</b>
+                            <div class="status-pill">Incident Report</div>
+                            <div class="v-arrow">▼</div>
+                            <div class="status-pill" style="border-color: #ff9999;">NTE Issuance</div>
+                            <div class="v-arrow">▼</div>
+                            <div class="status-pill">Administrative Hearing</div>
+                        </div>
+
+                        <div class="sub-column">
+                            <b>Performance (PIP)</b>
+                            <div class="status-pill">Poor Perf. Tagging</div>
+                            <div class="v-arrow">▼</div>
+                            <div class="status-pill">PIP (30/60/90 Days)</div>
+                            <div class="v-arrow">▼</div>
+                            <div class="status-pill"><b>Final Determination</b></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="node-box">Risk & Compliance</div>
+                    <div class="details">
+                        <b>Auditing</b>
+                        201 File Random Audit<br>Labor Law Compliance<br>Anti-Money Laundering
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="node-box">Offboarding</div>
+                    <div class="arrow-line"></div>
+                    <div class="details">
+                        <b>Separation</b>
+                        IT Access Revocation<br>Asset Recovery (LAPTOP)<br>Exit Interview Data
+                    </div>
+                    <div class="arrow-line"></div>
+                    <div class="node-box" style="background: #fff; width: 120px;">Final Settlement</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
