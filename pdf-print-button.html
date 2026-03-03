@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print PDF Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .content-preview {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .content-preview h2 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .content-preview p {
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .content-preview ul {
+            color: #6c757d;
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .print-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 auto;
+        }
+
+        .print-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .print-btn:active {
+            transform: translateY(0);
+        }
+
+        .print-icon {
+            font-size: 1.3em;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
+
+            .subtitle, .print-btn {
+                display: none;
+            }
+
+            .content-preview {
+                border: none;
+                background: white;
+                padding: 0;
+            }
+
+            h1 {
+                color: #000;
+                margin-bottom: 20px;
+            }
+
+            .content-preview h2 {
+                color: #000;
+                margin-top: 20px;
+            }
+
+            .content-preview p, .content-preview ul {
+                color: #000;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📄 PDF Document</h1>
+        <p class="subtitle">Click the button below to print this document as a PDF</p>
+        
+        <div class="content-preview">
+            <h2>Sample Document Content</h2>
+            <p>This is a sample document that demonstrates PDF printing functionality. When you click the print button, your browser will open the print dialog where you can save this page as a PDF.</p>
+            
+            <h2>Document Sections</h2>
+            <p><strong>Section 1: Introduction</strong></p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
+            
+            <p><strong>Section 2: Key Points</strong></p>
+            <ul>
+                <li>Print functionality works in all modern browsers</li>
+                <li>Users can save directly to PDF format</li>
+                <li>Content is formatted specifically for printing</li>
+                <li>Professional styling maintained in print view</li>
+            </ul>
+            
+            <p><strong>Section 3: Conclusion</strong></p>
+            <p>This document demonstrates how HTML content can be easily converted to PDF format using the browser's built-in print functionality. The layout and styling are optimized for both screen and print viewing.</p>
+        </div>
+
+        <button class="print-btn" onclick="printPDF()">
+            <span class="print-icon">🖨️</span>
+            Print as PDF
+        </button>
+    </div>
+
+    <script>
+        function printPDF() {
+            window.print();
+        }
+
+        // Optional: Add keyboard shortcut (Ctrl+P or Cmd+P)
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                e.preventDefault();
+                printPDF();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Initial Quote from ARW</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary-dark: #00424a;
+            --primary-light: #edfcff;
+            --secondary-dark: #273f43;
+            --secondary-light: #dbf6fa;
+            --tertiary-dark: #2f3b58;
+            --tertiary-light: #bac6ea;
+            --background-color: #cde7ec;
+            --error-color: #de3730;
+            --neutral-dark: #393c3d;
+            --neutral-light: #f8fafa;
+        }
+
+        body {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            background-color: var(--background-color);
+            color: var(--neutral-dark);
+            line-height: 1.6;
+        }
+
+        .container-wrapper {
+            max-width: 768px; /* md:max-w-2xl */
+            margin: 0 auto;
+            padding: 1rem; /* p-4 */
+        }
+
+        .email-container {
+            background-color: var(--neutral-light);
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-lg */
+            padding: 2rem; /* p-8 */
+        }
+
+        .header-section {
+            background-color: var(--primary-dark);
+            color: var(--primary-light);
+            padding: 1.5rem 2rem; /* py-6 px-8 */
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+            margin: -2rem -2rem 2rem -2rem; /* Adjust for container padding */
+            text-align: center;
+        }
+
+        .quote-details-card {
+            background-color: var(--secondary-light);
+            border-left: 4px solid var(--primary-dark);
+            padding: 1.5rem; /* p-6 */
+            border-radius: 0.375rem; /* rounded-md */
+            margin-top: 1.5rem; /* mt-6 */
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+
+        .button-primary {
+            display: inline-block;
+            background-color: var(--primary-dark);
+            color: var(--primary-light);
+            padding: 0.75rem 1.5rem; /* py-3 px-6 */
+            border-radius: 0.375rem; /* rounded-md */
+            text-decoration: none;
+            font-weight: 600; /* font-semibold */
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .button-primary:hover {
+            background-color: var(--secondary-dark);
+        }
+
+        .link-secondary {
+            color: var(--primary-dark);
+            text-decoration: underline;
+            transition: color 0.2s ease-in-out;
+        }
+
+        .link-secondary:hover {
+            color: var(--secondary-dark);
+        }
+
+        @media (max-width: 767px) {
+            .email-container {
+                padding: 1.5rem; /* p-6 */
+            }
+            .header-section {
+                padding: 1rem 1.5rem; /* py-4 px-6 */
+                margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+            }
+            .quote-details-card {
+                padding: 1rem; /* p-4 */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-wrapper">
+        <div class="email-container">
+            <div class="header-section">
+                <h1 class="text-3xl font-bold mb-2">Your Initial Quote from ARW</h1>
+                <p class="text-lg">Preliminary Quotation</p>
+            </div>
+
+            <p class="mb-4">Dear John Doe,</p>
+
+            <p class="mb-4">Thank you for your interest in our services. We're pleased to provide an initial quote for 1000 units of 25 Walls.</p>
+
+            <div class="quote-details-card">
+                <h2 class="text-xl font-semibold text-primary-dark mb-2">Quotation Details:</h2>
+                <p class="text-lg font-bold text-primary-dark mb-1">Preliminary Quote: <span class="text-3xl">$50,000</span></p>
+                <p class="text-secondary-dark">For: 1000 units of 25 Walls</p>
+                <p class="text-sm text-secondary-dark mt-2"><em>Note: This quote includes services with Liftgate as requested.</em></p>
+            </div>
+
+            <p class="mb-4">This quote is preliminary and may be subject to adjustments based on a more detailed discussion of your specific requirements. We invite you to schedule a brief call at your convenience or reply to this email to finalize the details and ensure we meet all your needs.</p>
+
+            <div class="text-center mt-8 mb-8">
+                <a href="#" target="_blank" class="button-primary mr-4">Schedule a Call</a>
+                <a href="mailto:info@arw.com?subject=Reply%20to%20Your%20Initial%20Quote%20from%20ARW" class="link-secondary">Reply to this Email</a>
+            </div>
+
+            <p class="mb-4">We look forward to speaking with you.</p>
+
+            <p class="mt-6">Sincerely,</p>
+            <p class="font-semibold text-primary-dark">The ARW Team</p>
+        </div>
+    </div>
+</body>
+</html>

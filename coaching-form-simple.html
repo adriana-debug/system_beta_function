@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coaching Form</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+  <div class="max-w-3xl mx-auto p-6">
+    <!-- Coaching Form Card -->
+    <div class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-xl font-semibold mb-4">Coaching Session Form</h2>
+      <p class="text-sm text-gray-500 mb-6">Fill out the details for your coaching session.</p>
+      
+      <form class="space-y-5">
+        
+        <!-- Coach Name -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Coach Name</label>
+          <input type="text" placeholder="Enter coach name" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Employee Name -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Employee Name</label>
+          <input type="text" placeholder="Enter employee name" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Session Date -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Session Date</label>
+          <input type="date" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Focus Area -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Focus Area</label>
+          <select class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option>Select focus area</option>
+            <option>Time Management</option>
+            <option>Communication Skills</option>
+            <option>Leadership Development</option>
+            <option>Customer Service</option>
+            <option>Technical Skills</option>
+          </select>
+        </div>
+
+        <!-- Observations -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Observations</label>
+          <textarea placeholder="Enter observations..." rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+
+        <!-- Action Plan -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Agreed Action Plan</label>
+          <textarea placeholder="Enter agreed action plan..." rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+
+        <!-- Timeline -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Timeline</label>
+          <select class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option>Select timeline</option>
+            <option>1 Week</option>
+            <option>1 Month</option>
+            <option>3 Months</option>
+          </select>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-4">
+          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium shadow">
+            Save Coaching Session
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>
